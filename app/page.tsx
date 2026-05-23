@@ -28,11 +28,11 @@ export default function HomePage() {
           </div>
 
           <h1
-            className="animate-fade-in-up text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-[0.95] max-w-4xl tracking-tight"
+            className="animate-fade-in-up text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-[1.05] max-w-4xl tracking-tight"
             style={{ animationDelay: "100ms" }}
           >
             Inscriptions{" "}
-            <span className="block bg-gradient-to-r from-yellow-club via-yellow-200 to-yellow-club bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-yellow-club via-yellow-200 to-yellow-club bg-clip-text text-transparent pb-2 overflow-visible">
               en ligne
             </span>
             <span className="block text-white/90 mt-2">
@@ -54,7 +54,7 @@ export default function HomePage() {
           >
             <Link
               href="/stages"
-              className="group relative overflow-hidden rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
+              className="radar-pulse group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 S&apos;inscrire à un stage
@@ -62,11 +62,10 @@ export default function HomePage() {
                   →
                 </span>
               </span>
-              <span className="absolute inset-0 bg-gradient-to-r from-yellow-club to-yellow-hover opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
             <Link
               href="/ecole"
-              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
+              className="radar-pulse-ring group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
             >
               <span className="inline-flex items-center gap-2">
                 S&apos;inscrire à l&apos;école
@@ -108,14 +107,14 @@ export default function HomePage() {
             { value: 100, label: "Moniteurs DE", suffix: "%" },
           ].map((stat, i) => (
             <Reveal key={stat.label} delay={i * 100}>
-              <div>
-                <p className="text-5xl sm:text-6xl font-extrabold text-navy tracking-tight">
+              <div className="flex flex-col items-center">
+                <p className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-navy tracking-tight leading-none">
                   <AnimatedCounter
                     value={stat.value}
                     suffix={stat.suffix}
                   />
                 </p>
-                <p className="text-xs uppercase tracking-widest text-gray-500 font-bold mt-2">
+                <p className="text-[11px] sm:text-xs uppercase tracking-widest text-gray-500 font-bold mt-4">
                   {stat.label}
                 </p>
               </div>

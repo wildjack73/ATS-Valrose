@@ -121,6 +121,68 @@ body {
   animation: scroll-bounce 2s ease-in-out infinite;
 }
 
+/* === Radar pulse (battement) ============================================== */
+/* À mettre sur un conteneur en `position: relative; isolation: isolate;`.
+   Crée 2 anneaux concentriques qui se diffusent comme un radar. */
+
+@keyframes radar-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.75;
+  }
+  80% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.radar-pulse {
+  position: relative;
+  isolation: isolate;
+}
+
+.radar-pulse::before,
+.radar-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  z-index: -1;
+  pointer-events: none;
+  animation: radar-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.radar-pulse::after {
+  animation-delay: 1.2s;
+}
+
+/* Variante "rings only" — anneaux colorés sans recopier le fond du bouton.
+   Utile pour les boutons translucides (cas du bouton École). */
+.radar-pulse-ring {
+  position: relative;
+  isolation: isolate;
+}
+
+.radar-pulse-ring::before,
+.radar-pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid currentColor;
+  z-index: -1;
+  pointer-events: none;
+  animation: radar-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.radar-pulse-ring::after {
+  animation-delay: 1.2s;
+}
+
 /* Respecter prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
@@ -129,6 +191,13 @@ body {
   .animate-fade-in-up,
   .animate-scroll-bounce {
     animation: none !important;
+  }
+  .radar-pulse::before,
+  .radar-pulse::after,
+  .radar-pulse-ring::before,
+  .radar-pulse-ring::after {
+    animation: none !important;
+    display: none !important;
   }
 }
 
