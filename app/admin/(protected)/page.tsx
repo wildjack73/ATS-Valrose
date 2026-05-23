@@ -4,16 +4,19 @@ import {
   fetchEcole,
   fetchHistoriqueStages,
   fetchHistoriqueSemaines,
+  fetchHistoriqueEcole,
 } from "@/lib/admin/queries";
 import { SEMAINES } from "@/lib/data/stages";
 import StagesTable from "./StagesTable";
 import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
+import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 
 export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<{
   tab?: string;
+  histo?: string;
   semaine?: string;
   statut?: string;
 }>;
@@ -24,18 +27,22 @@ export default async function AdminDashboardPage({
   searchParams: SearchParams;
 }) {
   const sp = await searchParams;
-  const tab = sp.tab === "ecole"
-    ? "ecole"
-    : sp.tab === "historique"
-      ? "historique"
-      : "stages";
+  const tab =
+    sp.tab === "ecole"
+      ? "ecole"
+      : sp.tab === "historique"
+        ? "historique"
+        : "stages";
+  const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
-  const [stages, ecole, historique, historiqueSemaines] = await Promise.all([
-    fetchStages({ semaine: sp.semaine, statut: sp.statut }),
-    fetchEcole({ statut: sp.statut }),
-    fetchHistoriqueStages({ semaine: sp.semaine }),
-    fetchHistoriqueSemaines(),
-  ]);
+  const [stages, ecole, historique, historiqueSemaines, historiqueEcole] =
+    await Promise.all([
+      fetchStages({ semaine: sp.semaine, statut: sp.statut }),
+      fetchEcole({ statut: sp.statut }),
+      fetchHistoriqueStages({ semaine: sp.semaine }),
+      fetchHistoriqueSemaines(),
+      fetchHistoriqueEcole(),
+    ]);
 
   const totalStagesEnAttente = stages
     .filter((s) => s.statut === "en_attente")
@@ -46,6 +53,7 @@ export default async function AdminDashboardPage({
   const totalEcoleEnAttente = ecole
     .filter((s) => s.statut === "en_attente")
     .reduce((sum, s) => sum + (s.prix_total ?? 0), 0);
+  const totalArchives = historique.length + historiqueEcole.length;
 
   return (
     <>
@@ -71,7 +79,7 @@ export default async function AdminDashboardPage({
           École ({ecole.length})
         </TabLink>
         <TabLink active={tab === "historique"} href="/admin?tab=historique">
-          Archives ({historique.length})
+          Archives ({totalArchives})
         </TabLink>
       </div>
 
@@ -85,11 +93,31 @@ export default async function AdminDashboardPage({
       ) : tab === "ecole" ? (
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
       ) : (
-        <HistoriqueTable
-          rows={historique}
-          semaines={historiqueSemaines}
-          currentSemaine={sp.semaine}
-        />
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <SubLink
+              active={histo === "stages"}
+              href="/admin?tab=historique&histo=stages"
+            >
+              Stages ({historique.length})
+            </SubLink>
+            <SubLink
+              active={histo === "ecole"}
+              href="/admin?tab=historique&histo=ecole"
+            >
+              École ({historiqueEcole.length})
+            </SubLink>
+          </div>
+          {histo === "stages" ? (
+            <HistoriqueTable
+              rows={historique}
+              semaines={historiqueSemaines}
+              currentSemaine={sp.semaine}
+            />
+          ) : (
+            <HistoriqueEcoleTable rows={historiqueEcole} />
+          )}
+        </div>
       )}
     </>
   );
@@ -129,6 +157,29 @@ function TabLink({
         active
           ? "bg-white text-navy border-x border-t border-gray-200"
           : "text-gray-500 hover:text-navy"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function SubLink({
+  active,
+  href,
+  children,
+}: {
+  active: boolean;
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+        active
+          ? "bg-navy text-white"
+          : "bg-white border border-gray-200 text-gray-600 hover:border-navy"
       }`}
     >
       {children}

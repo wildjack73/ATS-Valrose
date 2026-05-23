@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "import:historique": "tsx scripts/import-historique-stages.ts"
+    "import:historique": "tsx scripts/import-historique-stages.ts",
+    "import:historique-ecole": "tsx scripts/import-historique-ecole.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

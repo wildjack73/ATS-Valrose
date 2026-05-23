@@ -169,3 +169,49 @@ create index if not exists idx_hist_stages_semaine on public.inscriptions_stages
 
 alter table public.inscriptions_stages_historique enable row level security;
 -- Aucune policy → seul service_role peut lire/modifier (lecture admin uniquement)
+
+-- ============================================================================
+-- Table : inscriptions_ecole_historique
+-- ----------------------------------------------------------------------------
+-- Inscriptions historiques école (saisons antérieures à 2026-2027).
+-- ============================================================================
+create table if not exists public.inscriptions_ecole_historique (
+  id uuid primary key default gen_random_uuid(),
+  imported_at timestamptz not null default now(),
+
+  source text not null,
+
+  -- Bruts CSV
+  horodateur text,
+  nom text,
+  prenom text,
+  date_naissance text,
+  adresse text,
+  code_postal_ville text,
+  telephone text,
+  email text,
+  niveau text,
+  cours_tennis_raw text,
+  cours_padel_raw text,
+  formule_mixte_raw text,
+  nouvelles_formules_raw text,
+  dispo_mercredi text,
+  dispo_samedi text,
+  dispo_semaine text,
+  mode_reglement text,
+  nb_paiements text,
+  licence_fft text,
+  licence_extra text,
+  reglement_notes text,
+  commentaires text,
+
+  -- Estimé
+  prix_estime integer default 0
+);
+
+create index if not exists idx_hist_ecole_imported on public.inscriptions_ecole_historique(imported_at desc);
+create index if not exists idx_hist_ecole_source on public.inscriptions_ecole_historique(source);
+create index if not exists idx_hist_ecole_email on public.inscriptions_ecole_historique(email);
+
+alter table public.inscriptions_ecole_historique enable row level security;
+-- Aucune policy → seul service_role peut lire/modifier

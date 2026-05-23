@@ -83,6 +83,50 @@ export async function fetchHistoriqueSemaines(): Promise<string[]> {
   return Array.from(unique).sort();
 }
 
+export interface InscriptionEcoleHistoriqueRow {
+  id: string;
+  imported_at: string;
+  source: string;
+  horodateur: string | null;
+  nom: string | null;
+  prenom: string | null;
+  date_naissance: string | null;
+  adresse: string | null;
+  code_postal_ville: string | null;
+  telephone: string | null;
+  email: string | null;
+  niveau: string | null;
+  cours_tennis_raw: string | null;
+  cours_padel_raw: string | null;
+  formule_mixte_raw: string | null;
+  nouvelles_formules_raw: string | null;
+  dispo_mercredi: string | null;
+  dispo_samedi: string | null;
+  dispo_semaine: string | null;
+  mode_reglement: string | null;
+  nb_paiements: string | null;
+  licence_fft: string | null;
+  licence_extra: string | null;
+  reglement_notes: string | null;
+  commentaires: string | null;
+  prix_estime: number;
+}
+
+export async function fetchHistoriqueEcole(): Promise<
+  InscriptionEcoleHistoriqueRow[]
+> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("inscriptions_ecole_historique")
+    .select("*")
+    .order("horodateur", { ascending: false, nullsFirst: false });
+  if (error) {
+    console.error("fetchHistoriqueEcole:", error);
+    return [];
+  }
+  return (data ?? []) as InscriptionEcoleHistoriqueRow[];
+}
+
 export async function fetchEcole(filters: {
   statut?: string;
 } = {}): Promise<InscriptionEcoleRow[]> {
