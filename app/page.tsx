@@ -49,7 +49,7 @@ export default function HomePage() {
           </p>
 
           <div
-            className="animate-fade-in-up mt-12 flex flex-wrap gap-4"
+            className="animate-fade-in-up mt-12 flex flex-wrap gap-x-8 gap-y-5"
             style={{ animationDelay: "400ms" }}
           >
             <Link
