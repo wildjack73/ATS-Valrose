@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function TarifsPage() {
   return (
-    <div className="bg-gray-50">
+    <div>
       <section className="bg-gradient-to-br from-navy via-navy to-cyan-club text-white">
         <div className="mx-auto max-w-4xl px-4 py-12">
           <h1 className="text-3xl sm:text-4xl font-extrabold">

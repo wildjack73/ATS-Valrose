@@ -6,7 +6,7 @@
   --color-navy-dark: #082230;
   --color-cyan-club: #2db5d6;
   --color-cyan-light: #4dc5e3;
-  --color-cyan-pale: #b8e1ee;
+  --color-cyan-pale: #d6eef5;
   --color-yellow-club: #f3c503;
   --color-yellow-hover: #d8af00;
 
@@ -29,7 +29,13 @@ body {
 body {
   font-family: var(--font-sans);
   color: #1a1a1a;
-  background: #f7fbfd;
+  /* Fond doux unifié sur tout le site */
+  background:
+    radial-gradient(at 12% 0%, rgba(45, 181, 214, 0.12) 0%, transparent 50%),
+    radial-gradient(at 88% 0%, rgba(243, 197, 3, 0.06) 0%, transparent 45%),
+    linear-gradient(180deg, #f3fafd 0%, #eef6fa 100%);
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 .sr-only {

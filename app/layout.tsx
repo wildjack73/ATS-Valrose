@@ -14,58 +14,60 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="min-h-full flex flex-col">
-        <header className="bg-navy text-white">
-          <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-3">
+        <header className="sticky top-0 z-40 bg-navy/95 backdrop-blur text-white shadow-sm border-b border-white/5">
+          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-3 group"
+              aria-label="Accueil ATS Valrose"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-club.png"
                 alt="ATS Valrose"
-                className="h-10 w-auto sm:h-12"
+                className="h-10 w-auto sm:h-12 transition-transform group-hover:scale-105"
               />
-              <span className="hidden sm:inline font-bold tracking-wide">
-                ATS VALROSE
-              </span>
+              <div className="hidden sm:flex flex-col leading-tight">
+                <span className="font-bold tracking-wide">ATS&nbsp;VALROSE</span>
+                <span className="text-[10px] uppercase tracking-widest text-white/60">
+                  Padel · Tennis · Nice
+                </span>
+              </div>
             </Link>
-            <nav className="text-sm flex items-center gap-5">
-              <Link
-                href="/stages"
-                className="text-white/80 hover:text-yellow-club transition-colors"
-              >
+
+            <nav className="flex items-center gap-1 sm:gap-2 text-sm">
+              <NavLink href="/stages" accent="cyan">
                 Stages
-              </Link>
-              <Link
-                href="/ecole"
-                className="text-white/80 hover:text-ocre-light transition-colors"
-              >
+              </NavLink>
+              <NavLink href="/ecole" accent="ocre">
                 École
-              </Link>
-              <Link
-                href="/tarifs"
-                className="text-white/80 hover:text-yellow-club transition-colors"
-              >
-                Tarifs
-              </Link>
+              </NavLink>
+              <NavLink href="/tarifs">Tarifs</NavLink>
             </nav>
           </div>
         </header>
 
         <main className="flex-1">{children}</main>
 
-        <footer className="bg-navy-dark text-white/80 text-sm">
-          <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
-            <span>© {new Date().getFullYear()} ATS Valrose — Nice</span>
-            <div className="flex items-center gap-4">
+        <footer className="bg-navy-dark text-white/80 text-sm border-t border-white/5">
+          <div className="mx-auto max-w-6xl px-4 py-8 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+            <div>
+              <p className="font-bold text-white">ATS&nbsp;Valrose</p>
+              <p className="text-xs text-white/60 mt-0.5">
+                © {new Date().getFullYear()} — Tennis &amp; Padel à Nice
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
               <a
                 href="mailto:contact@ats-valrose.fr"
-                className="hover:text-yellow-club"
+                className="hover:text-yellow-club transition-colors"
               >
                 contact@ats-valrose.fr
               </a>
-              <span className="text-white/30">·</span>
+              <span className="text-white/20">·</span>
               <Link
                 href="/admin"
-                className="text-white/40 hover:text-white text-xs"
+                className="text-white/40 hover:text-white transition-colors"
               >
                 Admin
               </Link>
@@ -74,5 +76,30 @@ export default function RootLayout({
         </footer>
       </body>
     </html>
+  );
+}
+
+function NavLink({
+  href,
+  children,
+  accent,
+}: {
+  href: string;
+  children: React.ReactNode;
+  accent?: "cyan" | "ocre";
+}) {
+  const hover =
+    accent === "ocre"
+      ? "hover:text-ocre-light"
+      : accent === "cyan"
+        ? "hover:text-cyan-light"
+        : "hover:text-yellow-club";
+  return (
+    <Link
+      href={href}
+      className={`px-3 py-1.5 rounded-md text-white/85 ${hover} hover:bg-white/5 transition-colors font-medium`}
+    >
+      {children}
+    </Link>
   );
 }

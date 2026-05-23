@@ -87,7 +87,7 @@ export default function HomePage() {
       </section>
 
       {/* CHIFFRES CLÉS */}
-      <section className="bg-white border-b border-gray-100">
+      <section className="bg-white/70 backdrop-blur border-b border-white/40">
         <div className="mx-auto max-w-5xl px-4 py-10 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           <Stat number="3" label="Courts de tennis" />
           <Stat number="2" label="Courts de padel" />
@@ -97,7 +97,7 @@ export default function HomePage() {
       </section>
 
       {/* CARTES DE PARCOURS */}
-      <section className="bg-gray-50">
+      <section>
         <div className="mx-auto max-w-5xl px-4 py-14">
           <div className="text-center mb-10">
             <p className="text-xs uppercase tracking-widest text-cyan-club font-semibold">
@@ -175,11 +175,11 @@ export default function HomePage() {
       </section>
 
       {/* LECONS / LOCATIONS */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-12">
+      <section>
+        <div className="mx-auto max-w-5xl px-4 pb-12">
           <Link
             href="/tarifs"
-            className="block rounded-2xl border-2 border-dashed border-navy/20 bg-white p-6 hover:border-navy/40 hover:bg-navy/5 transition"
+            className="block rounded-2xl border-2 border-dashed border-navy/20 bg-white/70 backdrop-blur p-6 hover:border-navy/40 hover:bg-white transition"
           >
             <div className="flex items-center gap-4 flex-wrap">
               <IconRacketSmall className="w-10 h-10 text-navy shrink-0" />
@@ -201,7 +201,7 @@ export default function HomePage() {
       </section>
 
       {/* CONTACT */}
-      <section className="bg-gray-50">
+      <section>
         <div className="mx-auto max-w-5xl px-4 py-10 text-center">
           <p className="text-sm text-gray-600">
             Une question ? Contactez le club&nbsp;:

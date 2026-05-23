@@ -11,6 +11,7 @@ import StagesTable from "./StagesTable";
 import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
 import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
+import TarifsView from "./TarifsView";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,9 @@ export default async function AdminDashboardPage({
       ? "ecole"
       : sp.tab === "historique"
         ? "historique"
-        : "stages";
+        : sp.tab === "tarifs"
+          ? "tarifs"
+          : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   const [stages, ecole, historique, historiqueSemaines, historiqueEcole] =
@@ -81,6 +84,9 @@ export default async function AdminDashboardPage({
         <TabLink active={tab === "historique"} href="/admin?tab=historique">
           Archives ({totalArchives})
         </TabLink>
+        <TabLink active={tab === "tarifs"} href="/admin?tab=tarifs">
+          Tarifs
+        </TabLink>
       </div>
 
       {tab === "stages" ? (
@@ -92,6 +98,8 @@ export default async function AdminDashboardPage({
         />
       ) : tab === "ecole" ? (
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
+      ) : tab === "tarifs" ? (
+        <TarifsView />
       ) : (
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">

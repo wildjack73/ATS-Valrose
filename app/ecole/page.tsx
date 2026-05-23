@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function EcolePage() {
   return (
-    <div className="bg-ocre-pale">
+    <div>
       <section className="bg-gradient-to-br from-clay via-ocre to-ocre-light text-white">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
           <h1 className="text-3xl sm:text-4xl font-extrabold">
