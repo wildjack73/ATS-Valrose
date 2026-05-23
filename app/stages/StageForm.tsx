@@ -589,27 +589,27 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
       </Section>
 
       {/* Récap + submit */}
-      <div className="rounded-2xl bg-navy text-white p-6 sm:p-8 sticky bottom-4 shadow-lg">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm text-white/70 uppercase tracking-wide">
-              Total à régler
-            </p>
-            <p className="text-3xl sm:text-4xl font-extrabold">{prixCalcule}€</p>
-            <p className="text-xs text-white/60 mt-1">
-              Règlement en espèces ou par chèque le jour du stage.
-            </p>
+      <div className="rounded-xl bg-navy text-white px-5 py-3 sticky bottom-3 shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <span className="text-[10px] uppercase tracking-widest text-white/60 font-semibold">
+              Total
+            </span>
+            <span className="text-2xl font-extrabold leading-none">{prixCalcule}€</span>
+            <span className="hidden md:inline text-xs text-white/50 truncate">
+              · Règlement le jour du stage (espèces / chèque)
+            </span>
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-yellow-club px-6 py-3 font-bold text-navy hover:bg-yellow-hover disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="rounded-lg bg-yellow-club px-5 py-2.5 font-bold text-navy text-sm hover:bg-yellow-hover disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {submitting ? "Envoi en cours…" : "Valider l'inscription"}
+            {submitting ? "Envoi…" : "Valider l'inscription"}
           </button>
         </div>
         {serverError ? (
-          <p className="mt-4 rounded-md bg-red-100 text-red-700 px-3 py-2 text-sm">
+          <p className="mt-2 rounded-md bg-red-100 text-red-700 px-3 py-1.5 text-xs">
             {serverError}
           </p>
         ) : null}
