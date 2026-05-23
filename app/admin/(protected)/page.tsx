@@ -20,6 +20,7 @@ import TarifsEditor from "./TarifsEditor";
 import PlanningEcole from "./PlanningEcole";
 import DashboardHeader from "./DashboardHeader";
 import StagesOrganisation from "./StagesOrganisation";
+import Annuaire from "./Annuaire";
 import {
   fetchGroupesEcole,
   fetchCoaches,
@@ -29,6 +30,7 @@ import {
   fetchStageOrganisation,
   fetchInscriptionsCountByDay,
 } from "@/lib/admin/stages-org-queries";
+import { fetchAnnuaireClients } from "@/lib/admin/annuaire-queries";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +60,9 @@ export default async function AdminDashboardPage({
             ? "planning"
             : sp.tab === "stages-org"
               ? "stages-org"
-              : "stages";
+              : sp.tab === "annuaire"
+                ? "annuaire"
+                : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : permettre de visualiser/éditer n'importe quelle saison
@@ -96,6 +100,10 @@ export default async function AdminDashboardPage({
           fetchInscriptionsSansGroupe(bundle.saison.id),
         ])
       : null;
+
+  // Annuaire : charger seulement si onglet actif
+  const annuaireData =
+    tab === "annuaire" ? await fetchAnnuaireClients() : null;
 
   // Stages organisation : charger seulement si onglet actif + semaine choisie
   const stageOrgData =
@@ -153,6 +161,13 @@ export default async function AdminDashboardPage({
         >
           Organisation Stages
         </TabLink>
+        <TabLink
+          active={tab === "annuaire"}
+          href="/admin?tab=annuaire"
+          accent="navy"
+        >
+          Annuaire
+        </TabLink>
         {/* Planning École masqué pour le moment — réactivable en décommentant
         <TabLink
           active={tab === "planning"}
@@ -196,6 +211,8 @@ export default async function AdminDashboardPage({
             Aucune saison active pour gérer le planning.
           </div>
         )
+      ) : tab === "annuaire" ? (
+        <Annuaire clients={annuaireData ?? []} />
       ) : tab === "stages-org" ? (
         bundle ? (
           <StagesOrganisation
