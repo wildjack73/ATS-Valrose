@@ -9,6 +9,7 @@ import type { TarifsBundle, CoursEcole } from "@/lib/data/tarifs-types";
 import { ecoleFormSchema, type EcoleFormInput } from "@/lib/schemas/ecole";
 import { Field, inputClass } from "@/components/ui/Field";
 import { NiveauSelect } from "@/components/ui/NiveauSelect";
+import { DateNaissanceInput } from "@/components/ui/DateNaissanceInput";
 import { Section } from "@/components/ui/Section";
 
 const MODES_REGLEMENT = [
@@ -142,11 +143,16 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
           required
           error={errors.date_naissance?.message}
         >
-          <input
-            id="date_naissance"
-            type="date"
-            className={inputClass}
-            {...register("date_naissance")}
+          <Controller
+            control={control}
+            name="date_naissance"
+            render={({ field }) => (
+              <DateNaissanceInput
+                id="date_naissance"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
           />
         </Field>
       </Section>
