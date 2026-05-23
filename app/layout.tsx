@@ -56,14 +56,23 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
 
         <footer className="bg-navy-dark text-white/80 text-sm">
-          <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row gap-2 justify-between">
+          <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
             <span>© {new Date().getFullYear()} ATS Valrose — Nice</span>
-            <a
-              href="mailto:contact@ats-valrose.fr"
-              className="hover:text-yellow-club"
-            >
-              contact@ats-valrose.fr
-            </a>
+            <div className="flex items-center gap-4">
+              <a
+                href="mailto:contact@ats-valrose.fr"
+                className="hover:text-yellow-club"
+              >
+                contact@ats-valrose.fr
+              </a>
+              <span className="text-white/30">·</span>
+              <Link
+                href="/admin"
+                className="text-white/40 hover:text-white text-xs"
+              >
+                Admin
+              </Link>
+            </div>
           </div>
         </footer>
       </body>
