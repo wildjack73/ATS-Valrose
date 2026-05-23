@@ -14,6 +14,7 @@ import {
   statutBadgeClass,
   statutRowClass,
 } from "@/lib/admin/format";
+import InlineStatusBadge from "./InlineStatusBadge";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -197,35 +198,41 @@ function EcoleRowGroup({
         </td>
         <td className="p-3 text-xs">{licenceFftLabel(row.licence_fft)}</td>
         <td className="p-3">
-          <div className="flex flex-col gap-1">
-            <span
-              className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statutBadgeClass(
-                row.statut,
-              )}`}
-            >
-              {statutLabel(row.statut)}
-            </span>
-            <div className="flex gap-1 text-base leading-none">
-              {row.paiement_info ? (
-                <span title={`Règlement : ${row.paiement_info}`}>💳</span>
-              ) : null}
-              {row.notes_admin ? (
-                <span title={`Note : ${row.notes_admin}`}>💬</span>
-              ) : null}
-            </div>
-          </div>
+          <InlineStatusBadge
+            value={row.statut}
+            disabled={pending}
+            onChange={(s) => patch({ statut: s })}
+            paiementInfo={row.paiement_info}
+            notesAdmin={row.notes_admin}
+          />
         </td>
         <td className="p-3 whitespace-nowrap">
-          <button
-            onClick={toggle}
-            className={`text-xs font-semibold px-3 py-1.5 rounded ${
-              open
-                ? "bg-navy text-white"
-                : "bg-ocre text-white hover:bg-ocre-dark"
-            }`}
-          >
-            {open ? "Fermer" : "Éditer"}
-          </button>
+          <div className="flex items-center gap-1">
+            <a
+              href={`mailto:${row.email}?subject=${encodeURIComponent(`Inscription École ${row.prenom} ${row.nom}`)}`}
+              className="text-base hover:scale-110 transition"
+              title={`Écrire à ${row.email}`}
+            >
+              📧
+            </a>
+            <a
+              href={`tel:${row.telephone.replace(/\s/g, "")}`}
+              className="text-base hover:scale-110 transition"
+              title={`Appeler ${row.telephone}`}
+            >
+              📞
+            </a>
+            <button
+              onClick={toggle}
+              className={`text-xs font-semibold px-3 py-1.5 rounded ${
+                open
+                  ? "bg-navy text-white"
+                  : "bg-ocre text-white hover:bg-ocre-dark"
+              }`}
+            >
+              {open ? "Fermer" : "Éditer"}
+            </button>
+          </div>
         </td>
       </tr>
       {open ? (
