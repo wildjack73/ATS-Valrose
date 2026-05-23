@@ -95,7 +95,8 @@ export default function StagesTable({
             <tr>
               <th className="text-left p-3">Date</th>
               <th className="text-left p-3">Enfant</th>
-              <th className="text-left p-3">Contact</th>
+              <th className="text-left p-3">Email</th>
+              <th className="text-left p-3">Téléphone</th>
               <th className="text-left p-3">Semaine</th>
               <th className="text-left p-3">Formule</th>
               <th className="text-right p-3">Prix</th>
@@ -106,7 +107,7 @@ export default function StagesTable({
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-gray-500">
+                <td colSpan={9} className="p-8 text-center text-gray-500">
                   Aucune inscription pour le moment.
                 </td>
               </tr>
@@ -160,8 +161,20 @@ function RowGroup({
           </div>
         </td>
         <td className="p-3 text-xs">
-          <div>{row.email}</div>
-          <div className="text-gray-500">{row.telephone}</div>
+          <a
+            href={`mailto:${row.email}`}
+            className="text-navy hover:text-yellow-hover hover:underline"
+          >
+            {row.email}
+          </a>
+        </td>
+        <td className="p-3 text-xs whitespace-nowrap">
+          <a
+            href={`tel:${row.telephone.replace(/\s/g, "")}`}
+            className="text-navy hover:text-yellow-hover hover:underline"
+          >
+            {row.telephone}
+          </a>
         </td>
         <td className="p-3 text-xs">{row.semaine_label}</td>
         <td className="p-3 text-xs">
@@ -211,7 +224,7 @@ function RowGroup({
       </tr>
       {open ? (
         <tr className="border-t bg-navy/5">
-          <td colSpan={8} className="p-4">
+          <td colSpan={9} className="p-4">
             <EditPanel row={row} patch={patch} pending={pending} />
           </td>
         </tr>

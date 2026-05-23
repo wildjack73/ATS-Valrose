@@ -77,7 +77,9 @@ export default function EcoleTable({
             <tr>
               <th className="text-left p-3">Date</th>
               <th className="text-left p-3">Élève</th>
-              <th className="text-left p-3">Contact</th>
+              <th className="text-left p-3">Email</th>
+              <th className="text-left p-3">Téléphone</th>
+              <th className="text-left p-3">Ville</th>
               <th className="text-left p-3">Cours</th>
               <th className="text-left p-3">Disponibilités</th>
               <th className="text-right p-3">Total</th>
@@ -90,7 +92,7 @@ export default function EcoleTable({
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-8 text-center text-gray-500">
+                <td colSpan={11} className="p-8 text-center text-gray-500">
                   Aucune inscription pour le moment.
                 </td>
               </tr>
@@ -150,9 +152,23 @@ function EcoleRowGroup({
           </div>
         </td>
         <td className="p-3 text-xs">
-          <div>{row.email}</div>
-          <div className="text-gray-500">{row.telephone}</div>
-          <div className="text-gray-500">{row.code_postal_ville}</div>
+          <a
+            href={`mailto:${row.email}`}
+            className="text-navy hover:text-yellow-hover hover:underline"
+          >
+            {row.email}
+          </a>
+        </td>
+        <td className="p-3 text-xs whitespace-nowrap">
+          <a
+            href={`tel:${row.telephone.replace(/\s/g, "")}`}
+            className="text-navy hover:text-yellow-hover hover:underline"
+          >
+            {row.telephone}
+          </a>
+        </td>
+        <td className="p-3 text-xs text-gray-600">
+          {row.code_postal_ville}
         </td>
         <td className="p-3 text-xs space-y-0.5">
           {coursTennisLabels(row.cours_tennis) ? (
@@ -214,7 +230,7 @@ function EcoleRowGroup({
       </tr>
       {open ? (
         <tr className="border-t bg-ocre/5">
-          <td colSpan={10} className="p-4">
+          <td colSpan={11} className="p-4">
             <EcoleEditPanel row={row} patch={patch} pending={pending} />
           </td>
         </tr>
