@@ -79,11 +79,21 @@ on conflict (saison_id, code) do update set
   periode = excluded.periode, label = excluded.label, date_debut = excluded.date_debut,
   ouverte = excluded.ouverte, order_idx = excluded.order_idx;
 
--- 4bis. Noël : déjeuner indisponible (le club ferme la restauration ces semaines-là)
+-- 4bis. Pas de déjeuner à Noël (restauration fermée) et sur les semaines qui démarrent en juin
 update public.semaines_stages
 set dejeuner_disponible = false
 where saison_id = (select id from public.saisons where code = '2026-2027')
-  and code like 'noel%';
+  and (
+    code like 'noel%'
+    or (date_debut is not null and extract(month from date_debut) = 6)
+  );
+
+-- Sécurité : les autres semaines de la saison gardent le déjeuner actif
+update public.semaines_stages
+set dejeuner_disponible = true
+where saison_id = (select id from public.saisons where code = '2026-2027')
+  and code not like 'noel%'
+  and (date_debut is null or extract(month from date_debut) <> 6);
 
 -- 5. Cours École Tennis
 with s as (select id from public.saisons where code = '2026-2027')

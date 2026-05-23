@@ -79,6 +79,14 @@ export async function POST(request: Request) {
     }
   }
 
+  // Règles métier : pas de déjeuner à Noël ni sur les semaines qui démarrent en juin
+  function dejeunerDispo(code: string, dateDebut: string): boolean {
+    if (code.startsWith("noel")) return false;
+    const month = parseInt(dateDebut.slice(5, 7), 10); // YYYY-MM-DD
+    if (month === 6) return false;
+    return true;
+  }
+
   // Insertion (upsert sur (saison_id, code))
   const toInsert = semaines.map((s) => ({
     saison_id: body.saisonId,
@@ -87,6 +95,7 @@ export async function POST(request: Request) {
     label: s.label,
     date_debut: s.date_debut,
     ouverte: true,
+    dejeuner_disponible: dejeunerDispo(s.code, s.date_debut),
     order_idx: s.order_idx,
   }));
 
