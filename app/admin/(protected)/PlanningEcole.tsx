@@ -31,6 +31,7 @@ export default function PlanningEcole({
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [filterJour, setFilterJour] = useState<JourSemaine | "all">("all");
+  const [viewMode, setViewMode] = useState<"cartes" | "grille">("grille");
 
   function refresh() {
     startTransition(() => router.refresh());
@@ -68,7 +69,7 @@ export default function PlanningEcole({
       ) : null}
 
       {/* Barre d'actions */}
-      <div className="flex flex-wrap items-center gap-3 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 bg-white rounded-xl border border-gray-200 p-4 shadow-sm no-print">
         <div className="flex items-center gap-2">
           <label className="text-xs font-semibold uppercase text-gray-500">
             Jour :
@@ -88,6 +89,34 @@ export default function PlanningEcole({
             ))}
           </select>
         </div>
+        <div className="inline-flex rounded border border-gray-300 overflow-hidden text-xs">
+          <button
+            onClick={() => setViewMode("grille")}
+            className={`px-3 py-1.5 font-semibold ${
+              viewMode === "grille"
+                ? "bg-navy text-white"
+                : "bg-white text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            📋 Grille
+          </button>
+          <button
+            onClick={() => setViewMode("cartes")}
+            className={`px-3 py-1.5 font-semibold ${
+              viewMode === "cartes"
+                ? "bg-navy text-white"
+                : "bg-white text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            🃏 Cartes
+          </button>
+        </div>
+        <button
+          onClick={() => window.print()}
+          className="text-xs font-semibold px-3 py-1.5 rounded bg-white border border-gray-300 hover:bg-gray-50"
+        >
+          🖨️ Imprimer
+        </button>
         <div className="ml-auto text-xs text-gray-600">
           <strong>{groupes.length}</strong> groupes ·{" "}
           <strong>
@@ -171,76 +200,80 @@ export default function PlanningEcole({
         if (list.length === 0) return null;
         return (
           <section key={jour}>
-            <h2 className="text-lg font-extrabold text-navy mb-3 sticky top-16 bg-gradient-to-r from-white to-transparent px-2 py-1 rounded -ml-2 z-10">
+            <h2 className="text-lg font-extrabold text-navy mb-3 px-2 py-1 rounded -ml-2 bg-gradient-to-r from-navy to-transparent text-white inline-block">
               📅 {JOURS_LABELS[jour]}
             </h2>
-            <div className="grid lg:grid-cols-2 gap-3">
-              {list.map((g) => (
-                <GroupeCard
-                  key={g.id}
-                  groupe={g}
-                  coaches={coaches}
-                  inscriptionsSansGroupe={inscriptionsSansGroupe}
-                  pending={pending}
-                  onUpdate={(patch) =>
-                    withError(async () => {
-                      const res = await fetch(
-                        `/api/admin/groupes-ecole/${g.id}`,
-                        {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(patch),
-                        },
-                      );
-                      if (!res.ok) {
-                        const j = await res.json().catch(() => ({}));
-                        throw new Error(j.error ?? "Échec mise à jour");
-                      }
-                    })
-                  }
-                  onDelete={() =>
-                    withError(async () => {
-                      const res = await fetch(
-                        `/api/admin/groupes-ecole/${g.id}`,
-                        { method: "DELETE" },
-                      );
-                      if (!res.ok) {
-                        const j = await res.json().catch(() => ({}));
-                        throw new Error(j.error ?? "Échec suppression");
-                      }
-                    })
-                  }
-                  onAddMember={(inscription_id) =>
-                    withError(async () => {
-                      const res = await fetch(
-                        `/api/admin/groupes-ecole/${g.id}/membres`,
-                        {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ inscription_id }),
-                        },
-                      );
-                      if (!res.ok) {
-                        const j = await res.json().catch(() => ({}));
-                        throw new Error(j.error ?? "Échec ajout");
-                      }
-                    })
-                  }
-                  onRemoveMember={(inscription_id) =>
-                    withError(async () => {
-                      const res = await fetch(
-                        `/api/admin/groupes-ecole/${g.id}/membres?inscription_id=${encodeURIComponent(inscription_id)}`,
-                        { method: "DELETE" },
-                      );
-                      if (!res.ok) {
-                        const j = await res.json().catch(() => ({}));
-                        throw new Error(j.error ?? "Échec retrait");
-                      }
-                    })
-                  }
-                />
-              ))}
-            </div>
+            {viewMode === "grille" ? (
+              <DayGrid groupes={list} />
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-3">
+                {list.map((g) => (
+                  <GroupeCard
+                    key={g.id}
+                    groupe={g}
+                    coaches={coaches}
+                    inscriptionsSansGroupe={inscriptionsSansGroupe}
+                    pending={pending}
+                    onUpdate={(patch) =>
+                      withError(async () => {
+                        const res = await fetch(
+                          `/api/admin/groupes-ecole/${g.id}`,
+                          {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(patch),
+                          },
+                        );
+                        if (!res.ok) {
+                          const j = await res.json().catch(() => ({}));
+                          throw new Error(j.error ?? "Échec mise à jour");
+                        }
+                      })
+                    }
+                    onDelete={() =>
+                      withError(async () => {
+                        const res = await fetch(
+                          `/api/admin/groupes-ecole/${g.id}`,
+                          { method: "DELETE" },
+                        );
+                        if (!res.ok) {
+                          const j = await res.json().catch(() => ({}));
+                          throw new Error(j.error ?? "Échec suppression");
+                        }
+                      })
+                    }
+                    onAddMember={(inscription_id) =>
+                      withError(async () => {
+                        const res = await fetch(
+                          `/api/admin/groupes-ecole/${g.id}/membres`,
+                          {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ inscription_id }),
+                          },
+                        );
+                        if (!res.ok) {
+                          const j = await res.json().catch(() => ({}));
+                          throw new Error(j.error ?? "Échec ajout");
+                        }
+                      })
+                    }
+                    onRemoveMember={(inscription_id) =>
+                      withError(async () => {
+                        const res = await fetch(
+                          `/api/admin/groupes-ecole/${g.id}/membres?inscription_id=${encodeURIComponent(inscription_id)}`,
+                          { method: "DELETE" },
+                        );
+                        if (!res.ok) {
+                          const j = await res.json().catch(() => ({}));
+                          throw new Error(j.error ?? "Échec retrait");
+                        }
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </section>
         );
       })}
@@ -258,6 +291,135 @@ export default function PlanningEcole({
           </button>
         </section>
       ) : null}
+    </div>
+  );
+}
+
+// --- Vue Grille (style Excel) -----------------------------------------------
+
+function DayGrid({ groupes }: { groupes: GroupeWithMembers[] }) {
+  // Identifier les créneaux horaires uniques (heure_debut + heure_fin)
+  const timeSlots = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of groupes) {
+      set.add(`${g.heure_debut}|${g.heure_fin ?? ""}`);
+    }
+    return Array.from(set).sort();
+  }, [groupes]);
+
+  // Identifier les coaches uniques pour cette journée
+  const coachesInDay = useMemo(() => {
+    const map = new Map<string, { id: string; nom: string; couleur: string }>();
+    for (const g of groupes) {
+      if (g.coach) {
+        map.set(g.coach.id, {
+          id: g.coach.id,
+          nom: g.coach.nom,
+          couleur: g.coach.couleur ?? "#0d2e3f",
+        });
+      }
+    }
+    // Coaches sans nom (groupe sans coach assigné) → "—"
+    const hasOrphans = groupes.some((g) => !g.coach);
+    const arr = Array.from(map.values()).sort((a, b) =>
+      a.nom.localeCompare(b.nom),
+    );
+    if (hasOrphans) {
+      arr.push({ id: "", nom: "—", couleur: "#9ca3af" });
+    }
+    return arr;
+  }, [groupes]);
+
+  function findGroupe(timeKey: string, coachId: string): GroupeWithMembers | null {
+    return (
+      groupes.find(
+        (g) =>
+          `${g.heure_debut}|${g.heure_fin ?? ""}` === timeKey &&
+          (g.coach?.id ?? "") === coachId,
+      ) ?? null
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm print-shadow-none">
+      <table className="w-full text-xs border-collapse">
+        <thead>
+          <tr>
+            <th className="bg-navy text-white px-2 py-2 border border-navy/30 sticky left-0 z-10">
+              Créneau
+            </th>
+            {coachesInDay.map((c) => (
+              <th
+                key={c.id || "_orphans"}
+                className="text-white px-2 py-2 border border-white/30 font-bold"
+                style={{ backgroundColor: c.couleur }}
+              >
+                {c.nom}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {timeSlots.map((ts) => {
+            const [heureDebut, heureFin] = ts.split("|");
+            return (
+              <tr key={ts} className="even:bg-gray-50/60">
+                <th className="px-2 py-2 border border-gray-200 bg-navy/5 text-navy font-bold whitespace-nowrap sticky left-0">
+                  {formatHeure(heureDebut)}
+                  {heureFin ? ` – ${formatHeure(heureFin)}` : ""}
+                </th>
+                {coachesInDay.map((c) => {
+                  const g = findGroupe(ts, c.id);
+                  return (
+                    <td
+                      key={c.id || "_orphans"}
+                      className="px-2 py-2 border border-gray-200 align-top"
+                      style={{
+                        backgroundColor: g ? `${c.couleur}08` : undefined,
+                      }}
+                    >
+                      {g ? <GridCell groupe={g} /> : null}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function GridCell({ groupe }: { groupe: GroupeWithMembers }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        {groupe.court ? (
+          <span className="text-[10px] uppercase tracking-wide text-gray-500">
+            {groupe.court}
+          </span>
+        ) : null}
+        {groupe.niveau ? (
+          <span className="font-bold text-navy text-[11px]">
+            {groupe.niveau}
+          </span>
+        ) : null}
+      </div>
+      <ul className="space-y-0.5 text-[11px] leading-tight">
+        {groupe.membres.length === 0 ? (
+          <li className="text-gray-400 italic">vide</li>
+        ) : (
+          groupe.membres.map((m) => (
+            <li key={m.inscription_id} className="text-gray-800">
+              {m.prenom} {m.nom}
+            </li>
+          ))
+        )}
+      </ul>
+      <div className="text-[10px] text-gray-500">
+        {groupe.membres.length} / {groupe.capacite_max}
+      </div>
     </div>
   );
 }

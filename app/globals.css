@@ -49,3 +49,31 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* === Impression ============================================================ */
+@media print {
+  body {
+    background: white !important;
+  }
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  /* Cartes & encadrés : pas d'ombre, pour économiser l'encre */
+  .print-shadow-none,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+  /* Les couleurs de fond doivent s'imprimer (sinon les coachs perdent leur code couleur) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* Évite les coupures bizarres au milieu des sections */
+  section {
+    break-inside: avoid;
+  }
+}
