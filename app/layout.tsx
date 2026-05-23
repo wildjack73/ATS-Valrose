@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 
@@ -18,12 +17,10 @@ export default function RootLayout({
         <header className="bg-navy text-white">
           <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo-club.png"
                 alt="ATS Valrose"
-                width={48}
-                height={48}
-                priority
                 className="h-10 w-auto sm:h-12"
               />
               <span className="hidden sm:inline font-bold tracking-wide">

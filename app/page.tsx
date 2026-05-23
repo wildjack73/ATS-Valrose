@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -44,12 +43,10 @@ export default function HomePage() {
 
         <div className="relative mx-auto max-w-5xl px-4 py-16 sm:py-24">
           <div className="flex items-center gap-4 mb-6">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo-club.png"
               alt="ATS Valrose"
-              width={80}
-              height={80}
-              priority
               className="h-16 w-auto sm:h-20"
             />
             <div className="h-12 sm:h-14 w-px bg-white/30" />
