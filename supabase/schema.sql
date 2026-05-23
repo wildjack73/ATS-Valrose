@@ -127,3 +127,45 @@ create policy "Public insert ecole" on public.inscriptions_ecole
   with check (true);
 
 -- Pas de policy SELECT/UPDATE/DELETE pour anon → seul service_role peut lire/modifier
+
+-- ============================================================================
+-- Table : inscriptions_stages_historique
+-- ----------------------------------------------------------------------------
+-- Contient les inscriptions importées depuis les anciens Google Forms
+-- (Saisons antérieures à 2026-2027). Contraintes souples car les données
+-- d'origine sont brutes (champs manquants, formats variables).
+-- ============================================================================
+create table if not exists public.inscriptions_stages_historique (
+  id uuid primary key default gen_random_uuid(),
+  imported_at timestamptz not null default now(),
+
+  source text not null,         -- nom du fichier d'origine (ex: 'stages-2025-2026.csv')
+
+  -- Champs bruts du CSV (tels quels, en texte)
+  horodateur text,              -- timestamp d'origine (texte, pas date typée)
+  nom text,
+  prenom text,
+  date_naissance text,          -- parfois "8 ans" plutôt qu'une date
+  adresse text,
+  telephone text,
+  email text,
+  niveau text,
+  formule text,                 -- libellé brut, ex: "Formule 2 matin - 170 euros"
+  semaine text,                 -- libellé brut, ex: "Toussaint du 27/10 au 31/10"
+  repas text,
+  jours_f4 text,                -- texte libre pour les jours de formule 4
+
+  -- Métadonnées normalisées
+  formule_normalisee text,      -- 'formule_1' | 'formule_2' | 'formule_3' | 'formule_4' | null
+  creneau_normalise text,       -- 'matin' | 'apres_midi' | null
+  dejeuner boolean default false,
+  prix_estime integer default 0 -- best-effort à partir du libellé formule
+);
+
+create index if not exists idx_hist_stages_imported on public.inscriptions_stages_historique(imported_at desc);
+create index if not exists idx_hist_stages_source on public.inscriptions_stages_historique(source);
+create index if not exists idx_hist_stages_email on public.inscriptions_stages_historique(email);
+create index if not exists idx_hist_stages_semaine on public.inscriptions_stages_historique(semaine);
+
+alter table public.inscriptions_stages_historique enable row level security;
+-- Aucune policy → seul service_role peut lire/modifier (lecture admin uniquement)

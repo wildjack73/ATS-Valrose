@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { fetchStages, fetchEcole } from "@/lib/admin/queries";
+import {
+  fetchStages,
+  fetchEcole,
+  fetchHistoriqueStages,
+  fetchHistoriqueSemaines,
+} from "@/lib/admin/queries";
 import { SEMAINES } from "@/lib/data/stages";
 import StagesTable from "./StagesTable";
 import EcoleTable from "./EcoleTable";
+import HistoriqueTable from "./HistoriqueTable";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +24,17 @@ export default async function AdminDashboardPage({
   searchParams: SearchParams;
 }) {
   const sp = await searchParams;
-  const tab = sp.tab === "ecole" ? "ecole" : "stages";
+  const tab = sp.tab === "ecole"
+    ? "ecole"
+    : sp.tab === "historique"
+      ? "historique"
+      : "stages";
 
-  const [stages, ecole] = await Promise.all([
+  const [stages, ecole, historique, historiqueSemaines] = await Promise.all([
     fetchStages({ semaine: sp.semaine, statut: sp.statut }),
     fetchEcole({ statut: sp.statut }),
+    fetchHistoriqueStages({ semaine: sp.semaine }),
+    fetchHistoriqueSemaines(),
   ]);
 
   const totalStagesEnAttente = stages
@@ -51,12 +63,15 @@ export default async function AdminDashboardPage({
         />
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto">
         <TabLink active={tab === "stages"} href="/admin?tab=stages">
           Stages ({stages.length})
         </TabLink>
         <TabLink active={tab === "ecole"} href="/admin?tab=ecole">
           École ({ecole.length})
+        </TabLink>
+        <TabLink active={tab === "historique"} href="/admin?tab=historique">
+          Archives ({historique.length})
         </TabLink>
       </div>
 
@@ -67,8 +82,14 @@ export default async function AdminDashboardPage({
           currentSemaine={sp.semaine}
           currentStatut={sp.statut}
         />
-      ) : (
+      ) : tab === "ecole" ? (
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
+      ) : (
+        <HistoriqueTable
+          rows={historique}
+          semaines={historiqueSemaines}
+          currentSemaine={sp.semaine}
+        />
       )}
     </>
   );
@@ -104,7 +125,7 @@ function TabLink({
   return (
     <Link
       href={href}
-      className={`px-4 py-2 rounded-t-lg text-sm font-semibold ${
+      className={`px-4 py-2 rounded-t-lg text-sm font-semibold whitespace-nowrap ${
         active
           ? "bg-white text-navy border-x border-t border-gray-200"
           : "text-gray-500 hover:text-navy"

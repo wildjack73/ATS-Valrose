@@ -45,3 +45,6 @@ next-env.d.ts
 
 # Claude Code config local
 .claude/
+
+# Données personnelles (CSVs d'import historique avec emails/téléphones)
+data-historique/
