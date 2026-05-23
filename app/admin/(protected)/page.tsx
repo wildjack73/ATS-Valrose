@@ -6,7 +6,12 @@ import {
   fetchHistoriqueSemaines,
   fetchHistoriqueEcole,
 } from "@/lib/admin/queries";
-import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
+import {
+  getActiveTarifsBundle,
+  getTarifsBundle,
+  getSaisonByCode,
+  listSaisons,
+} from "@/lib/data/tarifs-server";
 import StagesTable from "./StagesTable";
 import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
@@ -20,6 +25,7 @@ type SearchParams = Promise<{
   histo?: string;
   semaine?: string;
   statut?: string;
+  saison?: string;
 }>;
 
 export default async function AdminDashboardPage({
@@ -38,15 +44,30 @@ export default async function AdminDashboardPage({
           : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
-  const [stages, ecole, historique, historiqueSemaines, historiqueEcole, bundle] =
-    await Promise.all([
-      fetchStages({ semaine: sp.semaine, statut: sp.statut }),
-      fetchEcole({ statut: sp.statut }),
-      fetchHistoriqueStages({ semaine: sp.semaine }),
-      fetchHistoriqueSemaines(),
-      fetchHistoriqueEcole(),
-      getActiveTarifsBundle(),
-    ]);
+  // Pour l'onglet Tarifs : permettre de visualiser/éditer n'importe quelle saison
+  const targetSaisonPromise = sp.saison
+    ? getSaisonByCode(sp.saison).then((s) =>
+        s ? getTarifsBundle(s.id) : getActiveTarifsBundle(),
+      )
+    : getActiveTarifsBundle();
+
+  const [
+    stages,
+    ecole,
+    historique,
+    historiqueSemaines,
+    historiqueEcole,
+    bundle,
+    saisons,
+  ] = await Promise.all([
+    fetchStages({ semaine: sp.semaine, statut: sp.statut }),
+    fetchEcole({ statut: sp.statut }),
+    fetchHistoriqueStages({ semaine: sp.semaine }),
+    fetchHistoriqueSemaines(),
+    fetchHistoriqueEcole(),
+    targetSaisonPromise,
+    listSaisons(),
+  ]);
 
   const totalStagesEnAttente = stages
     .filter((s) => s.statut === "en_attente")
@@ -101,10 +122,10 @@ export default async function AdminDashboardPage({
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
       ) : tab === "tarifs" ? (
         bundle ? (
-          <TarifsEditor bundle={bundle} />
+          <TarifsEditor bundle={bundle} saisons={saisons} />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
-            Aucune saison active. Exécute{" "}
+            Aucune saison configurée. Exécute{" "}
             <code className="bg-white px-1 rounded">supabase/seed-2026-2027.sql</code>{" "}
             dans Supabase.
           </div>

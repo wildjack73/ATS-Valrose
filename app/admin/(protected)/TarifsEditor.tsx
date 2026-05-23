@@ -10,6 +10,7 @@ import type {
   CoursEcole,
   LicenceFftRow,
   TarifAutre,
+  Saison,
 } from "@/lib/data/tarifs-types";
 
 type Resource =
@@ -54,10 +55,17 @@ async function apiDelete(resource: Resource, id: string) {
   }
 }
 
-export default function TarifsEditor({ bundle }: { bundle: TarifsBundle }) {
+export default function TarifsEditor({
+  bundle,
+  saisons,
+}: {
+  bundle: TarifsBundle;
+  saisons: Saison[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [creatingSaison, setCreatingSaison] = useState(false);
 
   function refresh() {
     startTransition(() => router.refresh());
@@ -73,12 +81,98 @@ export default function TarifsEditor({ bundle }: { bundle: TarifsBundle }) {
     }
   }
 
+  async function setActive(saisonId: string) {
+    await withError(async () => {
+      const res = await fetch(`/api/admin/saisons/${saisonId}/activate`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error ?? "Échec activation");
+      }
+    });
+  }
+
+  async function createSaison(code: string, label: string, cloneFrom?: string) {
+    await withError(async () => {
+      const res = await fetch(`/api/admin/saisons`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, label, cloneFrom }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error ?? "Échec création");
+      }
+      // Naviguer vers la nouvelle saison
+      router.push(`/admin?tab=tarifs&saison=${encodeURIComponent(code)}`);
+    });
+  }
+
+  function switchSaison(code: string) {
+    router.push(`/admin?tab=tarifs&saison=${encodeURIComponent(code)}`);
+  }
+
+  const currentCode = bundle.saison.code;
+
   return (
     <div className="space-y-6">
       {error ? (
         <div className="rounded-md bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
           ⚠ {error}
         </div>
+      ) : null}
+
+      {/* Sélecteur de saison */}
+      <div className="rounded-xl bg-navy text-white p-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-xs uppercase tracking-wide text-white/60">
+            Saison
+          </label>
+          <select
+            value={currentCode}
+            onChange={(e) => switchSaison(e.target.value)}
+            disabled={pending}
+            className="rounded bg-white text-navy px-3 py-1.5 text-sm font-semibold"
+          >
+            {saisons.map((s) => (
+              <option key={s.id} value={s.code}>
+                {s.label} {s.active ? "(active)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        {bundle.saison.active ? (
+          <span className="rounded-full bg-green-500 text-white px-3 py-1 text-xs font-bold">
+            ✓ Saison active (affichée sur le site)
+          </span>
+        ) : (
+          <button
+            onClick={() => setActive(bundle.saison.id)}
+            disabled={pending}
+            className="rounded bg-yellow-club text-navy px-3 py-1.5 text-xs font-bold hover:bg-yellow-hover disabled:opacity-50"
+          >
+            Définir cette saison comme active
+          </button>
+        )}
+        <button
+          onClick={() => setCreatingSaison(true)}
+          disabled={pending}
+          className="ml-auto rounded bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 text-xs font-bold border border-white/20"
+        >
+          + Nouvelle saison
+        </button>
+      </div>
+
+      {creatingSaison ? (
+        <CreateSaisonForm
+          existingSaisons={saisons}
+          onCancel={() => setCreatingSaison(false)}
+          onCreate={async (code, label, cloneFrom) => {
+            await createSaison(code, label, cloneFrom);
+            setCreatingSaison(false);
+          }}
+        />
       ) : null}
 
       <Section title={`🎾 Stages — Formules (saison ${bundle.saison.label})`}>
@@ -858,6 +952,94 @@ function AddSemaineButton({
       >
         Annuler
       </button>
+    </div>
+  );
+}
+
+function CreateSaisonForm({
+  existingSaisons,
+  onCreate,
+  onCancel,
+}: {
+  existingSaisons: Saison[];
+  onCreate: (code: string, label: string, cloneFrom?: string) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [code, setCode] = useState("");
+  const [label, setLabel] = useState("");
+  const [cloneFrom, setCloneFrom] = useState(existingSaisons[0]?.code ?? "");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit() {
+    if (!code) return;
+    setSubmitting(true);
+    try {
+      await onCreate(code, label || `Saison ${code}`, cloneFrom || undefined);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="rounded-xl bg-white border-2 border-yellow-club shadow-sm p-5">
+      <h3 className="font-bold text-navy mb-3">Créer une nouvelle saison</h3>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-xs font-medium text-gray-600">Code</span>
+          <input
+            className={inputCls}
+            placeholder="ex: 2027-2028"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-medium text-gray-600">Libellé (optionnel)</span>
+          <input
+            className={inputCls}
+            placeholder={`Saison ${code || "2027-2028"}`}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
+        </label>
+        <label className="block sm:col-span-2">
+          <span className="text-xs font-medium text-gray-600">
+            Copier les tarifs depuis (optionnel)
+          </span>
+          <select
+            className={inputCls}
+            value={cloneFrom}
+            onChange={(e) => setCloneFrom(e.target.value)}
+          >
+            <option value="">Saison vide (configurer manuellement)</option>
+            {existingSaisons.map((s) => (
+              <option key={s.id} value={s.code}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="text-xs text-gray-500 mt-2">
+        Si tu copies depuis une saison existante, pense à <strong>mettre à jour
+        les dates des semaines</strong> pour le nouveau calendrier scolaire.
+      </p>
+      <div className="mt-4 flex gap-2">
+        <button
+          onClick={submit}
+          disabled={submitting || !code}
+          className="rounded bg-navy text-white px-4 py-2 text-sm font-bold hover:bg-navy-dark disabled:opacity-50"
+        >
+          {submitting ? "Création…" : "Créer la saison"}
+        </button>
+        <button
+          onClick={onCancel}
+          disabled={submitting}
+          className="rounded text-gray-600 hover:text-gray-900 px-4 py-2 text-sm"
+        >
+          Annuler
+        </button>
+      </div>
     </div>
   );
 }
