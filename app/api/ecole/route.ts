@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { ecoleFormSchema } from "@/lib/schemas/ecole";
-import { calculerPrixEcole } from "@/lib/data/ecole";
+import {
+  getActiveTarifsBundle,
+  calculerPrixEcoleFromTarifs,
+} from "@/lib/data/tarifs-server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { sendEcoleEmails } from "@/lib/email/send";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
@@ -35,16 +38,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
-  const prix_total = calculerPrixEcole({
-    cours_tennis: data.cours_tennis ?? [],
-    cours_padel: data.cours_padel ?? [],
-    licence_fft: data.licence_fft,
+  const bundle = await getActiveTarifsBundle();
+  if (!bundle) {
+    return NextResponse.json(
+      { error: "Aucune saison active configurée. Contactez le club." },
+      { status: 500 },
+    );
+  }
+
+  // Valider les codes
+  for (const code of data.cours_tennis ?? []) {
+    if (!bundle.coursTennis.find((c) => c.code === code)) {
+      return NextResponse.json(
+        { error: `Cours tennis invalide : ${code}` },
+        { status: 400 },
+      );
+    }
+  }
+  for (const code of data.cours_padel ?? []) {
+    if (!bundle.coursPadel.find((c) => c.code === code)) {
+      return NextResponse.json(
+        { error: `Cours padel invalide : ${code}` },
+        { status: 400 },
+      );
+    }
+  }
+  if (!bundle.licenceFft.find((l) => l.code === data.licence_fft)) {
+    return NextResponse.json(
+      { error: `Licence FFT invalide : ${data.licence_fft}` },
+      { status: 400 },
+    );
+  }
+
+  const prix_total = calculerPrixEcoleFromTarifs(bundle, {
+    coursTennisCodes: data.cours_tennis ?? [],
+    coursPadelCodes: data.cours_padel ?? [],
+    licenceFftCode: data.licence_fft,
   });
 
   const supabase = getSupabaseAdmin();
   const { data: inserted, error } = await supabase
     .from("inscriptions_ecole")
     .insert({
+      saison_id: bundle.saison.id,
       nom: data.nom,
       prenom: data.prenom,
       date_naissance: data.date_naissance,

@@ -5,28 +5,28 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import {
-  COURS_TENNIS,
-  COURS_PADEL,
-  MODES_REGLEMENT,
-  LICENCE_FFT,
-  PRIX_LICENCE_FFT,
-  calculerPrixEcole,
-  type CoursTennisId,
-  type CoursPadelId,
-} from "@/lib/data/ecole";
+import type { TarifsBundle, CoursEcole } from "@/lib/data/tarifs-types";
 import { ecoleFormSchema, type EcoleFormInput } from "@/lib/schemas/ecole";
 import { Field, inputClass } from "@/components/ui/Field";
 import { Section } from "@/components/ui/Section";
+
+const MODES_REGLEMENT = [
+  { id: "especes", label: "Espèces" },
+  { id: "cheque", label: "Chèque" },
+] as const;
 
 function toggleInArray<T>(arr: T[], value: T): T[] {
   return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
 }
 
-export default function EcoleForm() {
+export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const COURS_TENNIS = bundle.coursTennis;
+  const COURS_PADEL = bundle.coursPadel;
+  const LICENCE_FFT = bundle.licenceFft;
 
   const {
     register,
@@ -53,37 +53,30 @@ export default function EcoleForm() {
       dispo_semaine: "",
       mode_reglement: undefined,
       nb_paiements: undefined,
-      licence_fft: undefined,
+      licence_fft: "",
       notes: "",
       website: "",
     },
     mode: "onTouched",
   });
 
-  const coursTennis = watch("cours_tennis") ?? [];
-  const coursPadel = watch("cours_padel") ?? [];
-  const licenceFft = watch("licence_fft");
+  const coursTennis = (watch("cours_tennis") ?? []) as string[];
+  const coursPadel = (watch("cours_padel") ?? []) as string[];
+  const licenceFftCode = watch("licence_fft");
 
   const prixTotal = useMemo(() => {
-    if (!licenceFft) {
-      // calcul sans licence si pas encore choisi
-      return (
-        (coursTennis as CoursTennisId[]).reduce(
-          (s, id) => s + (COURS_TENNIS.find((c) => c.id === id)?.prix ?? 0),
-          0,
-        ) +
-        (coursPadel as CoursPadelId[]).reduce(
-          (s, id) => s + (COURS_PADEL.find((c) => c.id === id)?.prix ?? 0),
-          0,
-        )
-      );
+    let total = 0;
+    for (const code of coursTennis) {
+      total += COURS_TENNIS.find((c) => c.code === code)?.prix ?? 0;
     }
-    return calculerPrixEcole({
-      cours_tennis: coursTennis as CoursTennisId[],
-      cours_padel: coursPadel as CoursPadelId[],
-      licence_fft: licenceFft,
-    });
-  }, [coursTennis, coursPadel, licenceFft]);
+    for (const code of coursPadel) {
+      total += COURS_PADEL.find((c) => c.code === code)?.prix ?? 0;
+    }
+    if (licenceFftCode) {
+      total += LICENCE_FFT.find((l) => l.code === licenceFftCode)?.prix ?? 0;
+    }
+    return total;
+  }, [coursTennis, coursPadel, licenceFftCode, COURS_TENNIS, COURS_PADEL, LICENCE_FFT]);
 
   async function onSubmit(values: EcoleFormInput) {
     setServerError(null);
@@ -95,9 +88,7 @@ export default function EcoleForm() {
         body: JSON.stringify(values),
       });
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json?.error ?? "Erreur serveur");
-      }
+      if (!res.ok) throw new Error(json?.error ?? "Erreur serveur");
       router.push(`/ecole/confirmation?id=${json.id}`);
     } catch (err) {
       setServerError(
@@ -109,7 +100,6 @@ export default function EcoleForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
-      {/* Honeypot */}
       <input
         type="text"
         tabIndex={-1}
@@ -119,15 +109,9 @@ export default function EcoleForm() {
         {...register("website")}
       />
 
-      {/* 1. Identité */}
       <Section step={1} title="Identité de l'élève">
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field
-            label="Nom"
-            htmlFor="nom"
-            required
-            error={errors.nom?.message}
-          >
+          <Field label="Nom" htmlFor="nom" required error={errors.nom?.message}>
             <input
               id="nom"
               type="text"
@@ -166,7 +150,6 @@ export default function EcoleForm() {
         </Field>
       </Section>
 
-      {/* 2. Contact */}
       <Section step={2} title="Coordonnées">
         <Field
           label="Adresse"
@@ -230,7 +213,6 @@ export default function EcoleForm() {
           label="Niveau tennis (couleur ou classement, si connu)"
           htmlFor="niveau"
           error={errors.niveau?.message}
-          hint="Ex: rouge, orange, vert, jaune, 30/5, débutant…"
         >
           <input
             id="niveau"
@@ -241,7 +223,6 @@ export default function EcoleForm() {
         </Field>
       </Section>
 
-      {/* 3. Cours souhaités */}
       <Section
         step={3}
         title="Choix des cours"
@@ -256,8 +237,8 @@ export default function EcoleForm() {
               error={errors.cours_tennis?.message as string | undefined}
             >
               <div className="grid gap-2">
-                {COURS_TENNIS.map((c) => {
-                  const checked = (field.value ?? []).includes(c.id);
+                {COURS_TENNIS.map((c: CoursEcole) => {
+                  const checked = (field.value ?? []).includes(c.code);
                   return (
                     <label
                       key={c.id}
@@ -274,9 +255,9 @@ export default function EcoleForm() {
                           checked={checked}
                           onChange={() =>
                             field.onChange(
-                              toggleInArray<CoursTennisId>(
-                                (field.value as CoursTennisId[]) ?? [],
-                                c.id,
+                              toggleInArray<string>(
+                                (field.value as string[]) ?? [],
+                                c.code,
                               ),
                             )
                           }
@@ -303,8 +284,8 @@ export default function EcoleForm() {
               error={errors.cours_padel?.message as string | undefined}
             >
               <div className="grid gap-2">
-                {COURS_PADEL.map((c) => {
-                  const checked = (field.value ?? []).includes(c.id);
+                {COURS_PADEL.map((c: CoursEcole) => {
+                  const checked = (field.value ?? []).includes(c.code);
                   return (
                     <label
                       key={c.id}
@@ -321,9 +302,9 @@ export default function EcoleForm() {
                           checked={checked}
                           onChange={() =>
                             field.onChange(
-                              toggleInArray<CoursPadelId>(
-                                (field.value as CoursPadelId[]) ?? [],
-                                c.id,
+                              toggleInArray<string>(
+                                (field.value as string[]) ?? [],
+                                c.code,
                               ),
                             )
                           }
@@ -351,7 +332,6 @@ export default function EcoleForm() {
         </label>
       </Section>
 
-      {/* 4. Disponibilités */}
       <Section
         step={4}
         title="Disponibilités"
@@ -388,7 +368,6 @@ export default function EcoleForm() {
         </div>
       </Section>
 
-      {/* 5. Licence FFT */}
       <Section
         step={5}
         title="Licence FFT (obligatoire)"
@@ -405,8 +384,7 @@ export default function EcoleForm() {
             >
               <div className="grid gap-2">
                 {LICENCE_FFT.map((l) => {
-                  const checked = field.value === l.id;
-                  const prix = PRIX_LICENCE_FFT[l.id];
+                  const checked = field.value === l.code;
                   return (
                     <label
                       key={l.id}
@@ -421,13 +399,13 @@ export default function EcoleForm() {
                           type="radio"
                           className="accent-ocre"
                           checked={checked}
-                          onChange={() => field.onChange(l.id)}
+                          onChange={() => field.onChange(l.code)}
                         />
                         <span>{l.label}</span>
                       </span>
-                      {prix > 0 ? (
+                      {l.prix > 0 ? (
                         <span className="font-bold text-navy whitespace-nowrap">
-                          +{prix}€
+                          +{l.prix}€
                         </span>
                       ) : null}
                     </label>
@@ -439,7 +417,6 @@ export default function EcoleForm() {
         />
       </Section>
 
-      {/* 6. Paiement */}
       <Section step={6} title="Règlement">
         <Controller
           control={control}
@@ -514,7 +491,6 @@ export default function EcoleForm() {
         />
       </Section>
 
-      {/* 7. Notes */}
       <Section step={7} title="Informations complémentaires (optionnel)">
         <Field
           label="Allergies, particularités, remarques"
@@ -530,16 +506,13 @@ export default function EcoleForm() {
         </Field>
       </Section>
 
-      {/* Submit + total */}
       <div className="rounded-2xl bg-navy text-white p-6 sm:p-8 sticky bottom-4 shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm text-white/70 uppercase tracking-wide">
               Total annuel estimé
             </p>
-            <p className="text-3xl sm:text-4xl font-extrabold">
-              {prixTotal}€
-            </p>
+            <p className="text-3xl sm:text-4xl font-extrabold">{prixTotal}€</p>
             <p className="text-xs text-white/60 mt-1">
               Le club vous confirmera le créneau et le détail du règlement.
             </p>

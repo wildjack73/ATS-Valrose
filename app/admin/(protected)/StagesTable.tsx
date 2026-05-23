@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { InscriptionStageRow } from "@/lib/types/db";
-import type { Semaine } from "@/lib/data/stages";
+import type { Semaine } from "@/lib/data/tarifs-types";
 import {
   formatDateTime,
   age,
@@ -63,7 +63,7 @@ export default function StagesTable({
           {semaines
             .filter((s) => s.ouverte)
             .map((s) => (
-              <option key={s.id} value={s.id}>
+              <option key={s.id} value={s.code}>
                 {s.periode} — {s.label}
               </option>
             ))}

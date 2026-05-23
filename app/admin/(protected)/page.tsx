@@ -6,12 +6,12 @@ import {
   fetchHistoriqueSemaines,
   fetchHistoriqueEcole,
 } from "@/lib/admin/queries";
-import { SEMAINES } from "@/lib/data/stages";
+import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
 import StagesTable from "./StagesTable";
 import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
 import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
-import TarifsView from "./TarifsView";
+import TarifsEditor from "./TarifsEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -38,13 +38,14 @@ export default async function AdminDashboardPage({
           : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
-  const [stages, ecole, historique, historiqueSemaines, historiqueEcole] =
+  const [stages, ecole, historique, historiqueSemaines, historiqueEcole, bundle] =
     await Promise.all([
       fetchStages({ semaine: sp.semaine, statut: sp.statut }),
       fetchEcole({ statut: sp.statut }),
       fetchHistoriqueStages({ semaine: sp.semaine }),
       fetchHistoriqueSemaines(),
       fetchHistoriqueEcole(),
+      getActiveTarifsBundle(),
     ]);
 
   const totalStagesEnAttente = stages
@@ -92,14 +93,22 @@ export default async function AdminDashboardPage({
       {tab === "stages" ? (
         <StagesTable
           rows={stages}
-          semaines={SEMAINES}
+          semaines={bundle?.semaines ?? []}
           currentSemaine={sp.semaine}
           currentStatut={sp.statut}
         />
       ) : tab === "ecole" ? (
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
       ) : tab === "tarifs" ? (
-        <TarifsView />
+        bundle ? (
+          <TarifsEditor bundle={bundle} />
+        ) : (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
+            Aucune saison active. Exécute{" "}
+            <code className="bg-white px-1 rounded">supabase/seed-2026-2027.sql</code>{" "}
+            dans Supabase.
+          </div>
+        )
       ) : (
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">

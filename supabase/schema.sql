@@ -215,3 +215,121 @@ create index if not exists idx_hist_ecole_email on public.inscriptions_ecole_his
 
 alter table public.inscriptions_ecole_historique enable row level security;
 -- Aucune policy → seul service_role peut lire/modifier
+
+-- ============================================================================
+-- MULTI-SAISONS : tarifs éditables depuis l'admin
+-- ============================================================================
+-- Au lieu de hardcoder les tarifs dans lib/data/*.ts, ils sont stockés en DB
+-- avec une notion de "saison" (2025-2026, 2026-2027, etc.).
+-- Une seule saison est active à la fois — c'est celle qu'affichent les
+-- formulaires publics. L'admin peut éditer/créer d'autres saisons.
+-- ============================================================================
+
+create table if not exists public.saisons (
+  id uuid primary key default gen_random_uuid(),
+  code text unique not null,            -- "2026-2027"
+  label text not null,                  -- "Saison 2026-2027"
+  active boolean not null default false,
+  order_idx int not null default 0,
+  created_at timestamptz default now()
+);
+
+-- Une seule saison active à la fois
+create unique index if not exists idx_saisons_one_active
+  on public.saisons(active) where active = true;
+
+-- ----- Stages : Formules -----
+create table if not exists public.tarifs_stages_formules (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  code text not null,                   -- 'formule_1' .. 'formule_4'
+  titre text not null,
+  sous_titre text,
+  description text,
+  prix int,                             -- null pour à la carte
+  needs_creneau boolean default false,
+  has_dejeuner_option boolean default false,
+  is_a_la_carte boolean default false,
+  prix_dejeuner int default 0,
+  details_horaires text,
+  order_idx int default 0,
+  unique(saison_id, code)
+);
+
+-- ----- Stages : Options Formule 4 -----
+create table if not exists public.tarifs_options_f4 (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  code text not null,                   -- 'option_1' .. 'option_3'
+  label text not null,
+  prix int not null,
+  detail text,
+  order_idx int default 0,
+  unique(saison_id, code)
+);
+
+-- ----- Stages : Semaines (vacances scolaires) -----
+create table if not exists public.semaines_stages (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  code text not null,                   -- 'ete_juillet_1'
+  periode text not null,                -- 'Été 2026 — Juillet'
+  label text not null,                  -- 'Du 29/06 au 03/07'
+  date_debut date,                      -- (optionnel, pour tri)
+  ouverte boolean default true,
+  order_idx int default 0,
+  unique(saison_id, code)
+);
+
+-- ----- École : Cours Tennis + Padel -----
+create table if not exists public.tarifs_cours_ecole (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  type text not null check (type in ('tennis', 'padel')),
+  code text not null,                   -- 'baby_tennis', 'cours_adultes_annuel', etc.
+  label text not null,
+  prix int not null,
+  order_idx int default 0,
+  unique(saison_id, type, code)
+);
+
+-- ----- École : Licence FFT -----
+create table if not exists public.tarifs_licence_fft (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  code text not null,                   -- 'non_adulte', 'oui_23', 'oui_13'
+  label text not null,
+  prix int not null default 0,
+  order_idx int default 0,
+  unique(saison_id, code)
+);
+
+-- ----- Autres tarifs : leçons individuelles, locations, matériel -----
+create table if not exists public.tarifs_autres (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  category text not null check (category in ('lecons', 'locations', 'materiel')),
+  label text not null,
+  prix text not null,                   -- format libre: "40€/h", "5€/raquette"
+  detail text,
+  order_idx int default 0
+);
+
+-- RLS : pas de policy public — seul service_role lit/modifie ces tables.
+-- Les pages publiques fetchent via les API routes (server-side).
+alter table public.saisons enable row level security;
+alter table public.tarifs_stages_formules enable row level security;
+alter table public.tarifs_options_f4 enable row level security;
+alter table public.semaines_stages enable row level security;
+alter table public.tarifs_cours_ecole enable row level security;
+alter table public.tarifs_licence_fft enable row level security;
+alter table public.tarifs_autres enable row level security;
+
+-- ----- Liaison inscriptions ↔ saison (pour pouvoir filtrer par année plus tard) -----
+alter table public.inscriptions_stages
+  add column if not exists saison_id uuid references public.saisons(id);
+alter table public.inscriptions_ecole
+  add column if not exists saison_id uuid references public.saisons(id);
+
+create index if not exists idx_stages_saison on public.inscriptions_stages(saison_id);
+create index if not exists idx_ecole_saison on public.inscriptions_ecole(saison_id);

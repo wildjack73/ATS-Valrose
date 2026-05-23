@@ -1,11 +1,7 @@
 import Link from "next/link";
-import { COURS_TENNIS, COURS_PADEL } from "@/lib/data/ecole";
-import { FORMULES, OPTIONS_F4, PRIX_DEJEUNER } from "@/lib/data/stages";
-import {
-  LECONS_INDIVIDUELLES,
-  LOCATIONS,
-  MATERIEL,
-} from "@/lib/data/autres-tarifs";
+import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Tarifs — ATS Valrose",
@@ -13,13 +9,41 @@ export const metadata = {
     "Tous les tarifs du club ATS Valrose : école de tennis, école de padel, stages, leçons individuelles, locations.",
 };
 
-export default function TarifsPage() {
+export default async function TarifsPage() {
+  const bundle = await getActiveTarifsBundle();
+
+  if (!bundle) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-navy">
+          Tarifs non disponibles
+        </h1>
+        <p className="mt-3 text-gray-600">
+          Contactez le club&nbsp;:{" "}
+          <a
+            className="text-navy underline"
+            href="mailto:contact@ats-valrose.fr"
+          >
+            contact@ats-valrose.fr
+          </a>
+        </p>
+      </div>
+    );
+  }
+
+  const formulesFixes = bundle.formules.filter(
+    (f) => typeof f.prix === "number" && !f.is_a_la_carte,
+  );
+  const lecons = bundle.autres.filter((a) => a.category === "lecons");
+  const locations = bundle.autres.filter((a) => a.category === "locations");
+  const materiel = bundle.autres.filter((a) => a.category === "materiel");
+
   return (
     <div>
       <section className="bg-gradient-to-br from-navy via-navy to-cyan-club text-white">
         <div className="mx-auto max-w-4xl px-4 py-12">
           <h1 className="text-3xl sm:text-4xl font-extrabold">
-            Tarifs 2026-2027
+            Tarifs — {bundle.saison.label}
           </h1>
           <p className="mt-2 text-white/85">
             Tous les tarifs du club. Pour vous inscrire en ligne, utilisez les
@@ -36,7 +60,7 @@ export default function TarifsPage() {
           cta={{ href: "/ecole", label: "S'inscrire à l'école" }}
         >
           <Table
-            rows={COURS_TENNIS.map((c) => ({
+            rows={bundle.coursTennis.map((c) => ({
               label: c.label,
               prix: `${c.prix}€`,
             }))}
@@ -44,14 +68,16 @@ export default function TarifsPage() {
         </Block>
 
         {/* ÉCOLE PADEL */}
-        <Block color="ocre" title="École de Padel">
-          <Table
-            rows={COURS_PADEL.map((c) => ({
-              label: c.label,
-              prix: `${c.prix}€`,
-            }))}
-          />
-        </Block>
+        {bundle.coursPadel.length > 0 ? (
+          <Block color="ocre" title="École de Padel">
+            <Table
+              rows={bundle.coursPadel.map((c) => ({
+                label: c.label,
+                prix: `${c.prix}€`,
+              }))}
+            />
+          </Block>
+        ) : null}
 
         {/* STAGES */}
         <Block
@@ -61,14 +87,17 @@ export default function TarifsPage() {
         >
           <Table
             rows={[
-              ...FORMULES.filter((f) => typeof f.prix === "number").map(
-                (f) => ({
-                  label: `${f.titre} — ${f.detailsHoraires}`,
-                  prix: `${f.prix}€ / semaine`,
-                }),
-              ),
-              { label: "Option déjeuner (Formule 3)", prix: `+${PRIX_DEJEUNER}€ / semaine` },
-              ...Object.entries(OPTIONS_F4).map(([, o]) => ({
+              ...formulesFixes.map((f) => ({
+                label: `${f.titre}${f.details_horaires ? ` — ${f.details_horaires}` : ""}`,
+                prix: `${f.prix}€ / semaine`,
+              })),
+              ...bundle.formules
+                .filter((f) => f.has_dejeuner_option && f.prix_dejeuner > 0)
+                .map((f) => ({
+                  label: `Option déjeuner (${f.titre.split(" — ")[0]})`,
+                  prix: `+${f.prix_dejeuner}€ / semaine`,
+                })),
+              ...bundle.optionsF4.map((o) => ({
                 label: `Formule 4 — ${o.label} (${o.detail})`,
                 prix: `${o.prix}€ / jour`,
               })),
@@ -77,41 +106,46 @@ export default function TarifsPage() {
         </Block>
 
         {/* LEÇONS */}
-        <Block color="navy" title="Leçons individuelles">
-          <Table
-            rows={LECONS_INDIVIDUELLES.map((l) => ({
-              label: l.label + (l.detail ? ` — ${l.detail}` : ""),
-              prix: l.prix,
-            }))}
-          />
-          <p className="mt-4 text-sm text-gray-600">
-            Pour réserver une leçon individuelle, contactez directement le
-            club&nbsp;:{" "}
-            <a
-              className="text-navy underline"
-              href="mailto:contact@ats-valrose.fr"
-            >
-              contact@ats-valrose.fr
-            </a>
-          </p>
-        </Block>
+        {lecons.length > 0 ? (
+          <Block color="navy" title="Leçons individuelles">
+            <Table
+              rows={lecons.map((l) => ({
+                label: l.label + (l.detail ? ` — ${l.detail}` : ""),
+                prix: l.prix,
+              }))}
+            />
+            <p className="mt-4 text-sm text-gray-600">
+              Pour réserver une leçon, contactez le club&nbsp;:{" "}
+              <a
+                className="text-navy underline"
+                href="mailto:contact@ats-valrose.fr"
+              >
+                contact@ats-valrose.fr
+              </a>
+            </p>
+          </Block>
+        ) : null}
 
         {/* LOCATIONS */}
-        <Block color="navy" title="Location de courts">
-          <Table
-            rows={LOCATIONS.map((l) => ({ label: l.label, prix: l.prix }))}
-          />
-        </Block>
+        {locations.length > 0 ? (
+          <Block color="navy" title="Location de courts">
+            <Table
+              rows={locations.map((l) => ({ label: l.label, prix: l.prix }))}
+            />
+          </Block>
+        ) : null}
 
         {/* MATÉRIEL */}
-        <Block color="navy" title="Matériel">
-          <Table
-            rows={MATERIEL.map((m) => ({ label: m.label, prix: m.prix }))}
-          />
-          <p className="mt-4 text-sm text-gray-600">
-            Prêt de raquettes inclus dans toutes les formules de stage.
-          </p>
-        </Block>
+        {materiel.length > 0 ? (
+          <Block color="navy" title="Matériel">
+            <Table
+              rows={materiel.map((m) => ({ label: m.label, prix: m.prix }))}
+            />
+            <p className="mt-4 text-sm text-gray-600">
+              Prêt de raquettes inclus dans toutes les formules de stage.
+            </p>
+          </Block>
+        ) : null}
 
         <p className="text-center text-sm text-gray-500">
           Une question ?{" "}

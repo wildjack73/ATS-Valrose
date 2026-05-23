@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { stageFormSchema } from "@/lib/schemas/stage";
-import { SEMAINES, calculerPrix } from "@/lib/data/stages";
+import {
+  getActiveTarifsBundle,
+  calculerPrixStageFromTarifs,
+} from "@/lib/data/tarifs-server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { sendStageEmails } from "@/lib/email/send";
 import type { InscriptionStageRow } from "@/lib/types/db";
@@ -31,12 +34,62 @@ export async function POST(request: Request) {
 
   const data = parsed.data;
 
-  // Honeypot — si rempli, on considère que c'est un bot, on renvoie 200 silencieux.
+  // Honeypot
   if (data.website && data.website.length > 0) {
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
-  const semaine = SEMAINES.find((s) => s.id === data.semaine && s.ouverte);
+  // Récupérer la saison active et ses tarifs
+  const bundle = await getActiveTarifsBundle();
+  if (!bundle) {
+    return NextResponse.json(
+      { error: "Aucune saison active configurée. Contactez le club." },
+      { status: 500 },
+    );
+  }
+
+  // Valider la formule
+  const formule = bundle.formules.find((f) => f.code === data.formule);
+  if (!formule) {
+    return NextResponse.json(
+      { error: "Formule invalide pour la saison en cours." },
+      { status: 400 },
+    );
+  }
+
+  // Valider créneau si nécessaire
+  if (formule.needs_creneau && !data.formule_creneau) {
+    return NextResponse.json(
+      { error: "Choisissez un créneau (matin ou après-midi)." },
+      { status: 400 },
+    );
+  }
+
+  // Valider F4
+  if (formule.is_a_la_carte) {
+    if (
+      !data.formule_4_selection ||
+      data.formule_4_selection.length === 0
+    ) {
+      return NextResponse.json(
+        { error: "Choisissez au moins un jour pour la formule à la carte." },
+        { status: 400 },
+      );
+    }
+    for (const it of data.formule_4_selection) {
+      if (!bundle.optionsF4.find((o) => o.code === it.option)) {
+        return NextResponse.json(
+          { error: `Option F4 invalide : ${it.option}` },
+          { status: 400 },
+        );
+      }
+    }
+  }
+
+  // Valider semaine (doit être ouverte dans la saison active)
+  const semaine = bundle.semaines.find(
+    (s) => s.code === data.semaine && s.ouverte,
+  );
   if (!semaine) {
     return NextResponse.json(
       { error: "Semaine indisponible." },
@@ -44,15 +97,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const prix_total = calculerPrix({
-    formule: data.formule,
-    dejeuner: data.formule_dejeuner,
-    formule4Selection: data.formule_4_selection,
-  });
-
-  if (prix_total <= 0) {
+  // Calculer le prix
+  const { prix: prix_total, error: prixError } = calculerPrixStageFromTarifs(
+    bundle,
+    {
+      formuleCode: data.formule,
+      dejeuner: data.formule_dejeuner,
+      formule4Selection: data.formule_4_selection,
+    },
+  );
+  if (prixError || prix_total <= 0) {
     return NextResponse.json(
-      { error: "Tarif calculé invalide." },
+      { error: prixError ?? "Tarif calculé invalide." },
       { status: 400 },
     );
   }
@@ -61,6 +117,7 @@ export async function POST(request: Request) {
   const { data: inserted, error } = await supabase
     .from("inscriptions_stages")
     .insert({
+      saison_id: bundle.saison.id,
       nom: data.nom,
       prenom: data.prenom,
       date_naissance: data.date_naissance,
@@ -72,7 +129,7 @@ export async function POST(request: Request) {
       formule_creneau: data.formule_creneau ?? null,
       formule_dejeuner: data.formule_dejeuner ?? false,
       formule_4_selection:
-        data.formule === "formule_4" ? data.formule_4_selection : null,
+        formule.is_a_la_carte ? data.formule_4_selection : null,
       semaine: data.semaine,
       semaine_label: `${semaine.periode} — ${semaine.label}`,
       prix_total,
@@ -89,7 +146,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Emails best-effort — n'échoue pas la requête si Resend est mal configuré
   try {
     await sendStageEmails(inserted as InscriptionStageRow);
   } catch (e) {

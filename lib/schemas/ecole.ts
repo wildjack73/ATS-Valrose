@@ -1,32 +1,8 @@
 import { z } from "zod";
-import {
-  COURS_TENNIS,
-  COURS_PADEL,
-  MODES_REGLEMENT,
-  LICENCE_FFT,
-  hasConflitAdultes,
-  type CoursTennisId,
-  type CoursPadelId,
-  type ModeReglementId,
-  type LicenceFftId,
-} from "@/lib/data/ecole";
 
-const coursTennisIds = COURS_TENNIS.map((c) => c.id) as [
-  CoursTennisId,
-  ...CoursTennisId[],
-];
-const coursPadelIds = COURS_PADEL.map((c) => c.id) as [
-  CoursPadelId,
-  ...CoursPadelId[],
-];
-const modesReglementIds = MODES_REGLEMENT.map((c) => c.id) as [
-  ModeReglementId,
-  ...ModeReglementId[],
-];
-const licenceFftIds = LICENCE_FFT.map((c) => c.id) as [
-  LicenceFftId,
-  ...LicenceFftId[],
-];
+/**
+ * Schéma souple : on accepte les codes en string, validation stricte côté API.
+ */
 
 export const ecoleFormSchema = z
   .object({
@@ -38,10 +14,7 @@ export const ecoleFormSchema = z
       .refine((v) => !Number.isNaN(Date.parse(v)), "Date invalide"),
 
     adresse: z.string().trim().min(3, "Adresse requise"),
-    code_postal_ville: z
-      .string()
-      .trim()
-      .min(3, "Code postal et ville requis"),
+    code_postal_ville: z.string().trim().min(3, "Code postal et ville requis"),
     telephone: z
       .string()
       .trim()
@@ -52,15 +25,15 @@ export const ecoleFormSchema = z
 
     niveau: z.string().trim().max(50).optional().or(z.literal("")),
 
-    cours_tennis: z.array(z.enum(coursTennisIds)).default([]),
-    cours_padel: z.array(z.enum(coursPadelIds)).default([]),
+    cours_tennis: z.array(z.string()).default([]),
+    cours_padel: z.array(z.string()).default([]),
     licence_pickleball: z.boolean().optional().default(false),
 
     dispo_mercredi: z.string().max(200).optional().or(z.literal("")),
     dispo_samedi: z.string().max(200).optional().or(z.literal("")),
     dispo_semaine: z.string().max(200).optional().or(z.literal("")),
 
-    mode_reglement: z.enum(modesReglementIds, {
+    mode_reglement: z.enum(["especes", "cheque"], {
       message: "Choisissez un mode de règlement",
     }),
     nb_paiements: z
@@ -69,9 +42,7 @@ export const ecoleFormSchema = z
       .min(1)
       .max(4),
 
-    licence_fft: z.enum(licenceFftIds, {
-      message: "Choix de la licence FFT requis",
-    }),
+    licence_fft: z.string().min(1, "Choix de la licence FFT requis"),
 
     notes: z.string().max(2000).optional().or(z.literal("")),
 
@@ -87,7 +58,11 @@ export const ecoleFormSchema = z
         message: "Sélectionnez au moins un cours (tennis ou padel).",
       });
     }
-    if (hasConflitAdultes(data.cours_tennis ?? [])) {
+    // Conflit "annuel" + "trimestre" (même cours adultes choisi 2 fois)
+    const conflitT =
+      (data.cours_tennis ?? []).includes("cours_adultes_annuel") &&
+      (data.cours_tennis ?? []).includes("cours_adultes_trimestre");
+    if (conflitT) {
       ctx.addIssue({
         code: "custom",
         path: ["cours_tennis"],
@@ -95,7 +70,10 @@ export const ecoleFormSchema = z
           "Cours Adultes Tennis : choisissez annuel OU trimestre, pas les deux.",
       });
     }
-    if (hasConflitAdultes(data.cours_padel ?? [])) {
+    const conflitP =
+      (data.cours_padel ?? []).includes("cours_adultes_annuel") &&
+      (data.cours_padel ?? []).includes("cours_adultes_trimestre");
+    if (conflitP) {
       ctx.addIssue({
         code: "custom",
         path: ["cours_padel"],
