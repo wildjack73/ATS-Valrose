@@ -20,7 +20,7 @@ insert into public.tarifs_stages_formules
 select s.id, v.* from s, (values
   ('formule_1', 'Formule 1 — Baby Tennis', 'À partir de 3 ans', '1h30 de tennis par jour, lundi au vendredi.', 110, true, false, false, 0, 'Créneau 9h-10h30 ou 14h-15h30', 10),
   ('formule_2', 'Formule 2 — Demi-journée (3h)', 'Matin ou après-midi', 'Tennis, padel ou pickleball + goûter + multi-activités. Lundi au vendredi.', 180, true, false, false, 0, 'Matin 8h30-12h | Après-midi 13h30-17h', 20),
-  ('formule_3', 'Formule 3 — Journée complète', '9h à 17h, au Club', 'Programme matin + après-midi. Option déjeuner encadré par les moniteurs.', 280, false, true, false, 35, '8h30-17h', 30),
+  ('formule_3', 'Formule 3 — Journée complète', '9h à 17h, au Club', 'Programme matin + après-midi.', 280, false, true, false, 35, '8h30-17h', 30),
   -- Note : prix_dejeuner_jour est défini séparément ci-dessous (8€)
   ('formule_4', 'Formule 4 — À la carte', 'Choisissez vos jours', 'Tarif selon les options choisies, jour par jour. Idéal si vous n''êtes pas disponible toute la semaine.', null, false, false, true, 0, 'Choix par jour', 40)
 ) as v(code, titre, sous_titre, description, prix, needs_creneau, has_dejeuner_option, is_a_la_carte, prix_dejeuner, details_horaires, order_idx)
