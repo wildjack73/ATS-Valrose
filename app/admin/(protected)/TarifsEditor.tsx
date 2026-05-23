@@ -231,10 +231,37 @@ export default function TarifsEditor({
       <Section
         title="📅 Semaines de stages (vacances scolaires)"
         action={
-          <AddSemaineButton
-            saisonId={bundle.saison.id}
-            onAdd={(data) => withError(() => apiPost("semaines", data))}
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <ImportVacancesButton
+              saisonId={bundle.saison.id}
+              saisonCode={bundle.saison.code}
+              onImport={async (replaceExisting) => {
+                await withError(async () => {
+                  const res = await fetch(
+                    "/api/admin/semaines/import",
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        saisonId: bundle.saison.id,
+                        location: "Nice",
+                        anneeScolaire: bundle.saison.code,
+                        replaceExisting,
+                      }),
+                    },
+                  );
+                  if (!res.ok) {
+                    const j = await res.json().catch(() => ({}));
+                    throw new Error(j.error ?? "Échec import");
+                  }
+                });
+              }}
+            />
+            <AddSemaineButton
+              saisonId={bundle.saison.id}
+              onAdd={(data) => withError(() => apiPost("semaines", data))}
+            />
+          </div>
         }
       >
         <table className="w-full text-sm">
@@ -951,6 +978,53 @@ function AddSemaineButton({
         className="text-xs text-white/80 hover:text-white"
       >
         Annuler
+      </button>
+    </div>
+  );
+}
+
+function ImportVacancesButton({
+  saisonId,
+  saisonCode,
+  onImport,
+}: {
+  saisonId: string;
+  saisonCode: string;
+  onImport: (replaceExisting: boolean) => Promise<void>;
+}) {
+  void saisonId;
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handle(replaceExisting: boolean) {
+    const msg = replaceExisting
+      ? `Importer les vacances officielles de Nice pour ${saisonCode} ?\n\n⚠ Cela SUPPRIMERA toutes les semaines actuelles de cette saison.`
+      : `Importer les vacances officielles de Nice pour ${saisonCode} ?\n\nLes semaines existantes ne seront pas supprimées (mais celles ayant le même code seront mises à jour).`;
+    if (!confirm(msg)) return;
+    setSubmitting(true);
+    try {
+      await onImport(replaceExisting);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => handle(false)}
+        disabled={submitting}
+        title="Récupère les vacances scolaires Zone B Nice depuis data.education.gouv.fr"
+        className="bg-cyan-club text-navy text-xs font-bold px-3 py-1.5 rounded hover:bg-cyan-light disabled:opacity-50"
+      >
+        🌐 {submitting ? "…" : "Importer vacances Nice"}
+      </button>
+      <button
+        onClick={() => handle(true)}
+        disabled={submitting}
+        title="Supprime toutes les semaines actuelles avant d'importer"
+        className="bg-white/10 hover:bg-white/20 text-white text-xs px-2 py-1.5 rounded border border-white/20"
+      >
+        (remplacer tout)
       </button>
     </div>
   );
