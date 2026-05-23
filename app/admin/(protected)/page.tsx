@@ -18,6 +18,7 @@ import HistoriqueTable from "./HistoriqueTable";
 import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 import TarifsEditor from "./TarifsEditor";
 import PlanningEcole from "./PlanningEcole";
+import DashboardHeader from "./DashboardHeader";
 import {
   fetchGroupesEcole,
   fetchCoaches,
@@ -88,34 +89,11 @@ export default async function AdminDashboardPage({
         ])
       : null;
 
-  const totalStagesEnAttente = stages
-    .filter((s) => s.statut === "en_attente")
-    .reduce((sum, s) => sum + s.prix_total, 0);
-  const totalStagesPaye = stages
-    .filter((s) => s.statut === "paye")
-    .reduce((sum, s) => sum + s.prix_total, 0);
-  const totalEcoleEnAttente = ecole
-    .filter((s) => s.statut === "en_attente")
-    .reduce((sum, s) => sum + (s.prix_total ?? 0), 0);
   const totalArchives = historique.length + historiqueEcole.length;
 
   return (
     <>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card label="Inscriptions stages" value={stages.length.toString()} accent="cyan" />
-        <Card
-          label="Stages — à encaisser"
-          value={`${totalStagesEnAttente}€`}
-          hint={`${totalStagesPaye}€ déjà encaissés`}
-          accent="yellow"
-        />
-        <Card label="Inscriptions école" value={ecole.length.toString()} accent="ocre" />
-        <Card
-          label="École — à encaisser"
-          value={`${totalEcoleEnAttente}€`}
-          accent="yellow"
-        />
-      </div>
+      <DashboardHeader stages={stages} ecole={ecole} bundle={bundle} />
 
       <div className="flex items-center gap-2 mb-4 overflow-x-auto">
         <TabLink
@@ -215,38 +193,6 @@ export default async function AdminDashboardPage({
         </div>
       )}
     </>
-  );
-}
-
-function Card({
-  label,
-  value,
-  hint,
-  accent,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  accent?: "cyan" | "ocre" | "navy" | "yellow";
-}) {
-  const accentBar =
-    accent === "cyan"
-      ? "bg-cyan-club"
-      : accent === "ocre"
-        ? "bg-ocre"
-        : accent === "yellow"
-          ? "bg-yellow-club"
-          : "bg-navy";
-  return (
-    <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm relative overflow-hidden">
-      <span
-        className={`absolute left-0 top-0 bottom-0 w-1 ${accentBar}`}
-        aria-hidden="true"
-      />
-      <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold text-navy">{value}</p>
-      {hint ? <p className="text-xs text-gray-500 mt-1">{hint}</p> : null}
-    </div>
   );
 }
 
