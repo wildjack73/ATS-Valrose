@@ -272,6 +272,7 @@ export default function TarifsEditor({
               <th className="text-left py-2 pr-2">Dates</th>
               <th className="text-left py-2 pr-2">Début</th>
               <th className="text-center py-2 pr-2">Ouverte</th>
+              <th className="text-center py-2 pr-2">Déjeuner</th>
               <th className="text-right py-2 pr-2 w-40"></th>
             </tr>
           </thead>
@@ -428,6 +429,7 @@ function FormuleRow({
   const [sous, setSous] = useState(row.sous_titre ?? "");
   const [prix, setPrix] = useState(row.prix?.toString() ?? "");
   const [dej, setDej] = useState(row.prix_dejeuner.toString());
+  const [dejJour, setDejJour] = useState(row.prix_dejeuner_jour?.toString() ?? "0");
 
   async function save() {
     await onSave({
@@ -435,6 +437,7 @@ function FormuleRow({
       sous_titre: sous || null,
       prix: prix === "" ? null : parseInt(prix, 10),
       prix_dejeuner: parseInt(dej, 10) || 0,
+      prix_dejeuner_jour: parseInt(dejJour, 10) || 0,
     });
     setEditing(false);
   }
@@ -461,12 +464,24 @@ function FormuleRow({
           </td>
           <td className="py-2 pr-2">
             {row.has_dejeuner_option ? (
-              <input
-                type="number"
-                className={`${inputCls} text-right`}
-                value={dej}
-                onChange={(e) => setDej(e.target.value)}
-              />
+              <div className="space-y-1">
+                <input
+                  type="number"
+                  className={`${inputCls} text-right`}
+                  value={dej}
+                  onChange={(e) => setDej(e.target.value)}
+                  placeholder="35"
+                  title="Forfait semaine"
+                />
+                <input
+                  type="number"
+                  className={`${inputCls} text-right`}
+                  value={dejJour}
+                  onChange={(e) => setDejJour(e.target.value)}
+                  placeholder="8"
+                  title="Par jour"
+                />
+              </div>
             ) : (
               <span className="text-gray-400">—</span>
             )}
@@ -486,8 +501,15 @@ function FormuleRow({
           <td className="py-2 pr-2 text-right font-bold text-navy">
             {row.prix !== null ? `${row.prix}€` : "—"}
           </td>
-          <td className="py-2 pr-2 text-right">
-            {row.has_dejeuner_option ? `+${row.prix_dejeuner}€` : "—"}
+          <td className="py-2 pr-2 text-right text-xs">
+            {row.has_dejeuner_option ? (
+              <>
+                <div>Semaine : {row.prix_dejeuner}€</div>
+                <div className="text-gray-500">Jour : {row.prix_dejeuner_jour}€</div>
+              </>
+            ) : (
+              "—"
+            )}
           </td>
           <td className="py-2 pr-2 text-right">
             <button
@@ -586,6 +608,7 @@ function SemaineRow({
   const [label, setLabel] = useState(row.label);
   const [date, setDate] = useState(row.date_debut ?? "");
   const [ouverte, setOuverte] = useState(row.ouverte);
+  const [dejDispo, setDejDispo] = useState(row.dejeuner_disponible !== false);
 
   async function save() {
     await onSave({
@@ -593,6 +616,7 @@ function SemaineRow({
       label,
       date_debut: date || null,
       ouverte,
+      dejeuner_disponible: dejDispo,
     });
     setEditing(false);
   }
@@ -618,6 +642,13 @@ function SemaineRow({
               onChange={(e) => setOuverte(e.target.checked)}
             />
           </td>
+          <td className="py-2 pr-2 text-center">
+            <input
+              type="checkbox"
+              checked={dejDispo}
+              onChange={(e) => setDejDispo(e.target.checked)}
+            />
+          </td>
           <td className="py-2 pr-2 text-right">
             <RowButtons disabled={disabled} onSave={save} onCancel={() => setEditing(false)} />
           </td>
@@ -629,6 +660,9 @@ function SemaineRow({
           <td className="py-2 pr-2 text-gray-600 text-xs">{row.date_debut ?? "—"}</td>
           <td className="py-2 pr-2 text-center">
             {row.ouverte ? "✓" : "✕"}
+          </td>
+          <td className="py-2 pr-2 text-center">
+            {row.dejeuner_disponible !== false ? "✓" : "✕"}
           </td>
           <td className="py-2 pr-2 text-right space-x-2 whitespace-nowrap">
             <button

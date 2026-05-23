@@ -34,7 +34,10 @@ export const stageFormSchema = z
     // formule_code peut être n'importe quel code (validé serveur)
     formule: z.string().min(1, "Choisissez une formule"),
     formule_creneau: z.enum(["matin", "apres_midi"]).optional().nullable(),
-    formule_dejeuner: z.boolean().optional().default(false),
+    formule_dejeuner_jours: z
+      .array(z.enum(["lundi", "mardi", "mercredi", "jeudi", "vendredi"]))
+      .optional()
+      .default([]),
     formule_4_selection: z.array(f4SelectionSchema).optional().default([]),
 
     semaine: z.string().min(1, "Choisissez une semaine"),

@@ -97,12 +97,16 @@ export async function POST(request: Request) {
     );
   }
 
+  // Filtrer les jours déjeuner si la semaine ne le propose pas
+  const dejeunerJours =
+    semaine.dejeuner_disponible === false ? [] : data.formule_dejeuner_jours ?? [];
+
   // Calculer le prix
   const { prix: prix_total, error: prixError } = calculerPrixStageFromTarifs(
     bundle,
     {
       formuleCode: data.formule,
-      dejeuner: data.formule_dejeuner,
+      dejeunerJours,
       formule4Selection: data.formule_4_selection,
     },
   );
@@ -127,7 +131,8 @@ export async function POST(request: Request) {
       niveau: data.niveau || null,
       formule: data.formule,
       formule_creneau: data.formule_creneau ?? null,
-      formule_dejeuner: data.formule_dejeuner ?? false,
+      formule_dejeuner: dejeunerJours.length > 0,
+      dejeuner_jours: dejeunerJours.length > 0 ? dejeunerJours : null,
       formule_4_selection:
         formule.is_a_la_carte ? data.formule_4_selection : null,
       semaine: data.semaine,

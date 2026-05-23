@@ -34,6 +34,7 @@ export interface InscriptionStageRow {
   formule: FormuleId;
   formule_creneau: Creneau | null;
   formule_dejeuner: boolean;
+  dejeuner_jours: JourSemaine[] | null;
   formule_4_selection:
     | { jour: JourSemaine; option: OptionF4 }[]
     | null;

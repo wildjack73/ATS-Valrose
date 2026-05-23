@@ -12,6 +12,19 @@ export const metadata = {
 export default async function StagesPage() {
   const bundle = await getActiveTarifsBundle();
 
+  // Filtrer les semaines passées (Vendredi < aujourd'hui)
+  if (bundle) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    bundle.semaines = bundle.semaines.filter((s) => {
+      if (!s.date_debut) return s.ouverte;
+      const lundi = new Date(s.date_debut);
+      const vendredi = new Date(lundi);
+      vendredi.setDate(vendredi.getDate() + 4);
+      return vendredi >= today && s.ouverte;
+    });
+  }
+
   if (!bundle) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">

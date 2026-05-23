@@ -23,7 +23,8 @@ export interface Formule {
   needs_creneau: boolean;
   has_dejeuner_option: boolean;
   is_a_la_carte: boolean;
-  prix_dejeuner: number;
+  prix_dejeuner: number;          // forfait semaine (5 jours)
+  prix_dejeuner_jour: number;     // par jour individuel
   details_horaires: string | null;
   order_idx: number;
 }
@@ -46,6 +47,7 @@ export interface Semaine {
   label: string;
   date_debut: string | null;
   ouverte: boolean;
+  dejeuner_disponible: boolean;
   order_idx: number;
 }
 

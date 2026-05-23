@@ -136,17 +136,17 @@ export async function getActiveTarifsBundle(): Promise<TarifsBundle | null> {
 
 export interface CalculPrixStageInput {
   formuleCode: string;
-  dejeuner?: boolean;
+  dejeunerJours?: string[];   // ['lundi','mardi',...]
   formule4Selection?: { jour: string; option: string }[];
 }
 
 export function calculerPrixStageFromTarifs(
   bundle: TarifsBundle,
   input: CalculPrixStageInput,
-): { prix: number; error?: string } {
+): { prix: number; prixDejeuner: number; error?: string } {
   const formule = bundle.formules.find((f) => f.code === input.formuleCode);
   if (!formule) {
-    return { prix: 0, error: `Formule inconnue : ${input.formuleCode}` };
+    return { prix: 0, prixDejeuner: 0, error: `Formule inconnue : ${input.formuleCode}` };
   }
   if (formule.is_a_la_carte) {
     const items = input.formule4Selection ?? [];
@@ -154,17 +154,25 @@ export function calculerPrixStageFromTarifs(
     for (const it of items) {
       const opt = bundle.optionsF4.find((o) => o.code === it.option);
       if (!opt) {
-        return { prix: 0, error: `Option F4 inconnue : ${it.option}` };
+        return { prix: 0, prixDejeuner: 0, error: `Option F4 inconnue : ${it.option}` };
       }
       total += opt.prix;
     }
-    return { prix: total };
+    return { prix: total, prixDejeuner: 0 };
   }
+
   let total = formule.prix ?? 0;
-  if (formule.has_dejeuner_option && input.dejeuner) {
-    total += formule.prix_dejeuner ?? 0;
+  let prixDejeuner = 0;
+  if (formule.has_dejeuner_option && input.dejeunerJours && input.dejeunerJours.length > 0) {
+    if (input.dejeunerJours.length >= 5) {
+      // forfait semaine
+      prixDejeuner = formule.prix_dejeuner ?? 0;
+    } else {
+      prixDejeuner = input.dejeunerJours.length * (formule.prix_dejeuner_jour ?? 0);
+    }
+    total += prixDejeuner;
   }
-  return { prix: total };
+  return { prix: total, prixDejeuner };
 }
 
 export interface CalculPrixEcoleInput {

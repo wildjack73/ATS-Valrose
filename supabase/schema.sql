@@ -333,3 +333,14 @@ alter table public.inscriptions_ecole
 
 create index if not exists idx_stages_saison on public.inscriptions_stages(saison_id);
 create index if not exists idx_ecole_saison on public.inscriptions_ecole(saison_id);
+
+-- Déjeuner au jour (8€/jour si pas la semaine entière à 35€)
+alter table public.tarifs_stages_formules
+  add column if not exists prix_dejeuner_jour int default 8;
+
+alter table public.semaines_stages
+  add column if not exists dejeuner_disponible boolean default true;
+
+-- Jours de déjeuner choisis (array de noms de jours)
+alter table public.inscriptions_stages
+  add column if not exists dejeuner_jours jsonb;
