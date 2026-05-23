@@ -254,16 +254,16 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                   return (
                     <label
                       key={c.id}
-                      className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 cursor-pointer text-sm ${
+                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
                         checked
                           ? "border-ocre bg-ocre/10"
                           : "border-gray-300 hover:border-ocre/50"
                       }`}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-start gap-2">
                         <input
                           type="checkbox"
-                          className="accent-ocre"
+                          className="accent-ocre mt-0.5"
                           checked={checked}
                           onChange={() =>
                             field.onChange(
@@ -274,7 +274,14 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                             )
                           }
                         />
-                        <span>{c.label}</span>
+                        <span>
+                          <span className="font-medium">{c.label}</span>
+                          {c.description ? (
+                            <span className="block text-xs text-gray-500 mt-0.5">
+                              {c.description}
+                            </span>
+                          ) : null}
+                        </span>
                       </span>
                       <span className="font-bold text-navy whitespace-nowrap">
                         {c.prix}€
@@ -301,16 +308,16 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                   return (
                     <label
                       key={c.id}
-                      className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 cursor-pointer text-sm ${
+                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
                         checked
                           ? "border-ocre bg-ocre/10"
                           : "border-gray-300 hover:border-ocre/50"
                       }`}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-start gap-2">
                         <input
                           type="checkbox"
-                          className="accent-ocre"
+                          className="accent-ocre mt-0.5"
                           checked={checked}
                           onChange={() =>
                             field.onChange(
@@ -321,7 +328,14 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                             )
                           }
                         />
-                        <span>{c.label}</span>
+                        <span>
+                          <span className="font-medium">{c.label}</span>
+                          {c.description ? (
+                            <span className="block text-xs text-gray-500 mt-0.5">
+                              {c.description}
+                            </span>
+                          ) : null}
+                        </span>
                       </span>
                       <span className="font-bold text-navy whitespace-nowrap">
                         {c.prix}€

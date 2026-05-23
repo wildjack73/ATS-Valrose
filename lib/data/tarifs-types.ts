@@ -57,6 +57,7 @@ export interface CoursEcole {
   type: "tennis" | "padel";
   code: string;
   label: string;
+  description: string | null;
   prix: number;
   order_idx: number;
 }

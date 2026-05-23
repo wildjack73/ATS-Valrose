@@ -350,3 +350,7 @@ alter table public.inscriptions_stages
   add column if not exists paiement_info text;
 alter table public.inscriptions_ecole
   add column if not exists paiement_info text;
+
+-- Description optionnelle par cours école (âge, durée, public…)
+alter table public.tarifs_cours_ecole
+  add column if not exists description text;

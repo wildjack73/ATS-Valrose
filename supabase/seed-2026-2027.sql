@@ -97,30 +97,36 @@ where saison_id = (select id from public.saisons where code = '2026-2027')
 
 -- 5. Cours École Tennis
 with s as (select id from public.saisons where code = '2026-2027')
-insert into public.tarifs_cours_ecole (saison_id, type, code, label, prix, order_idx)
+insert into public.tarifs_cours_ecole (saison_id, type, code, label, description, prix, order_idx)
 select s.id, 'tennis', v.* from s, (values
-  ('baby_tennis',             'Baby Tennis (1h)',                       250, 10),
-  ('mini_tennis',             'Mini Tennis (1h)',                       250, 20),
-  ('initiation',              'Initiation (1h)',                        250, 30),
-  ('perfectionnement',        'Perfectionnement (1h30)',                360, 40),
-  ('centre_entrainement',     'Centre d''Entraînement (3h)',            720, 50),
-  ('demi_journee',            'Demi-journée (3h)',                      750, 60),
-  ('cours_adultes_annuel',    'Cours Adultes (1h30, annuel)',           520, 70),
-  ('cours_adultes_trimestre', 'Cours Adultes (1h30, 1 trimestre)',      180, 80)
-) as v(code, label, prix, order_idx)
+  ('baby_tennis',             'Baby Tennis',          'À partir de 3 ans · 1h/semaine',                    250, 10),
+  ('mini_tennis',             'Mini Tennis',          'À partir de 5 ans · 1h/semaine',                    250, 20),
+  ('initiation',              'Initiation',           'À partir de 6 ans · 1h/semaine',                    250, 30),
+  ('perfectionnement',        'Perfectionnement',     'À partir de 7 ans · 1h30/semaine',                  360, 40),
+  ('centre_entrainement',     'Centre d''Entraînement','Joueurs confirmés · 3h/semaine',                  720, 50),
+  ('demi_journee',            'Demi-journée',         'Multi-activités sur une demi-journée · 3h/semaine', 750, 60),
+  ('cours_adultes_annuel',    'Cours Adultes',        'Adultes · 1h30/semaine · saison complète',          520, 70),
+  ('cours_adultes_trimestre', 'Cours Adultes',        'Adultes · 1h30/semaine · 1 trimestre',              180, 80)
+) as v(code, label, description, prix, order_idx)
 on conflict (saison_id, type, code) do update set
-  label = excluded.label, prix = excluded.prix, order_idx = excluded.order_idx;
+  label = excluded.label,
+  description = excluded.description,
+  prix = excluded.prix,
+  order_idx = excluded.order_idx;
 
 -- 6. Cours École Padel
 with s as (select id from public.saisons where code = '2026-2027')
-insert into public.tarifs_cours_ecole (saison_id, type, code, label, prix, order_idx)
+insert into public.tarifs_cours_ecole (saison_id, type, code, label, description, prix, order_idx)
 select s.id, 'padel', v.* from s, (values
-  ('perfectionnement',        'Perfectionnement Padel (1h30)',          450, 10),
-  ('cours_adultes_annuel',    'Cours Adultes Padel (annuel)',           680, 20),
-  ('cours_adultes_trimestre', 'Cours Adultes Padel (1 trimestre)',      240, 30)
-) as v(code, label, prix, order_idx)
+  ('perfectionnement',        'Perfectionnement Padel','1h30/semaine',                             450, 10),
+  ('cours_adultes_annuel',    'Cours Adultes Padel',   'Adultes · 1h30/semaine · saison complète', 680, 20),
+  ('cours_adultes_trimestre', 'Cours Adultes Padel',   'Adultes · 1h30/semaine · 1 trimestre',     240, 30)
+) as v(code, label, description, prix, order_idx)
 on conflict (saison_id, type, code) do update set
-  label = excluded.label, prix = excluded.prix, order_idx = excluded.order_idx;
+  label = excluded.label,
+  description = excluded.description,
+  prix = excluded.prix,
+  order_idx = excluded.order_idx;
 
 -- 7. Licence FFT
 with s as (select id from public.saisons where code = '2026-2027')

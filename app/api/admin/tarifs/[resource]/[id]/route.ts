@@ -34,7 +34,7 @@ const RESOURCE_ALLOWED_FIELDS: Record<string, string[]> = {
     "code",
     "order_idx",
   ],
-  "cours-ecole": ["label", "prix", "order_idx"],
+  "cours-ecole": ["label", "description", "prix", "order_idx"],
   "licence-fft": ["label", "prix", "order_idx"],
   autres: ["category", "label", "prix", "detail", "order_idx"],
 };

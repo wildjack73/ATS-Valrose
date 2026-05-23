@@ -719,6 +719,7 @@ function CoursTable({
         <tr className="text-xs uppercase text-gray-500 border-b">
           <th className="text-left py-2 pr-2">Code</th>
           <th className="text-left py-2 pr-2">Label</th>
+          <th className="text-left py-2 pr-2">Description</th>
           <th className="text-right py-2 pr-2">Prix annuel</th>
           <th className="text-right py-2 pr-2 w-32"></th>
         </tr>
@@ -748,10 +749,15 @@ function CoursRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(row.label);
+  const [description, setDescription] = useState(row.description ?? "");
   const [prix, setPrix] = useState(row.prix.toString());
 
   async function save() {
-    await onSave({ label, prix: parseInt(prix, 10) || 0 });
+    await onSave({
+      label,
+      description: description || null,
+      prix: parseInt(prix, 10) || 0,
+    });
     setEditing(false);
   }
 
@@ -762,6 +768,14 @@ function CoursRow({
         <>
           <td className="py-2 pr-2">
             <input className={inputCls} value={label} onChange={(e) => setLabel(e.target.value)} />
+          </td>
+          <td className="py-2 pr-2">
+            <input
+              className={inputCls}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="ex: À partir de 3 ans · 1h/semaine"
+            />
           </td>
           <td className="py-2 pr-2">
             <input
@@ -778,6 +792,9 @@ function CoursRow({
       ) : (
         <>
           <td className="py-2 pr-2">{row.label}</td>
+          <td className="py-2 pr-2 text-xs text-gray-600">
+            {row.description ?? <span className="text-gray-400 italic">—</span>}
+          </td>
           <td className="py-2 pr-2 text-right font-bold text-navy">{row.prix}€</td>
           <td className="py-2 pr-2 text-right">
             <button
