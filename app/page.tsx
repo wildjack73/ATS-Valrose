@@ -11,21 +11,11 @@ export default function HomePage() {
         <HeroBackground />
 
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32">
-          <div className="animate-fade-in-up flex items-center gap-4 mb-8">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-club.png"
-              alt="ATS Valrose"
-              className="h-16 w-auto sm:h-20 drop-shadow-2xl"
-            />
-            <div className="h-12 sm:h-14 w-px bg-white/30" />
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-yellow-club font-bold">
-                Padel · Tennis · Nice
-              </p>
-              <p className="text-sm text-white/70">Saison 2026-2027</p>
-            </div>
-          </div>
+          <p
+            className="animate-fade-in-up text-xs uppercase tracking-[0.3em] text-yellow-club font-bold mb-6"
+          >
+            Saison 2026-2027
+          </p>
 
           <h1
             className="animate-fade-in-up text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-[1.05] max-w-4xl tracking-tight"
@@ -104,7 +94,7 @@ export default function HomePage() {
             { value: 3, label: "Courts de tennis", suffix: "" },
             { value: 2, label: "Courts de padel", suffix: "" },
             { value: 17, label: "Semaines de stages / an", suffix: "" },
-            { value: 100, label: "Moniteurs DE", suffix: "%" },
+            { value: 100, label: "Moniteurs D.E.", suffix: "%" },
           ].map((stat, i) => (
             <Reveal key={stat.label} delay={i * 100}>
               <div className="flex flex-col items-center">

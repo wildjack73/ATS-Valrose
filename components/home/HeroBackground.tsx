@@ -1,57 +1,93 @@
 "use client";
 
 /**
- * Décor du hero : balles de tennis flottantes + grille de court animée.
+ * Décor du hero : court de tennis détaillé en filigrane + balles flottantes.
  * SVG pur + CSS animations (zéro JS au runtime).
  */
 export function HeroBackground() {
   return (
     <>
-      {/* Court lines en filigrane */}
+      {/* ===== Court de tennis détaillé (vue de dessus stylisée) ===== */}
       <svg
-        className="absolute inset-0 w-full h-full opacity-[0.08] pointer-events-none"
+        className="absolute inset-0 w-full h-full opacity-25 pointer-events-none"
         viewBox="0 0 1200 600"
         preserveAspectRatio="xMidYMid slice"
         aria-hidden="true"
       >
-        <rect
-          x="100"
-          y="80"
-          width="1000"
-          height="440"
+        <g
           stroke="white"
-          strokeWidth="2"
+          strokeWidth="2.5"
           fill="none"
-        />
-        <line x1="600" y1="80" x2="600" y2="520" stroke="white" strokeWidth="2" />
+          strokeLinejoin="round"
+        >
+          {/* Bord extérieur du court (doubles) */}
+          <rect x="80" y="60" width="1040" height="480" rx="2" />
+
+          {/* Couloir gauche (entre simples et doubles) */}
+          <line x1="80" y1="60" x2="80" y2="540" />
+          <line x1="140" y1="60" x2="140" y2="540" />
+
+          {/* Couloir droit */}
+          <line x1="1060" y1="60" x2="1060" y2="540" />
+          <line x1="1120" y1="60" x2="1120" y2="540" />
+
+          {/* Ligne de fond (en haut/bas) — déjà dans le rect, on ajoute les
+              marques centrales (T marks) */}
+          <line x1="600" y1="56" x2="600" y2="68" strokeWidth="3" />
+          <line x1="600" y1="532" x2="600" y2="544" strokeWidth="3" />
+
+          {/* Filet (ligne centrale verticale, plus épaisse) */}
+          <line x1="600" y1="60" x2="600" y2="540" strokeWidth="4" />
+          {/* Maille filet (suggéré par tirets) */}
+          <line
+            x1="600"
+            y1="60"
+            x2="600"
+            y2="540"
+            stroke="white"
+            strokeWidth="14"
+            strokeDasharray="4 6"
+            opacity="0.35"
+          />
+
+          {/* Lignes de service (parallèles au filet, à mi-distance) */}
+          <line x1="140" y1="200" x2="1060" y2="200" />
+          <line x1="140" y1="400" x2="1060" y2="400" />
+
+          {/* Ligne centrale de service (perpendiculaire au filet) */}
+          <line x1="140" y1="300" x2="1060" y2="300" />
+
+          {/* Cercle de service (touche déco non-réglo mais ça fait court) */}
+          <circle cx="600" cy="300" r="45" />
+          <circle cx="600" cy="300" r="6" fill="white" opacity="0.4" />
+        </g>
+
+        {/* Surface du court avec léger remplissage pour suggérer la couleur */}
         <rect
-          x="280"
-          y="200"
-          width="640"
-          height="200"
-          stroke="white"
-          strokeWidth="2"
-          fill="none"
+          x="80"
+          y="60"
+          width="1040"
+          height="480"
+          fill="white"
+          opacity="0.02"
         />
-        <line x1="280" y1="300" x2="920" y2="300" stroke="white" strokeWidth="2" />
-        <circle cx="600" cy="300" r="40" stroke="white" strokeWidth="2" fill="none" />
       </svg>
 
-      {/* Balles flottantes */}
+      {/* ===== Balles flottantes ===== */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <FloatingBall x="8%" y="20%" size={36} delay="0s" duration="8s" />
-        <FloatingBall x="85%" y="15%" size={28} delay="1.5s" duration="10s" />
-        <FloatingBall x="92%" y="70%" size={42} delay="3s" duration="12s" />
-        <FloatingBall x="15%" y="78%" size={24} delay="0.8s" duration="9s" />
-        <FloatingBall x="50%" y="85%" size={32} delay="2s" duration="11s" />
+        <FloatingBall x="6%" y="18%" size={36} delay="0s" duration="8s" />
+        <FloatingBall x="86%" y="14%" size={28} delay="1.5s" duration="10s" />
+        <FloatingBall x="93%" y="72%" size={42} delay="3s" duration="12s" />
+        <FloatingBall x="12%" y="80%" size={24} delay="0.8s" duration="9s" />
+        <FloatingBall x="48%" y="88%" size={32} delay="2s" duration="11s" />
       </div>
 
-      {/* Gradient mouvant en surcouche */}
+      {/* ===== Gradient lumineux mouvant ===== */}
       <div
-        className="absolute inset-0 opacity-30 pointer-events-none animate-pulse-slow"
+        className="absolute inset-0 opacity-40 pointer-events-none animate-pulse-slow"
         style={{
           background:
-            "radial-gradient(circle at 20% 30%, rgba(45, 181, 214, 0.6) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(243, 197, 3, 0.3) 0%, transparent 50%)",
+            "radial-gradient(circle at 20% 30%, rgba(45, 181, 214, 0.55) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(243, 197, 3, 0.25) 0%, transparent 50%)",
         }}
       />
     </>
@@ -83,21 +119,21 @@ function FloatingBall({
         animationDuration: duration,
       }}
     >
-      <svg viewBox="0 0 64 64" className="w-full h-full opacity-30">
+      <svg viewBox="0 0 64 64" className="w-full h-full opacity-40">
         <circle cx="32" cy="32" r="28" fill="#f3c503" />
         <path
           d="M5 32 Q32 12 59 32"
           stroke="white"
           strokeWidth="2"
           fill="none"
-          opacity="0.4"
+          opacity="0.5"
         />
         <path
           d="M5 32 Q32 52 59 32"
           stroke="white"
           strokeWidth="2"
           fill="none"
-          opacity="0.4"
+          opacity="0.5"
         />
       </svg>
     </div>

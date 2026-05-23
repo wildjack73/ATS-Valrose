@@ -57,12 +57,21 @@ export function SiteHeader() {
             className="flex items-center gap-3 group"
             aria-label="Accueil ATS Valrose"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-club.png"
-              alt="ATS Valrose"
-              className="h-12 w-auto sm:h-14 transition-transform group-hover:scale-105 drop-shadow"
-            />
+            {/* Disque blanc + halo doux pour faire ressortir le logo bleu sur fond navy */}
+            <span className="relative inline-flex items-center justify-center">
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full bg-cyan-light/30 blur-md scale-110"
+              />
+              <span className="relative inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white shadow-lg ring-2 ring-cyan-light/40 transition-transform group-hover:scale-105">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-club.png"
+                  alt="ATS Valrose"
+                  className="h-11 sm:h-12 w-auto"
+                />
+              </span>
+            </span>
             <div className="hidden sm:flex flex-col leading-tight">
               <span className="font-extrabold tracking-wide text-[15px]">
                 ATS&nbsp;VALROSE
