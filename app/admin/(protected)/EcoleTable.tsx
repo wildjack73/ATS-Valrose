@@ -12,6 +12,7 @@ import {
   licenceFftLabel,
   statutLabel,
   statutBadgeClass,
+  statutRowClass,
 } from "@/lib/admin/format";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
@@ -135,7 +136,7 @@ function EcoleRowGroup({
 
   return (
     <>
-      <tr className="border-t hover:bg-gray-50">
+      <tr className={`border-t ${statutRowClass(row.statut)}`}>
         <td className="p-3 whitespace-nowrap text-gray-600">
           {formatDateTime(row.created_at)}
         </td>
@@ -180,18 +181,32 @@ function EcoleRowGroup({
         </td>
         <td className="p-3 text-xs">{licenceFftLabel(row.licence_fft)}</td>
         <td className="p-3">
-          <span
-            className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statutBadgeClass(
-              row.statut,
-            )}`}
-          >
-            {statutLabel(row.statut)}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statutBadgeClass(
+                row.statut,
+              )}`}
+            >
+              {statutLabel(row.statut)}
+            </span>
+            <div className="flex gap-1 text-base leading-none">
+              {row.paiement_info ? (
+                <span title={`Règlement : ${row.paiement_info}`}>💳</span>
+              ) : null}
+              {row.notes_admin ? (
+                <span title={`Note : ${row.notes_admin}`}>💬</span>
+              ) : null}
+            </div>
+          </div>
         </td>
         <td className="p-3 whitespace-nowrap">
           <button
             onClick={toggle}
-            className="text-xs text-navy underline hover:text-yellow-hover"
+            className={`text-xs font-semibold px-3 py-1.5 rounded ${
+              open
+                ? "bg-navy text-white"
+                : "bg-ocre text-white hover:bg-ocre-dark"
+            }`}
           >
             {open ? "Fermer" : "Éditer"}
           </button>
@@ -272,16 +287,16 @@ function EcoleEditPanel({
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block">
+        <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-gray-600 uppercase">
             Commentaire admin
           </span>
-          <input
-            type="text"
+          <textarea
+            rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Note privée (ne sera pas envoyée à la famille)"
-            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+            placeholder="Note privée (ne sera pas envoyée à la famille). Allergies, niveau précis, particularités…"
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm resize-y"
           />
         </label>
       </div>

@@ -77,9 +77,18 @@ export function statutLabel(s: string): string {
 }
 
 export function statutBadgeClass(s: string): string {
-  if (s === "paye") return "bg-green-100 text-green-800";
-  if (s === "annule") return "bg-red-100 text-red-700";
-  return "bg-yellow-100 text-yellow-800";
+  if (s === "paye")
+    return "bg-green-100 text-green-800 ring-1 ring-green-300";
+  if (s === "annule")
+    return "bg-red-100 text-red-700 ring-1 ring-red-300";
+  return "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300";
+}
+
+/** Classe de fond pour la ligne complète selon le statut */
+export function statutRowClass(s: string): string {
+  if (s === "paye") return "bg-green-50/40 hover:bg-green-50/80";
+  if (s === "annule") return "bg-red-50/40 hover:bg-red-50/80";
+  return "hover:bg-yellow-50/40";
 }
 
 export function coursTennisLabels(ids: CoursTennisId[] | null | undefined) {

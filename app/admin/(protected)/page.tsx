@@ -83,30 +83,48 @@ export default async function AdminDashboardPage({
   return (
     <>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card label="Inscriptions stages" value={stages.length.toString()} />
+        <Card label="Inscriptions stages" value={stages.length.toString()} accent="cyan" />
         <Card
           label="Stages — à encaisser"
           value={`${totalStagesEnAttente}€`}
           hint={`${totalStagesPaye}€ déjà encaissés`}
+          accent="yellow"
         />
-        <Card label="Inscriptions école" value={ecole.length.toString()} />
+        <Card label="Inscriptions école" value={ecole.length.toString()} accent="ocre" />
         <Card
           label="École — à encaisser"
           value={`${totalEcoleEnAttente}€`}
+          accent="yellow"
         />
       </div>
 
       <div className="flex items-center gap-2 mb-4 overflow-x-auto">
-        <TabLink active={tab === "stages"} href="/admin?tab=stages">
+        <TabLink
+          active={tab === "stages"}
+          href="/admin?tab=stages"
+          accent="cyan"
+        >
           Stages ({stages.length})
         </TabLink>
-        <TabLink active={tab === "ecole"} href="/admin?tab=ecole">
+        <TabLink
+          active={tab === "ecole"}
+          href="/admin?tab=ecole"
+          accent="ocre"
+        >
           École ({ecole.length})
         </TabLink>
-        <TabLink active={tab === "historique"} href="/admin?tab=historique">
+        <TabLink
+          active={tab === "historique"}
+          href="/admin?tab=historique"
+          accent="navy"
+        >
           Archives ({totalArchives})
         </TabLink>
-        <TabLink active={tab === "tarifs"} href="/admin?tab=tarifs">
+        <TabLink
+          active={tab === "tarifs"}
+          href="/admin?tab=tarifs"
+          accent="yellow"
+        >
           Tarifs
         </TabLink>
       </div>
@@ -165,13 +183,27 @@ function Card({
   label,
   value,
   hint,
+  accent,
 }: {
   label: string;
   value: string;
   hint?: string;
+  accent?: "cyan" | "ocre" | "navy" | "yellow";
 }) {
+  const accentBar =
+    accent === "cyan"
+      ? "bg-cyan-club"
+      : accent === "ocre"
+        ? "bg-ocre"
+        : accent === "yellow"
+          ? "bg-yellow-club"
+          : "bg-navy";
   return (
-    <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm">
+    <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm relative overflow-hidden">
+      <span
+        className={`absolute left-0 top-0 bottom-0 w-1 ${accentBar}`}
+        aria-hidden="true"
+      />
       <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
       <p className="mt-1 text-2xl font-extrabold text-navy">{value}</p>
       {hint ? <p className="text-xs text-gray-500 mt-1">{hint}</p> : null}
@@ -183,18 +215,28 @@ function TabLink({
   active,
   href,
   children,
+  accent,
 }: {
   active: boolean;
   href: string;
   children: React.ReactNode;
+  accent?: "cyan" | "ocre" | "navy" | "yellow";
 }) {
+  const activeColor =
+    accent === "cyan"
+      ? "border-cyan-club text-cyan-club"
+      : accent === "ocre"
+        ? "border-ocre text-ocre"
+        : accent === "yellow"
+          ? "border-yellow-hover text-yellow-hover"
+          : "border-navy text-navy";
   return (
     <Link
       href={href}
-      className={`px-4 py-2 rounded-t-lg text-sm font-semibold whitespace-nowrap ${
+      className={`px-4 py-2 rounded-t-lg text-sm font-semibold whitespace-nowrap transition-colors ${
         active
-          ? "bg-white text-navy border-x border-t border-gray-200"
-          : "text-gray-500 hover:text-navy"
+          ? `bg-white border-x border-t border-b-2 ${activeColor}`
+          : "text-gray-500 hover:text-navy hover:bg-white/50"
       }`}
     >
       {children}
