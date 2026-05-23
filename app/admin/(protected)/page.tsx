@@ -153,6 +153,7 @@ export default async function AdminDashboardPage({
         >
           Organisation Stages
         </TabLink>
+        {/* Planning École masqué pour le moment — réactivable en décommentant
         <TabLink
           active={tab === "planning"}
           href="/admin?tab=planning"
@@ -160,6 +161,7 @@ export default async function AdminDashboardPage({
         >
           Planning École
         </TabLink>
+        */}
       </div>
 
       {tab === "stages" ? (
