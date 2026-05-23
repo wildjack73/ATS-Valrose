@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 
 export const metadata: Metadata = {
   title: "Inscriptions — ATS Valrose",
@@ -14,38 +15,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="min-h-full flex flex-col">
-        <header className="sticky top-0 z-40 bg-navy/95 backdrop-blur text-white shadow-sm border-b border-white/5">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group"
-              aria-label="Accueil ATS Valrose"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo-club.png"
-                alt="ATS Valrose"
-                className="h-10 w-auto sm:h-12 transition-transform group-hover:scale-105"
-              />
-              <div className="hidden sm:flex flex-col leading-tight">
-                <span className="font-bold tracking-wide">ATS&nbsp;VALROSE</span>
-                <span className="text-[10px] uppercase tracking-widest text-white/60">
-                  Padel · Tennis · Nice
-                </span>
-              </div>
-            </Link>
-
-            <nav className="flex items-center gap-1 sm:gap-2 text-sm">
-              <NavLink href="/stages" accent="cyan">
-                Stages
-              </NavLink>
-              <NavLink href="/ecole" accent="ocre">
-                École
-              </NavLink>
-              <NavLink href="/tarifs">Tarifs</NavLink>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
 
         <main className="flex-1">{children}</main>
 
@@ -79,27 +49,3 @@ export default function RootLayout({
   );
 }
 
-function NavLink({
-  href,
-  children,
-  accent,
-}: {
-  href: string;
-  children: React.ReactNode;
-  accent?: "cyan" | "ocre";
-}) {
-  const hover =
-    accent === "ocre"
-      ? "hover:text-ocre-light"
-      : accent === "cyan"
-        ? "hover:text-cyan-light"
-        : "hover:text-yellow-club";
-  return (
-    <Link
-      href={href}
-      className={`px-3 py-1.5 rounded-md text-white/85 ${hover} hover:bg-white/5 transition-colors font-medium`}
-    >
-      {children}
-    </Link>
-  );
-}
