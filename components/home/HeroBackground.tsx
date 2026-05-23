@@ -7,69 +7,63 @@
 export function HeroBackground() {
   return (
     <>
-      {/* ===== Court de tennis détaillé (vue de dessus stylisée) ===== */}
+      {/* ===== Court de tennis vue de dessus (orientation paysage) =====
+          baselines à gauche/droite, filet vertical au centre */}
       <svg
         className="absolute inset-0 w-full h-full opacity-25 pointer-events-none"
         viewBox="0 0 1200 600"
         preserveAspectRatio="xMidYMid slice"
         aria-hidden="true"
       >
+        {/* Léger remplissage de surface */}
+        <rect
+          x="60"
+          y="80"
+          width="1080"
+          height="440"
+          fill="white"
+          opacity="0.03"
+        />
+
         <g
           stroke="white"
-          strokeWidth="2.5"
+          strokeWidth="3"
           fill="none"
-          strokeLinejoin="round"
+          strokeLinejoin="miter"
+          strokeLinecap="square"
         >
-          {/* Bord extérieur du court (doubles) */}
-          <rect x="80" y="60" width="1040" height="480" rx="2" />
+          {/* Bord extérieur (doubles) */}
+          <rect x="60" y="80" width="1080" height="440" />
 
-          {/* Couloir gauche (entre simples et doubles) */}
-          <line x1="80" y1="60" x2="80" y2="540" />
-          <line x1="140" y1="60" x2="140" y2="540" />
+          {/* Couloirs (singles sidelines) — lignes parallèles aux baselines */}
+          <line x1="60" y1="120" x2="1140" y2="120" />
+          <line x1="60" y1="480" x2="1140" y2="480" />
 
-          {/* Couloir droit */}
-          <line x1="1060" y1="60" x2="1060" y2="540" />
-          <line x1="1120" y1="60" x2="1120" y2="540" />
+          {/* Lignes de service (verticales, parallèles au filet) */}
+          <line x1="400" y1="120" x2="400" y2="480" />
+          <line x1="800" y1="120" x2="800" y2="480" />
 
-          {/* Ligne de fond (en haut/bas) — déjà dans le rect, on ajoute les
-              marques centrales (T marks) */}
-          <line x1="600" y1="56" x2="600" y2="68" strokeWidth="3" />
-          <line x1="600" y1="532" x2="600" y2="544" strokeWidth="3" />
+          {/* Ligne médiane de service (entre les 2 lignes de service) */}
+          <line x1="400" y1="300" x2="800" y2="300" />
 
-          {/* Filet (ligne centrale verticale, plus épaisse) */}
-          <line x1="600" y1="60" x2="600" y2="540" strokeWidth="4" />
-          {/* Maille filet (suggéré par tirets) */}
-          <line
-            x1="600"
-            y1="60"
-            x2="600"
-            y2="540"
-            stroke="white"
-            strokeWidth="14"
-            strokeDasharray="4 6"
-            opacity="0.35"
-          />
+          {/* Center marks au milieu des baselines (gauche + droite) */}
+          <line x1="60" y1="300" x2="84" y2="300" strokeWidth="4" />
+          <line x1="1116" y1="300" x2="1140" y2="300" strokeWidth="4" />
 
-          {/* Lignes de service (parallèles au filet, à mi-distance) */}
-          <line x1="140" y1="200" x2="1060" y2="200" />
-          <line x1="140" y1="400" x2="1060" y2="400" />
-
-          {/* Ligne centrale de service (perpendiculaire au filet) */}
-          <line x1="140" y1="300" x2="1060" y2="300" />
-
-          {/* Cercle de service (touche déco non-réglo mais ça fait court) */}
-          <circle cx="600" cy="300" r="45" />
-          <circle cx="600" cy="300" r="6" fill="white" opacity="0.4" />
+          {/* Filet (vertical, plus épais) */}
+          <line x1="600" y1="80" x2="600" y2="520" strokeWidth="5" />
         </g>
 
-        {/* Surface du court avec léger remplissage pour suggérer la couleur */}
-        <rect
-          x="80"
-          y="60"
-          width="1040"
-          height="480"
-          fill="white"
-          opacity="0.02"
+        {/* Maille du filet (pointillés en surcouche) */}
+        <line
+          x1="600"
+          y1="80"
+          x2="600"
+          y2="520"
+          stroke="white"
+          strokeWidth="18"
+          strokeDasharray="3 5"
+          opacity="0.25"
         />
       </svg>
 
