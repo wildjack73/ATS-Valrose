@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { TarifsBundle, CoursEcole } from "@/lib/data/tarifs-types";
 import { ecoleFormSchema, type EcoleFormInput } from "@/lib/schemas/ecole";
 import { Field, inputClass } from "@/components/ui/Field";
+import { NiveauSelect } from "@/components/ui/NiveauSelect";
 import { Section } from "@/components/ui/Section";
 
 const MODES_REGLEMENT = [
@@ -214,11 +215,16 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
           htmlFor="niveau"
           error={errors.niveau?.message}
         >
-          <input
-            id="niveau"
-            type="text"
-            className={inputClass}
-            {...register("niveau")}
+          <Controller
+            control={control}
+            name="niveau"
+            render={({ field }) => (
+              <NiveauSelect
+                id="niveau"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
           />
         </Field>
       </Section>

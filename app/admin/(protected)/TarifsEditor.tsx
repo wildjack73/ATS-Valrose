@@ -659,10 +659,26 @@ function SemaineRow({
           <td className="py-2 pr-2">{row.label}</td>
           <td className="py-2 pr-2 text-gray-600 text-xs">{row.date_debut ?? "—"}</td>
           <td className="py-2 pr-2 text-center">
-            {row.ouverte ? "✓" : "✕"}
+            <input
+              type="checkbox"
+              className="accent-navy w-4 h-4 cursor-pointer"
+              checked={row.ouverte}
+              disabled={disabled}
+              onChange={(e) => onSave({ ouverte: e.target.checked })}
+              title="Cliquer pour activer/désactiver l'inscription à cette semaine"
+            />
           </td>
           <td className="py-2 pr-2 text-center">
-            {row.dejeuner_disponible !== false ? "✓" : "✕"}
+            <input
+              type="checkbox"
+              className="accent-navy w-4 h-4 cursor-pointer"
+              checked={row.dejeuner_disponible !== false}
+              disabled={disabled}
+              onChange={(e) =>
+                onSave({ dejeuner_disponible: e.target.checked })
+              }
+              title="Cliquer pour proposer/retirer l'option déjeuner"
+            />
           </td>
           <td className="py-2 pr-2 text-right space-x-2 whitespace-nowrap">
             <button

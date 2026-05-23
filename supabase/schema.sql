@@ -344,3 +344,9 @@ alter table public.semaines_stages
 -- Jours de déjeuner choisis (array de noms de jours)
 alter table public.inscriptions_stages
   add column if not exists dejeuner_jours jsonb;
+
+-- Détails du règlement saisis par l'admin (chèque n°XX, espèces, virement...)
+alter table public.inscriptions_stages
+  add column if not exists paiement_info text;
+alter table public.inscriptions_ecole
+  add column if not exists paiement_info text;

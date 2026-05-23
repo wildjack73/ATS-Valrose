@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
 import {
   formatDateTime,
@@ -36,12 +36,12 @@ export default function EcoleTable({
     router.push(`/admin?${next.toString()}`);
   }
 
-  async function setStatut(id: string, statut: string) {
+  async function patchInscription(id: string, patch: object) {
     startTransition(async () => {
       await fetch(`/api/admin/inscriptions/ecole/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ statut }),
+        body: JSON.stringify(patch),
       });
       router.refresh();
     });
@@ -94,106 +94,213 @@ export default function EcoleTable({
                 </td>
               </tr>
             ) : (
-              rows.map((r) => {
-                const dispo = [
-                  r.dispo_mercredi ? `Mer: ${r.dispo_mercredi}` : null,
-                  r.dispo_samedi ? `Sam: ${r.dispo_samedi}` : null,
-                  r.dispo_semaine ? `Sem: ${r.dispo_semaine}` : null,
-                ]
-                  .filter(Boolean)
-                  .join(" • ");
-                return (
-                  <tr key={r.id} className="border-t hover:bg-gray-50">
-                    <td className="p-3 whitespace-nowrap text-gray-600">
-                      {formatDateTime(r.created_at)}
-                    </td>
-                    <td className="p-3">
-                      <div className="font-semibold text-navy">
-                        {r.prenom} {r.nom}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {age(r.date_naissance)} ans
-                        {r.niveau ? ` • ${r.niveau}` : ""}
-                      </div>
-                    </td>
-                    <td className="p-3 text-xs">
-                      <div>{r.email}</div>
-                      <div className="text-gray-500">{r.telephone}</div>
-                      <div className="text-gray-500">
-                        {r.code_postal_ville}
-                      </div>
-                    </td>
-                    <td className="p-3 text-xs space-y-0.5">
-                      {coursTennisLabels(r.cours_tennis) ? (
-                        <div>
-                          <span className="text-gray-500">T:</span>{" "}
-                          {coursTennisLabels(r.cours_tennis)}
-                        </div>
-                      ) : null}
-                      {coursPadelLabels(r.cours_padel) ? (
-                        <div>
-                          <span className="text-gray-500">P:</span>{" "}
-                          {coursPadelLabels(r.cours_padel)}
-                        </div>
-                      ) : null}
-                      {r.licence_pickleball ? (
-                        <div className="text-gray-500">+ Pickleball</div>
-                      ) : null}
-                    </td>
-                    <td className="p-3 text-xs text-gray-600">
-                      {dispo || "—"}
-                    </td>
-                    <td className="p-3 text-right font-bold text-navy">
-                      {r.prix_total}€
-                    </td>
-                    <td className="p-3 text-xs">
-                      {modeReglementLabel(r.mode_reglement)}
-                      <div className="text-gray-500">
-                        en {r.nb_paiements} fois
-                      </div>
-                    </td>
-                    <td className="p-3 text-xs">
-                      {licenceFftLabel(r.licence_fft)}
-                    </td>
-                    <td className="p-3">
-                      <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statutBadgeClass(
-                          r.statut,
-                        )}`}
-                      >
-                        {statutLabel(r.statut)}
-                      </span>
-                    </td>
-                    <td className="p-3 whitespace-nowrap">
-                      <button
-                        onClick={() =>
-                          setOpenId(openId === r.id ? null : r.id)
-                        }
-                        className="text-xs text-navy underline hover:text-yellow-hover"
-                      >
-                        {openId === r.id ? "Fermer" : "Statut"}
-                      </button>
-                      {openId === r.id ? (
-                        <div className="absolute z-10 mt-2 rounded-md bg-white border border-gray-200 shadow-lg p-2 flex flex-col gap-1">
-                          {STATUTS.map((s) => (
-                            <button
-                              key={s}
-                              disabled={pending || r.statut === s}
-                              onClick={() => setStatut(r.id, s)}
-                              className="text-left px-3 py-1.5 text-xs rounded hover:bg-gray-100 disabled:opacity-40"
-                            >
-                              Marquer comme {statutLabel(s).toLowerCase()}
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
-                    </td>
-                  </tr>
-                );
-              })
+              rows.map((r) => (
+                <EcoleRowGroup
+                  key={r.id}
+                  row={r}
+                  open={openId === r.id}
+                  toggle={() => setOpenId(openId === r.id ? null : r.id)}
+                  patch={(p) => patchInscription(r.id, p)}
+                  pending={pending}
+                />
+              ))
             )}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function EcoleRowGroup({
+  row,
+  open,
+  toggle,
+  patch,
+  pending,
+}: {
+  row: InscriptionEcoleRow;
+  open: boolean;
+  toggle: () => void;
+  patch: (p: object) => void;
+  pending: boolean;
+}) {
+  const dispo = [
+    row.dispo_mercredi ? `Mer: ${row.dispo_mercredi}` : null,
+    row.dispo_samedi ? `Sam: ${row.dispo_samedi}` : null,
+    row.dispo_semaine ? `Sem: ${row.dispo_semaine}` : null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+
+  return (
+    <>
+      <tr className="border-t hover:bg-gray-50">
+        <td className="p-3 whitespace-nowrap text-gray-600">
+          {formatDateTime(row.created_at)}
+        </td>
+        <td className="p-3">
+          <div className="font-semibold text-navy">
+            {row.prenom} {row.nom}
+          </div>
+          <div className="text-xs text-gray-500">
+            {age(row.date_naissance)} ans
+            {row.niveau ? ` • ${row.niveau}` : ""}
+          </div>
+        </td>
+        <td className="p-3 text-xs">
+          <div>{row.email}</div>
+          <div className="text-gray-500">{row.telephone}</div>
+          <div className="text-gray-500">{row.code_postal_ville}</div>
+        </td>
+        <td className="p-3 text-xs space-y-0.5">
+          {coursTennisLabels(row.cours_tennis) ? (
+            <div>
+              <span className="text-gray-500">T:</span>{" "}
+              {coursTennisLabels(row.cours_tennis)}
+            </div>
+          ) : null}
+          {coursPadelLabels(row.cours_padel) ? (
+            <div>
+              <span className="text-gray-500">P:</span>{" "}
+              {coursPadelLabels(row.cours_padel)}
+            </div>
+          ) : null}
+          {row.licence_pickleball ? (
+            <div className="text-gray-500">+ Pickleball</div>
+          ) : null}
+        </td>
+        <td className="p-3 text-xs text-gray-600">{dispo || "—"}</td>
+        <td className="p-3 text-right font-bold text-navy">
+          {row.prix_total}€
+        </td>
+        <td className="p-3 text-xs">
+          {modeReglementLabel(row.mode_reglement)}
+          <div className="text-gray-500">en {row.nb_paiements} fois</div>
+        </td>
+        <td className="p-3 text-xs">{licenceFftLabel(row.licence_fft)}</td>
+        <td className="p-3">
+          <span
+            className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${statutBadgeClass(
+              row.statut,
+            )}`}
+          >
+            {statutLabel(row.statut)}
+          </span>
+        </td>
+        <td className="p-3 whitespace-nowrap">
+          <button
+            onClick={toggle}
+            className="text-xs text-navy underline hover:text-yellow-hover"
+          >
+            {open ? "Fermer" : "Éditer"}
+          </button>
+        </td>
+      </tr>
+      {open ? (
+        <tr className="border-t bg-ocre/5">
+          <td colSpan={10} className="p-4">
+            <EcoleEditPanel row={row} patch={patch} pending={pending} />
+          </td>
+        </tr>
+      ) : null}
+    </>
+  );
+}
+
+function EcoleEditPanel({
+  row,
+  patch,
+  pending,
+}: {
+  row: InscriptionEcoleRow;
+  patch: (p: object) => void;
+  pending: boolean;
+}) {
+  const [statut, setStatut] = useState(row.statut);
+  const [paiement, setPaiement] = useState(row.paiement_info ?? "");
+  const [notes, setNotes] = useState(row.notes_admin ?? "");
+
+  useEffect(() => {
+    setStatut(row.statut);
+    setPaiement(row.paiement_info ?? "");
+    setNotes(row.notes_admin ?? "");
+  }, [row.statut, row.paiement_info, row.notes_admin]);
+
+  function save() {
+    patch({ statut, paiement_info: paiement, notes_admin: notes });
+  }
+
+  const dirty =
+    statut !== row.statut ||
+    paiement !== (row.paiement_info ?? "") ||
+    notes !== (row.notes_admin ?? "");
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+          Statut :
+        </span>
+        {STATUTS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            disabled={pending}
+            onClick={() => setStatut(s)}
+            className={`text-xs px-3 py-1.5 rounded font-semibold border ${
+              statut === s
+                ? statutBadgeClass(s) + " border-current"
+                : "bg-white border-gray-300 hover:border-navy text-gray-700"
+            }`}
+          >
+            {statutLabel(s)}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-xs font-semibold text-gray-600 uppercase">
+            Comment réglé
+          </span>
+          <input
+            type="text"
+            value={paiement}
+            onChange={(e) => setPaiement(e.target.value)}
+            placeholder="ex: 4 chèques mensuels n°123-126, espèces…"
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-gray-600 uppercase">
+            Commentaire admin
+          </span>
+          <input
+            type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Note privée (ne sera pas envoyée à la famille)"
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between">
+        {row.notes ? (
+          <div className="text-xs text-gray-600">
+            <strong>Note du parent :</strong> {row.notes}
+          </div>
+        ) : (
+          <span />
+        )}
+        <button
+          onClick={save}
+          disabled={pending || !dirty}
+          className="rounded bg-navy text-white px-4 py-1.5 text-sm font-bold hover:bg-navy-dark disabled:opacity-40"
+        >
+          {pending ? "…" : "Enregistrer"}
+        </button>
       </div>
     </div>
   );

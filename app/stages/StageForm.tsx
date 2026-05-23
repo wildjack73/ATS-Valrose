@@ -14,6 +14,7 @@ import {
 } from "@/lib/data/tarifs-types";
 import { stageFormSchema, type StageFormInput } from "@/lib/schemas/stage";
 import { Field, inputClass } from "@/components/ui/Field";
+import { NiveauSelect } from "@/components/ui/NiveauSelect";
 import { Section } from "@/components/ui/Section";
 
 type DaySelection = Record<string, string>; // jour -> optionCode | ""
@@ -243,13 +244,17 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
           label="Niveau tennis (si connu)"
           htmlFor="niveau"
           error={errors.niveau?.message}
-          hint="Ex: rouge, orange, vert, jaune, 30/5, débutant…"
         >
-          <input
-            id="niveau"
-            type="text"
-            className={inputClass}
-            {...register("niveau")}
+          <Controller
+            control={control}
+            name="niveau"
+            render={({ field }) => (
+              <NiveauSelect
+                id="niveau"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
           />
         </Field>
       </Section>

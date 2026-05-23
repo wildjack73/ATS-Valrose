@@ -46,6 +46,7 @@ export interface InscriptionStageRow {
 
   notes: string | null;
   statut: StatutInscription;
+  paiement_info: string | null;
   notes_admin: string | null;
 }
 
@@ -86,6 +87,7 @@ export interface InscriptionEcoleRow {
 
   notes: string | null;
   statut: StatutInscription;
+  paiement_info: string | null;
   notes_admin: string | null;
 }
 
