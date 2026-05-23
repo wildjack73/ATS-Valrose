@@ -50,6 +50,88 @@ body {
   border: 0;
 }
 
+/* === Animations premium ==================================================== */
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, -25px) rotate(45deg);
+  }
+  50% {
+    transform: translate(-15px, -45px) rotate(90deg);
+  }
+  75% {
+    transform: translate(-25px, -15px) rotate(135deg);
+  }
+}
+
+.animate-float {
+  animation: float 10s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 15s ease infinite;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out both;
+}
+
+/* Carte 3D au hover */
+.card-3d {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 25px 50px -12px rgba(13, 46, 63, 0.25);
+}
+
+/* Scroll indicator */
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+.animate-scroll-bounce {
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+/* Respecter prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-pulse-slow,
+  .animate-gradient-x,
+  .animate-fade-in-up,
+  .animate-scroll-bounce {
+    animation: none !important;
+  }
+}
+
 /* === Impression ============================================================ */
 @media print {
   body {
