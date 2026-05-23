@@ -315,20 +315,24 @@ function Check() {
 function IconBall({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
+      {/* Boule */}
       <circle cx="32" cy="32" r="28" fill="currentColor" />
+      {/* Couture tennis : 2 arcs qui se croisent en S (look balle de tennis) */}
       <path
-        d="M5 32 Q32 12 59 32"
+        d="M 8 24 Q 32 40 56 24"
         stroke="white"
-        strokeWidth="2"
+        strokeWidth="2.5"
         fill="none"
-        opacity="0.4"
+        opacity="0.85"
+        strokeLinecap="round"
       />
       <path
-        d="M5 32 Q32 52 59 32"
+        d="M 8 40 Q 32 24 56 40"
         stroke="white"
-        strokeWidth="2"
+        strokeWidth="2.5"
         fill="none"
-        opacity="0.4"
+        opacity="0.85"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -337,23 +341,41 @@ function IconBall({ className }: { className?: string }) {
 function IconRacket({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
-      <ellipse
-        cx="24"
-        cy="22"
-        rx="16"
-        ry="20"
-        fill="currentColor"
-        transform="rotate(-30 24 22)"
-      />
-      <rect
-        x="38"
-        y="36"
-        width="6"
-        height="22"
-        rx="2"
-        fill="currentColor"
-        transform="rotate(-30 41 47)"
-      />
+      <g transform="rotate(-30 32 32)">
+        {/* Cadre (tête de raquette ovale) */}
+        <ellipse
+          cx="32"
+          cy="20"
+          rx="14"
+          ry="17"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+        />
+        {/* Cordage vertical */}
+        <line x1="22" y1="6" x2="22" y2="34" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="27" y1="4" x2="27" y2="36" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="32" y1="3" x2="32" y2="37" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="37" y1="4" x2="37" y2="36" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="42" y1="6" x2="42" y2="34" stroke="currentColor" strokeWidth="1.2" />
+        {/* Cordage horizontal */}
+        <line x1="19" y1="11" x2="45" y2="11" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="18" y1="16" x2="46" y2="16" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="18" y1="22" x2="46" y2="22" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="19" y1="28" x2="45" y2="28" stroke="currentColor" strokeWidth="1.2" />
+        {/* Cœur de raquette (Y) */}
+        <path
+          d="M 25 36 Q 32 42 32 44 Q 32 42 39 36"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinejoin="round"
+        />
+        {/* Manche */}
+        <rect x="30" y="42" width="4" height="18" rx="1.5" fill="currentColor" />
+        {/* Pommeau */}
+        <rect x="29" y="58" width="6" height="3" rx="1" fill="currentColor" />
+      </g>
     </svg>
   );
 }
@@ -361,24 +383,33 @@ function IconRacket({ className }: { className?: string }) {
 function IconRacketSmall({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
-      <circle
-        cx="15"
-        cy="14"
-        r="9"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        fill="none"
-      />
-      <line
-        x1="22"
-        y1="21"
-        x2="34"
-        y2="33"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <circle cx="15" cy="14" r="3" fill="currentColor" opacity="0.3" />
+      <g transform="rotate(-30 20 20)">
+        {/* Cadre */}
+        <ellipse
+          cx="20"
+          cy="13"
+          rx="9"
+          ry="11"
+          stroke="currentColor"
+          strokeWidth="2"
+          fill="none"
+        />
+        {/* Cordage en croix */}
+        <line x1="20" y1="3" x2="20" y2="24" stroke="currentColor" strokeWidth="1" />
+        <line x1="14" y1="9" x2="26" y2="9" stroke="currentColor" strokeWidth="1" />
+        <line x1="13" y1="13" x2="27" y2="13" stroke="currentColor" strokeWidth="1" />
+        <line x1="14" y1="17" x2="26" y2="17" stroke="currentColor" strokeWidth="1" />
+        {/* Cœur */}
+        <path
+          d="M 16 23 Q 20 28 20 29 Q 20 28 24 23"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          fill="none"
+          strokeLinejoin="round"
+        />
+        {/* Manche */}
+        <rect x="18.5" y="27" width="3" height="11" rx="1" fill="currentColor" />
+      </g>
     </svg>
   );
 }
