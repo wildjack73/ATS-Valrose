@@ -17,6 +17,12 @@ import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
 import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 import TarifsEditor from "./TarifsEditor";
+import PlanningEcole from "./PlanningEcole";
+import {
+  fetchGroupesEcole,
+  fetchCoaches,
+  fetchInscriptionsSansGroupe,
+} from "@/lib/admin/planning-queries";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +47,9 @@ export default async function AdminDashboardPage({
         ? "historique"
         : sp.tab === "tarifs"
           ? "tarifs"
-          : "stages";
+          : sp.tab === "planning"
+            ? "planning"
+            : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : permettre de visualiser/éditer n'importe quelle saison
@@ -59,6 +67,7 @@ export default async function AdminDashboardPage({
     historiqueEcole,
     bundle,
     saisons,
+    coaches,
   ] = await Promise.all([
     fetchStages({ semaine: sp.semaine, statut: sp.statut }),
     fetchEcole({ statut: sp.statut }),
@@ -67,7 +76,17 @@ export default async function AdminDashboardPage({
     fetchHistoriqueEcole(),
     targetSaisonPromise,
     listSaisons(),
+    fetchCoaches(),
   ]);
+
+  // Planning : on charge groupes + non-placés seulement si l'onglet est actif
+  const planningData =
+    tab === "planning" && bundle
+      ? await Promise.all([
+          fetchGroupesEcole(bundle.saison.id),
+          fetchInscriptionsSansGroupe(bundle.saison.id),
+        ])
+      : null;
 
   const totalStagesEnAttente = stages
     .filter((s) => s.statut === "en_attente")
@@ -127,6 +146,13 @@ export default async function AdminDashboardPage({
         >
           Tarifs
         </TabLink>
+        <TabLink
+          active={tab === "planning"}
+          href="/admin?tab=planning"
+          accent="ocre"
+        >
+          Planning
+        </TabLink>
       </div>
 
       {tab === "stages" ? (
@@ -146,6 +172,19 @@ export default async function AdminDashboardPage({
             Aucune saison configurée. Exécute{" "}
             <code className="bg-white px-1 rounded">supabase/seed-2026-2027.sql</code>{" "}
             dans Supabase.
+          </div>
+        )
+      ) : tab === "planning" ? (
+        bundle && planningData ? (
+          <PlanningEcole
+            saisonId={bundle.saison.id}
+            groupes={planningData[0]}
+            coaches={coaches}
+            inscriptionsSansGroupe={planningData[1]}
+          />
+        ) : (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
+            Aucune saison active pour gérer le planning.
           </div>
         )
       ) : (

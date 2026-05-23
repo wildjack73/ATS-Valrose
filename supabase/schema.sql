@@ -354,3 +354,48 @@ alter table public.inscriptions_ecole
 -- Description optionnelle par cours école (âge, durée, public…)
 alter table public.tarifs_cours_ecole
   add column if not exists description text;
+
+-- ============================================================================
+-- PLANNING ÉCOLE : coaches + groupes + assignation des élèves
+-- ============================================================================
+
+create table if not exists public.coaches (
+  id uuid primary key default gen_random_uuid(),
+  nom text not null,
+  couleur text,                      -- hex pour code couleur dans le planning
+  actif boolean default true,
+  order_idx int default 0,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.groupes_ecole (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  jour text not null check (jour in ('lundi','mardi','mercredi','jeudi','vendredi','samedi')),
+  heure_debut time not null,
+  heure_fin time,
+  court text,                        -- 'Court 3', 'Padel 1', 'Padel 2'
+  coach_id uuid references public.coaches(id) on delete set null,
+  niveau text,                       -- 'Baby tennis', 'Rouge', 'Adultes', etc.
+  capacite_max int default 8,
+  notes text,
+  order_idx int default 0,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_groupes_saison on public.groupes_ecole(saison_id);
+create index if not exists idx_groupes_jour on public.groupes_ecole(jour, heure_debut);
+
+-- Liaison N-N : un élève peut être dans plusieurs groupes (tennis + padel par ex)
+create table if not exists public.inscriptions_groupes (
+  inscription_id uuid not null references public.inscriptions_ecole(id) on delete cascade,
+  groupe_id uuid not null references public.groupes_ecole(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (inscription_id, groupe_id)
+);
+
+create index if not exists idx_inscriptions_groupes_groupe on public.inscriptions_groupes(groupe_id);
+
+alter table public.coaches enable row level security;
+alter table public.groupes_ecole enable row level security;
+alter table public.inscriptions_groupes enable row level security;
