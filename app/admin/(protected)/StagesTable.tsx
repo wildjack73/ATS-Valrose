@@ -94,21 +94,20 @@ export default function StagesTable({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
             <tr>
-              <th className="text-left p-3">Date</th>
+              <th className="text-left p-3 w-24">Date</th>
               <th className="text-left p-3">Enfant</th>
               <th className="text-left p-3">Email</th>
-              <th className="text-left p-3">Téléphone</th>
-              <th className="text-left p-3">Semaine</th>
-              <th className="text-left p-3">Formule</th>
-              <th className="text-right p-3">Prix</th>
-              <th className="text-left p-3">Statut</th>
-              <th></th>
+              <th className="text-left p-3 w-32">Téléphone</th>
+              <th className="text-left p-3">Stage</th>
+              <th className="text-right p-3 w-16">Prix</th>
+              <th className="text-left p-3 w-40">Statut</th>
+              <th className="w-32"></th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-gray-500">
+                <td colSpan={8} className="p-8 text-center text-gray-500">
                   Aucune inscription pour le moment.
                 </td>
               </tr>
@@ -149,10 +148,10 @@ function RowGroup({
   return (
     <>
       <tr className={`border-t ${statutRowClass(row.statut)}`}>
-        <td className="p-3 whitespace-nowrap text-gray-600">
+        <td className="p-3 whitespace-nowrap text-gray-600 text-xs align-top">
           {formatDateTime(row.created_at)}
         </td>
-        <td className="p-3">
+        <td className="p-3 align-top">
           <div className="font-semibold text-navy">
             {row.prenom} {row.nom}
           </div>
@@ -161,7 +160,7 @@ function RowGroup({
             {row.niveau ? ` • ${row.niveau}` : ""}
           </div>
         </td>
-        <td className="p-3 text-xs">
+        <td className="p-3 text-xs align-top break-all">
           <a
             href={`mailto:${row.email}`}
             className="text-navy hover:text-yellow-hover hover:underline"
@@ -169,7 +168,7 @@ function RowGroup({
             {row.email}
           </a>
         </td>
-        <td className="p-3 text-xs whitespace-nowrap">
+        <td className="p-3 text-xs whitespace-nowrap align-top">
           <a
             href={`tel:${row.telephone.replace(/\s/g, "")}`}
             className="text-navy hover:text-yellow-hover hover:underline"
@@ -177,18 +176,18 @@ function RowGroup({
             {row.telephone}
           </a>
         </td>
-        <td className="p-3 text-xs">{row.semaine_label}</td>
-        <td className="p-3 text-xs">
-          <div>{formuleLabel(row.formule)}</div>
-          <div className="text-gray-500">
+        <td className="p-3 text-xs align-top">
+          <div className="font-semibold text-navy">{row.semaine_label}</div>
+          <div className="text-gray-600">{formuleLabel(row.formule)}</div>
+          <div className="text-gray-500 text-[11px]">
             {creneauLabel(row.formule_creneau)}
-            {row.formule_dejeuner ? " + déjeuner" : ""}
+            {row.formule_dejeuner ? " · + déjeuner" : ""}
             {row.formule === "formule_4"
               ? f4SelectionLabel(row.formule_4_selection)
               : ""}
           </div>
         </td>
-        <td className="p-3 text-right font-bold text-navy">
+        <td className="p-3 text-right font-bold text-navy align-top whitespace-nowrap">
           {row.prix_total}€
         </td>
         <td className="p-3">
@@ -231,7 +230,7 @@ function RowGroup({
       </tr>
       {open ? (
         <tr className="border-t bg-navy/5">
-          <td colSpan={9} className="p-4">
+          <td colSpan={8} className="p-4">
             <EditPanel row={row} patch={patch} pending={pending} />
           </td>
         </tr>
