@@ -399,3 +399,29 @@ create index if not exists idx_inscriptions_groupes_groupe on public.inscription
 alter table public.coaches enable row level security;
 alter table public.groupes_ecole enable row level security;
 alter table public.inscriptions_groupes enable row level security;
+
+-- ============================================================================
+-- ORGANISATION STAGES : qui coache quoi par semaine/jour/session
+-- ============================================================================
+create table if not exists public.stage_organisations (
+  id uuid primary key default gen_random_uuid(),
+  semaine_id uuid not null references public.semaines_stages(id) on delete cascade,
+  jour text not null check (jour in ('lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche')),
+  session text not null check (session in (
+    'matin',
+    'apres_midi',
+    'soir',
+    'sport_collectifs_matin',
+    'sport_collectifs_apres_midi',
+    'repas',
+    'permanence_matin',
+    'permanence_apres_midi'
+  )),
+  coach_id uuid references public.coaches(id) on delete cascade,
+  notes text,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_stage_org_semaine on public.stage_organisations(semaine_id, jour);
+
+alter table public.stage_organisations enable row level security;

@@ -19,11 +19,16 @@ import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 import TarifsEditor from "./TarifsEditor";
 import PlanningEcole from "./PlanningEcole";
 import DashboardHeader from "./DashboardHeader";
+import StagesOrganisation from "./StagesOrganisation";
 import {
   fetchGroupesEcole,
   fetchCoaches,
   fetchInscriptionsSansGroupe,
 } from "@/lib/admin/planning-queries";
+import {
+  fetchStageOrganisation,
+  fetchInscriptionsCountByDay,
+} from "@/lib/admin/stages-org-queries";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +36,7 @@ type SearchParams = Promise<{
   tab?: string;
   histo?: string;
   semaine?: string;
+  semaineId?: string;
   statut?: string;
   saison?: string;
 }>;
@@ -50,7 +56,9 @@ export default async function AdminDashboardPage({
           ? "tarifs"
           : sp.tab === "planning"
             ? "planning"
-            : "stages";
+            : sp.tab === "stages-org"
+              ? "stages-org"
+              : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : permettre de visualiser/éditer n'importe quelle saison
@@ -89,6 +97,20 @@ export default async function AdminDashboardPage({
         ])
       : null;
 
+  // Stages organisation : charger seulement si onglet actif + semaine choisie
+  const stageOrgData =
+    tab === "stages-org" && bundle && sp.semaineId
+      ? await (async () => {
+          const semaine = bundle.semaines.find((s) => s.id === sp.semaineId);
+          if (!semaine) return null;
+          const [org, counts] = await Promise.all([
+            fetchStageOrganisation(semaine.id),
+            fetchInscriptionsCountByDay(semaine.code),
+          ]);
+          return { semaine, org, counts };
+        })()
+      : null;
+
   const totalArchives = historique.length + historiqueEcole.length;
 
   return (
@@ -125,11 +147,18 @@ export default async function AdminDashboardPage({
           Tarifs
         </TabLink>
         <TabLink
+          active={tab === "stages-org"}
+          href="/admin?tab=stages-org"
+          accent="cyan"
+        >
+          Organisation Stages
+        </TabLink>
+        <TabLink
           active={tab === "planning"}
           href="/admin?tab=planning"
           accent="ocre"
         >
-          Planning
+          Planning École
         </TabLink>
       </div>
 
@@ -163,6 +192,26 @@ export default async function AdminDashboardPage({
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
             Aucune saison active pour gérer le planning.
+          </div>
+        )
+      ) : tab === "stages-org" ? (
+        bundle ? (
+          <StagesOrganisation
+            semaines={bundle.semaines}
+            currentSemaineId={stageOrgData?.semaine.id}
+            coaches={coaches}
+            organisation={
+              stageOrgData
+                ? Object.fromEntries(stageOrgData.org.byKey.entries())
+                : {}
+            }
+            inscriptionsCount={
+              stageOrgData?.counts ?? { total: 0, matin: {}, apresMidi: {} }
+            }
+          />
+        ) : (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
+            Aucune saison active.
           </div>
         )
       ) : (
