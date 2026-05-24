@@ -357,15 +357,12 @@ function RallyBall() {
         </radialGradient>
       </defs>
 
-      {/* Ombre douce sous la balle */}
-      <ellipse cx="40" cy="74" rx="22" ry="3" fill="black" opacity="0.22" />
-
       {/* Boule */}
-      <circle cx="40" cy="36" r="32" fill="url(#rb-grad)" />
+      <circle cx="40" cy="40" r="34" fill="url(#rb-grad)" />
 
       {/* Couture en S — la signature visuelle d'une balle de tennis */}
       <path
-        d="M 10 28 Q 26 46 40 36 T 70 28"
+        d="M 10 32 Q 26 50 40 40 T 70 32"
         stroke="white"
         strokeWidth="3"
         fill="none"
@@ -374,7 +371,7 @@ function RallyBall() {
       />
 
       {/* Reflet brillant en haut-gauche pour effet 3D */}
-      <ellipse cx="29" cy="20" rx="12" ry="6" fill="url(#rb-shine)" />
+      <ellipse cx="29" cy="24" rx="12" ry="6" fill="url(#rb-shine)" />
     </svg>
   );
 }
