@@ -398,26 +398,36 @@ function Check() {
 
 function IconBall({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
+    <svg viewBox="0 0 80 80" className={className} aria-hidden="true">
       {/* Boule */}
-      <circle cx="32" cy="32" r="28" fill="currentColor" />
-      {/* Couture qui se voit sur le bord gauche (parenthèse) */}
-      <path
-        d="M 14 8 Q 4 32 14 56"
-        stroke="white"
-        strokeWidth="2.5"
+      <circle cx="40" cy="40" r="34" fill="currentColor" />
+      {/* Anneau subtil pour effet 3D bombé */}
+      <circle
+        cx="40"
+        cy="40"
+        r="34"
         fill="none"
-        opacity="0.85"
-        strokeLinecap="round"
+        stroke="white"
+        strokeWidth="1"
+        opacity="0.4"
       />
-      {/* Couture qui se voit sur le bord droit (parenthèse miroir) */}
+      {/* Couture en S — signature visuelle d'une balle de tennis */}
       <path
-        d="M 50 8 Q 60 32 50 56"
+        d="M 8 32 Q 26 50 40 40 T 72 32"
         stroke="white"
-        strokeWidth="2.5"
+        strokeWidth="3"
         fill="none"
-        opacity="0.85"
         strokeLinecap="round"
+        opacity="0.7"
+      />
+      {/* Brillance en haut-gauche */}
+      <ellipse
+        cx="28"
+        cy="22"
+        rx="11"
+        ry="5"
+        fill="white"
+        opacity="0.35"
       />
     </svg>
   );
