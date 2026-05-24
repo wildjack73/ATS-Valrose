@@ -11,18 +11,19 @@ export default function HomePage() {
         <HeroBackground />
 
         {/* === DESKTOP : boutons absolus dans les coins du hero ============ */}
-        {/* Le wrapper absolu couvre toute la section. Les 2 boutons et la
-            balle sont positionnés verticalement à 50% (alignés avec le
-            titre), horizontalement aux extrémités. */}
+        {/* Le wrapper absolu couvre toute la section. À l'intérieur on
+            utilise un flex items-center justify-between pour répartir les
+            2 boutons aux 2 extrémités de manière fiable (pas de right-
+            qui peut foirer si la largeur du parent n'est pas calculée). */}
         <div
           aria-hidden="false"
           className="hidden md:block absolute inset-0 pointer-events-none animate-fade-in-up"
           style={{ animationDelay: "400ms" }}
         >
-          <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20">
+          <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20 flex items-center justify-between">
             <Link
               href="/stages"
-              className="impact-pulse-left group absolute left-6 sm:left-10 lg:left-20 top-1/2 -translate-y-1/2 pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-[calc(50%+2px)]"
+              className="impact-pulse-left group pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 S&apos;inscrire à un stage
@@ -34,7 +35,7 @@ export default function HomePage() {
 
             <Link
               href="/ecole"
-              className="impact-pulse-right group absolute right-6 sm:right-10 lg:right-20 top-1/2 -translate-y-1/2 pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-[calc(50%+2px)]"
+              className="impact-pulse-right group pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
             >
               <span className="inline-flex items-center gap-2">
                 S&apos;inscrire à l&apos;école
