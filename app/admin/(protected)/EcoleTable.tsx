@@ -266,6 +266,37 @@ function EcoleRowGroup({
           </div>
         </td>
       </tr>
+      {!open && (row.notes || row.notes_admin || row.paiement_info) ? (
+        <tr
+          onClick={toggle}
+          className={`cursor-pointer ${statutRowClass(row.statut)}`}
+        >
+          <td colSpan={8} className="px-3 pb-2 pt-0">
+            <div className="ml-5 text-xs space-y-1">
+              {row.notes ? (
+                <div className="text-gray-700">
+                  <span className="font-semibold text-clay">
+                    💬 Note famille&nbsp;:
+                  </span>{" "}
+                  <span className="italic">{row.notes}</span>
+                </div>
+              ) : null}
+              {row.notes_admin ? (
+                <div className="text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                  <span className="font-semibold">🔒 Note admin&nbsp;:</span>{" "}
+                  {row.notes_admin}
+                </div>
+              ) : null}
+              {row.paiement_info ? (
+                <div className="text-emerald-900 bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
+                  <span className="font-semibold">💶 Règlement&nbsp;:</span>{" "}
+                  {row.paiement_info}
+                </div>
+              ) : null}
+            </div>
+          </td>
+        </tr>
+      ) : null}
       {open ? (
         <tr className="border-t bg-ocre/5">
           <td colSpan={8} className="p-4">
