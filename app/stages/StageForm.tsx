@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -83,9 +83,21 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
     (f) => f.code === formuleCode,
   );
   const semaineChoisie = SEMAINES.find((s) => s.code === semaineCode);
+  // Le déjeuner ne s'affiche QUE si la formule le propose ET qu'une semaine
+  // a bien été choisie ET que cette semaine accepte le déjeuner.
+  const semaineAccepteDejeuner =
+    !!semaineChoisie && semaineChoisie.dejeuner_disponible !== false;
   const dejeunerActif =
-    !!formule?.has_dejeuner_option &&
-    semaineChoisie?.dejeuner_disponible !== false;
+    !!formule?.has_dejeuner_option && semaineAccepteDejeuner;
+
+  // Reset auto des jours déjeuner si on bascule sur une semaine sans déjeuner
+  // (ou si on désélectionne la semaine). Évite la facturation fantôme.
+  useEffect(() => {
+    if (!semaineAccepteDejeuner && dejeunerJours.length > 0) {
+      setValue("formule_dejeuner_jours", [], { shouldValidate: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [semaineCode, semaineAccepteDejeuner]);
 
   function updateDay(jour: string, option: string) {
     const next = { ...daySelection, [jour]: option };
@@ -265,9 +277,71 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
         </Field>
       </Section>
 
-      {/* 3. Choix de la formule */}
+      {/* 3. Choix de la semaine (placé AVANT la formule pour que les
+            sous-options déjeuner sachent si elles peuvent s'afficher) */}
       <Section
         step={3}
+        title="Choix de la semaine"
+        description="Sélectionnez la semaine de stage."
+      >
+        <Controller
+          control={control}
+          name="semaine"
+          render={({ field }) => (
+            <div className="space-y-4">
+              {Object.entries(groupedSemaines).map(([periode, items]) => (
+                <div key={periode}>
+                  <h3 className="text-sm font-bold text-navy mb-2 uppercase tracking-wide">
+                    {periode}
+                  </h3>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {items.map((s) => {
+                      const checked = field.value === s.code;
+                      return (
+                        <label
+                          key={s.code}
+                          className={`flex items-center gap-3 rounded-md border px-3 py-2 cursor-pointer text-sm ${
+                            checked
+                              ? "border-yellow-club bg-yellow-club/10"
+                              : "border-gray-300 hover:border-cyan-club"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            className="accent-navy"
+                            value={s.code}
+                            checked={checked}
+                            onChange={() => field.onChange(s.code)}
+                          />
+                          <span className="flex-1">{s.label}</span>
+                          {s.dejeuner_disponible === false ? (
+                            <span className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                              sans déjeuner
+                            </span>
+                          ) : null}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              {Object.keys(groupedSemaines).length === 0 ? (
+                <p className="text-sm text-gray-500 italic">
+                  Aucune semaine disponible pour le moment. Reviens
+                  prochainement ou contacte le club.
+                </p>
+              ) : null}
+            </div>
+          )}
+        />
+        {errors.semaine ? (
+          <p className="text-xs text-red-600">{errors.semaine.message}</p>
+        ) : null}
+      </Section>
+
+      {/* 4. Choix de la formule */}
+      <Section
+        step={4}
         title="Choix de la formule"
         description="Choisissez la formule qui correspond à votre enfant."
       >
@@ -513,62 +587,6 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
               </p>
             ) : null}
           </div>
-        ) : null}
-      </Section>
-
-      {/* 4. Semaine */}
-      <Section
-        step={4}
-        title="Choix de la semaine"
-        description="Sélectionnez la semaine de stage."
-      >
-        <Controller
-          control={control}
-          name="semaine"
-          render={({ field }) => (
-            <div className="space-y-4">
-              {Object.entries(groupedSemaines).map(([periode, items]) => (
-                <div key={periode}>
-                  <h3 className="text-sm font-bold text-navy mb-2 uppercase tracking-wide">
-                    {periode}
-                  </h3>
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {items.map((s) => {
-                      const checked = field.value === s.code;
-                      return (
-                        <label
-                          key={s.code}
-                          className={`flex items-center gap-3 rounded-md border px-3 py-2 cursor-pointer text-sm ${
-                            checked
-                              ? "border-yellow-club bg-yellow-club/10"
-                              : "border-gray-300 hover:border-cyan-club"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            className="accent-navy"
-                            value={s.code}
-                            checked={checked}
-                            onChange={() => field.onChange(s.code)}
-                          />
-                          <span>{s.label}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-              {Object.keys(groupedSemaines).length === 0 ? (
-                <p className="text-sm text-gray-500 italic">
-                  Aucune semaine disponible pour le moment. Reviens
-                  prochainement ou contacte le club.
-                </p>
-              ) : null}
-            </div>
-          )}
-        />
-        {errors.semaine ? (
-          <p className="text-xs text-red-600">{errors.semaine.message}</p>
         ) : null}
       </Section>
 
