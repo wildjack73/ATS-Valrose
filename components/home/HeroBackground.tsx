@@ -67,13 +67,12 @@ export function HeroBackground() {
         />
       </svg>
 
-      {/* ===== Balles flottantes ===== */}
+      {/* ===== Balles flottantes (dans les coins, pas au centre) ===== */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <FloatingBall x="6%" y="18%" size={36} delay="0s" duration="8s" />
-        <FloatingBall x="86%" y="14%" size={28} delay="1.5s" duration="10s" />
-        <FloatingBall x="93%" y="72%" size={42} delay="3s" duration="12s" />
-        <FloatingBall x="12%" y="80%" size={24} delay="0.8s" duration="9s" />
-        <FloatingBall x="48%" y="88%" size={32} delay="2s" duration="11s" />
+        <FloatingBall x="4%" y="14%" size={28} delay="0s" duration="9s" />
+        <FloatingBall x="93%" y="10%" size={24} delay="1.5s" duration="11s" />
+        <FloatingBall x="95%" y="78%" size={32} delay="3s" duration="12s" />
+        <FloatingBall x="3%" y="82%" size={26} delay="0.8s" duration="10s" />
       </div>
 
       {/* ===== Gradient lumineux mouvant ===== */}
@@ -101,6 +100,9 @@ function FloatingBall({
   delay: string;
   duration: string;
 }) {
+  // ID unique pour les gradients SVG (sinon ils se chevauchent entre balles)
+  const uid = `${x}-${y}-${size}`.replace(/[^a-z0-9]/gi, "");
+
   return (
     <div
       className="absolute animate-float"
@@ -113,21 +115,42 @@ function FloatingBall({
         animationDuration: duration,
       }}
     >
-      <svg viewBox="0 0 64 64" className="w-full h-full opacity-40">
-        <circle cx="32" cy="32" r="28" fill="#f3c503" />
+      <svg viewBox="0 0 80 80" className="w-full h-full opacity-55">
+        <defs>
+          <radialGradient id={`fb-grad-${uid}`} cx="35%" cy="28%" r="72%">
+            <stop offset="0%" stopColor="#f6fc7d" />
+            <stop offset="55%" stopColor="#c8d935" />
+            <stop offset="100%" stopColor="#8aa01f" />
+          </radialGradient>
+          <radialGradient id={`fb-shine-${uid}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        <circle cx="40" cy="40" r="34" fill={`url(#fb-grad-${uid})`} />
         <path
-          d="M5 32 Q32 12 59 32"
+          d="M 16 14 Q 6 40 16 66"
           stroke="white"
           strokeWidth="2"
           fill="none"
-          opacity="0.5"
+          strokeLinecap="round"
+          opacity="0.85"
         />
         <path
-          d="M5 32 Q32 52 59 32"
+          d="M 64 14 Q 74 40 64 66"
           stroke="white"
           strokeWidth="2"
           fill="none"
-          opacity="0.5"
+          strokeLinecap="round"
+          opacity="0.85"
+        />
+        <ellipse
+          cx="30"
+          cy="22"
+          rx="10"
+          ry="5"
+          fill={`url(#fb-shine-${uid})`}
         />
       </svg>
     </div>
