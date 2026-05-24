@@ -45,8 +45,9 @@ export default function HomePage() {
               </span>
             </Link>
 
-            {/* Rally ball entre les 2 boutons, même niveau vertical */}
-            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/2 -translate-y-1/2 h-0">
+            {/* Rally ball entre les 2 boutons, passe DEVANT eux (z-30 > z-20)
+                et rebondit sur leur dessus (translateY décalé dans rally-y). */}
+            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/2 -translate-y-1/2 h-0 z-30">
               <div className="rally-x">
                 <div className="rally-y">
                   <RallyBall />

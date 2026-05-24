@@ -206,12 +206,15 @@ body {
   transform-origin: center center;
 }
 
+/* Le point bas (0% / 100%) est décalé vers le haut de 50px : la balle
+   atterrit juste au-dessus du bouton (sa base touche le haut du bouton),
+   pas au milieu. Effet « rebondit sur le bouton ». */
 @keyframes rally-y {
   0%, 100% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(-50px) rotate(0deg);
   }
   50% {
-    transform: translateY(-170px) rotate(180deg);
+    transform: translateY(-220px) rotate(180deg);
   }
 }
 
