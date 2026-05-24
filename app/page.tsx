@@ -10,7 +10,8 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-navy via-[#0a3a52] to-cyan-club text-white animate-gradient-x">
         <HeroBackground />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32 text-center">
+        {/* Bloc texte centré (badge + titre + paragraphe) — max-w-6xl */}
+        <div className="relative mx-auto max-w-6xl px-4 pt-20 sm:pt-28 lg:pt-32 text-center">
           <p className="animate-fade-in-up mb-6">
             <span className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase tracking-[0.25em] text-yellow-club font-bold px-4 py-1.5 rounded-full bg-navy-dark/60 backdrop-blur-sm border border-yellow-club/40 shadow-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-club animate-pulse-slow" />
@@ -38,9 +39,12 @@ export default function HomePage() {
             Stages de vacances et école de tennis. Tennis, padel, pickleball,
             multi-activités. Encadré par des moniteurs diplômés d&apos;État.
           </p>
+        </div>
 
+        {/* Bloc boutons — plus large que le titre, vraiment dans les coins */}
+        <div className="relative pt-12 pb-20 sm:pb-28 lg:pb-32">
           <div
-            className="animate-fade-in-up mt-12 relative max-w-6xl mx-auto"
+            className="animate-fade-in-up relative max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20"
             style={{ animationDelay: "400ms" }}
           >
             <div className="flex flex-wrap items-end gap-x-8 gap-y-5 justify-center md:justify-between">
@@ -71,7 +75,7 @@ export default function HomePage() {
             {/* Échange de balle entre les 2 boutons (md+ uniquement) */}
             <div
               aria-hidden
-              className="hidden md:block pointer-events-none absolute inset-x-0 bottom-16 h-0"
+              className="hidden md:block pointer-events-none absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 bottom-16 h-0"
             >
               <div className="rally-x">
                 <div className="rally-y">
