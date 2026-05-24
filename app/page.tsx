@@ -363,19 +363,11 @@ function RallyBall() {
       {/* Boule */}
       <circle cx="40" cy="36" r="32" fill="url(#rb-grad)" />
 
-      {/* Coutures latérales (parenthèses) — classique balle de tennis */}
+      {/* Couture en S — la signature visuelle d'une balle de tennis */}
       <path
-        d="M 16 10 Q 6 36 16 62"
+        d="M 10 28 Q 26 46 40 36 T 70 28"
         stroke="white"
-        strokeWidth="2.4"
-        fill="none"
-        strokeLinecap="round"
-        opacity="0.95"
-      />
-      <path
-        d="M 64 10 Q 74 36 64 62"
-        stroke="white"
-        strokeWidth="2.4"
+        strokeWidth="3"
         fill="none"
         strokeLinecap="round"
         opacity="0.95"

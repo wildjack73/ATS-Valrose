@@ -115,42 +115,26 @@ function FloatingBall({
         animationDuration: duration,
       }}
     >
-      <svg viewBox="0 0 80 80" className="w-full h-full opacity-55">
+      <svg viewBox="0 0 80 80" className="w-full h-full opacity-70">
         <defs>
-          <radialGradient id={`fb-grad-${uid}`} cx="35%" cy="28%" r="72%">
+          <radialGradient id={`fb-grad-${uid}`} cx="35%" cy="28%" r="75%">
             <stop offset="0%" stopColor="#f6fc7d" />
             <stop offset="55%" stopColor="#c8d935" />
-            <stop offset="100%" stopColor="#8aa01f" />
-          </radialGradient>
-          <radialGradient id={`fb-shine-${uid}`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="white" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="white" stopOpacity="0" />
+            <stop offset="100%" stopColor="#7a9019" />
           </radialGradient>
         </defs>
 
+        {/* Boule */}
         <circle cx="40" cy="40" r="34" fill={`url(#fb-grad-${uid})`} />
+
+        {/* Une seule couture en S — plus iconique à petite taille */}
         <path
-          d="M 16 14 Q 6 40 16 66"
+          d="M 12 30 Q 26 46 40 36 T 68 32"
           stroke="white"
-          strokeWidth="2"
+          strokeWidth="3"
           fill="none"
           strokeLinecap="round"
-          opacity="0.85"
-        />
-        <path
-          d="M 64 14 Q 74 40 64 66"
-          stroke="white"
-          strokeWidth="2"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.85"
-        />
-        <ellipse
-          cx="30"
-          cy="22"
-          rx="10"
-          ry="5"
-          fill={`url(#fb-shine-${uid})`}
+          opacity="0.95"
         />
       </svg>
     </div>
