@@ -192,17 +192,17 @@ body {
 
 .rally-x {
   position: absolute;
-  animation: rally-x 7.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  animation: rally-x 9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 @keyframes rally-x {
-  0%, 100% { left: 36px; }
-  50% { left: calc(100% - 36px - 40px); }
+  0%, 100% { left: 60px; }
+  50% { left: calc(100% - 60px - 40px); }
 }
 
 .rally-y {
   display: inline-block;
-  animation: rally-y 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  animation: rally-y 4.5s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   transform-origin: center center;
 }
 
@@ -211,7 +211,7 @@ body {
     transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-130px) rotate(180deg);
+    transform: translateY(-170px) rotate(180deg);
   }
 }
 
@@ -248,7 +248,7 @@ body {
   background: inherit;
   z-index: -1;
   pointer-events: none;
-  animation: impact-pulse-fill 7.2s ease-out infinite;
+  animation: impact-pulse-fill 9s ease-out infinite;
   animation-delay: 0s;
 }
 
@@ -260,8 +260,8 @@ body {
   border: 3px solid currentColor;
   z-index: -1;
   pointer-events: none;
-  animation: impact-pulse-ring 7.2s ease-out infinite;
-  animation-delay: 3.6s;
+  animation: impact-pulse-ring 9s ease-out infinite;
+  animation-delay: 4.5s;
 }
 
 /* Respecter prefers-reduced-motion */

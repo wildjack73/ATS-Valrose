@@ -39,7 +39,7 @@ export default function HomePage() {
           </p>
 
           <div
-            className="animate-fade-in-up mt-12 relative max-w-3xl mx-auto"
+            className="animate-fade-in-up mt-12 relative max-w-6xl mx-auto"
             style={{ animationDelay: "400ms" }}
           >
             <div className="flex flex-wrap items-end gap-x-8 gap-y-5 justify-center md:justify-between">
