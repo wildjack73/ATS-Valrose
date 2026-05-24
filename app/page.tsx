@@ -10,7 +10,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-navy via-[#0a3a52] to-cyan-club text-white animate-gradient-x">
         <HeroBackground />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32">
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32 text-center">
           <p
             className="animate-fade-in-up text-xs uppercase tracking-[0.3em] text-yellow-club font-bold mb-6"
           >
@@ -18,7 +18,7 @@ export default function HomePage() {
           </p>
 
           <h1
-            className="animate-fade-in-up text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-[1.05] max-w-4xl tracking-tight"
+            className="animate-fade-in-up text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-[1.05] tracking-tight"
             style={{ animationDelay: "100ms" }}
           >
             Inscriptions{" "}
@@ -31,7 +31,7 @@ export default function HomePage() {
           </h1>
 
           <p
-            className="animate-fade-in-up mt-8 text-lg sm:text-2xl text-white/85 max-w-2xl leading-relaxed"
+            className="animate-fade-in-up mt-8 text-lg sm:text-2xl text-white/85 max-w-2xl mx-auto leading-relaxed"
             style={{ animationDelay: "250ms" }}
           >
             Stages de vacances et école de tennis. Tennis, padel, pickleball,
@@ -39,7 +39,7 @@ export default function HomePage() {
           </p>
 
           <div
-            className="animate-fade-in-up mt-12 flex flex-wrap gap-x-8 gap-y-5"
+            className="animate-fade-in-up mt-12 flex flex-wrap gap-x-8 gap-y-5 justify-center"
             style={{ animationDelay: "400ms" }}
           >
             <Link
@@ -317,17 +317,18 @@ function IconBall({ className }: { className?: string }) {
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
       {/* Boule */}
       <circle cx="32" cy="32" r="28" fill="currentColor" />
-      {/* Couture tennis : 2 arcs qui se croisent en S (look balle de tennis) */}
+      {/* Couture qui se voit sur le bord gauche (parenthèse) */}
       <path
-        d="M 8 24 Q 32 40 56 24"
+        d="M 14 8 Q 4 32 14 56"
         stroke="white"
         strokeWidth="2.5"
         fill="none"
         opacity="0.85"
         strokeLinecap="round"
       />
+      {/* Couture qui se voit sur le bord droit (parenthèse miroir) */}
       <path
-        d="M 8 40 Q 32 24 56 40"
+        d="M 50 8 Q 60 32 50 56"
         stroke="white"
         strokeWidth="2.5"
         fill="none"
