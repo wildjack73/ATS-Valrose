@@ -168,9 +168,51 @@ export default function StagesOrganisation({
         </div>
       ) : (
         <>
+          {/* En-tête imprimable (caché à l'écran) */}
+          <div className="print-only mb-4" style={{ pageBreakInside: "avoid" }}>
+            <div
+              className="print-only-flex"
+              style={{
+                alignItems: "center",
+                gap: "12pt",
+                borderBottom: "2pt solid #0d2e3f",
+                paddingBottom: "8pt",
+                marginBottom: "12pt",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-club.png"
+                alt="ATS Valrose"
+                style={{ height: "40pt", width: "auto" }}
+              />
+              <div>
+                <div
+                  style={{
+                    fontSize: "16pt",
+                    fontWeight: 800,
+                    color: "#0d2e3f",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  ATS&nbsp;Valrose — Organisation des coachs
+                </div>
+                <div style={{ fontSize: "13pt", color: "#333", marginTop: "2pt" }}>
+                  {currentSemaine.periode} — {currentSemaine.label}
+                </div>
+                <div
+                  style={{ fontSize: "10pt", color: "#666", marginTop: "2pt" }}
+                >
+                  {inscriptionsCount.total} inscription
+                  {inscriptionsCount.total > 1 ? "s" : ""} sur la semaine
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Table semaine */}
           <section className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
-            <header className="bg-gradient-to-r from-navy via-navy to-cyan-club text-white px-5 py-3">
+            <header className="bg-gradient-to-r from-navy via-navy to-cyan-club text-white px-5 py-3 no-print">
               <h2 className="text-lg font-extrabold">
                 {currentSemaine.periode} — {currentSemaine.label}
               </h2>
@@ -280,11 +322,24 @@ export default function StagesOrganisation({
 
           {/* Permanence week-end */}
           <section className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
-            <header className="bg-gradient-to-r from-ocre to-clay text-white px-5 py-3">
+            <header className="bg-gradient-to-r from-ocre to-clay text-white px-5 py-3 no-print">
               <h2 className="text-lg font-extrabold">
                 🏖️ Permanence week-end
               </h2>
             </header>
+            {/* Titre weekend pour impression uniquement */}
+            <h3
+              className="print-only"
+              style={{
+                fontSize: "12pt",
+                fontWeight: 700,
+                color: "#0d2e3f",
+                marginTop: "12pt",
+                marginBottom: "4pt",
+              }}
+            >
+              Permanence week-end
+            </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs border-collapse">
                 <thead>
@@ -375,7 +430,7 @@ function CoachCell({
               title="Cliquer pour retirer"
             >
               {a.coach.nom}
-              <span className="opacity-60">×</span>
+              <span className="opacity-60 print-hide">×</span>
             </span>
           ) : null,
         )}
@@ -389,7 +444,7 @@ function CoachCell({
                 e.target.value = "";
               }
             }}
-            className="text-[11px] rounded border border-gray-300 px-1 py-0 bg-white hover:bg-gray-50"
+            className="text-[11px] rounded border border-gray-300 px-1 py-0 bg-white hover:bg-gray-50 print-hide"
           >
             <option value="">+</option>
             {available.map((c) => (

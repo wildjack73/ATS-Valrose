@@ -293,14 +293,43 @@ body {
 
 /* === Impression ============================================================ */
 @media print {
+  /* Page : paysage, marges réduites pour gagner de la place */
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+
   body {
     background: white !important;
+    color: #000 !important;
+    font-size: 11pt;
   }
+
+  /* Cache header global, footer global, et tout ce qui est marqué no-print */
   header,
   footer,
   .no-print {
     display: none !important;
   }
+
+  /* Cache les éléments interactifs qui n'ont pas de sens sur papier
+     (selects vides «+», boutons ×, etc.) */
+  .print-hide {
+    display: none !important;
+  }
+
+  /* L'inverse : ces éléments n'apparaissent qu'en impression
+     (en-tête de doc, logo club, etc.) */
+  .print-only {
+    display: block !important;
+  }
+  .print-only-flex {
+    display: flex !important;
+  }
+  .print-only-inline {
+    display: inline !important;
+  }
+
   /* Cartes & encadrés : pas d'ombre, pour économiser l'encre */
   .print-shadow-none,
   .shadow-sm,
@@ -308,13 +337,37 @@ body {
   .shadow-lg {
     box-shadow: none !important;
   }
-  /* Les couleurs de fond doivent s'imprimer (sinon les coachs perdent leur code couleur) */
+
+  /* Les couleurs de fond doivent s'imprimer (sinon les coachs perdent
+     leur code couleur dans le tableau d'organisation) */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
   /* Évite les coupures bizarres au milieu des sections */
   section {
     break-inside: avoid;
   }
+
+  /* Tableaux : bords nets, pas d'arrière-plan parasite */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  th, td {
+    border: 1px solid #333 !important;
+    padding: 4pt 6pt !important;
+  }
+  thead th {
+    background: #e5e7eb !important;
+    color: #000 !important;
+  }
+}
+
+/* Caché par défaut, visible uniquement en impression */
+.print-only,
+.print-only-flex,
+.print-only-inline {
+  display: none;
 }

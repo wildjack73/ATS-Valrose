@@ -123,9 +123,11 @@ export default async function AdminDashboardPage({
 
   return (
     <>
-      <DashboardHeader stages={stages} ecole={ecole} bundle={bundle} />
+      <div className="no-print">
+        <DashboardHeader stages={stages} ecole={ecole} bundle={bundle} />
+      </div>
 
-      <div className="flex items-center gap-2 mb-4 overflow-x-auto">
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto no-print">
         <TabLink
           active={tab === "stages"}
           href="/admin?tab=stages"

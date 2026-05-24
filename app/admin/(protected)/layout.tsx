@@ -13,7 +13,7 @@ export default async function ProtectedAdminLayout({
   }
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="bg-navy text-white">
+      <div className="bg-navy text-white no-print">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between text-sm">
           <div className="flex items-center gap-4">
             <span className="font-bold">Admin ATS Valrose</span>
