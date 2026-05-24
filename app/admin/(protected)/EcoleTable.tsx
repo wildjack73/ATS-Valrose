@@ -49,6 +49,27 @@ export default function EcoleTable({
     });
   }
 
+  async function deleteInscription(id: string, label: string) {
+    if (
+      !window.confirm(
+        `Supprimer définitivement l'inscription de ${label} ?\n\nCette action est irréversible.`,
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      const res = await fetch(`/api/admin/inscriptions/ecole/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        window.alert("Échec de la suppression. Réessaye.");
+        return;
+      }
+      if (openId === id) setOpenId(null);
+      router.refresh();
+    });
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-b-xl rounded-tr-xl shadow-sm">
       <div className="p-4 border-b flex flex-wrap items-center gap-3">
@@ -101,6 +122,9 @@ export default function EcoleTable({
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
+                  remove={() =>
+                    deleteInscription(r.id, `${r.prenom} ${r.nom}`)
+                  }
                   pending={pending}
                 />
               ))
@@ -117,12 +141,14 @@ function EcoleRowGroup({
   open,
   toggle,
   patch,
+  remove,
   pending,
 }: {
   row: InscriptionEcoleRow;
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
+  remove: () => void;
   pending: boolean;
 }) {
   const dispo = [
@@ -133,11 +159,23 @@ function EcoleRowGroup({
     .filter(Boolean)
     .join(" • ");
 
+  function handleRowClick(e: React.MouseEvent<HTMLTableRowElement>) {
+    const target = e.target as HTMLElement;
+    if (target.closest("a, button, input, select, textarea, label")) return;
+    toggle();
+  }
+
   return (
     <>
-      <tr className={`border-t ${statutRowClass(row.statut)}`}>
+      <tr
+        onClick={handleRowClick}
+        className={`border-t cursor-pointer hover:bg-ocre/5 transition-colors ${statutRowClass(row.statut)}`}
+      >
         <td className="p-3 whitespace-nowrap text-gray-600 text-xs align-top">
-          {formatDateTime(row.created_at)}
+          <div className="flex items-start gap-2">
+            <Chevron open={open} />
+            <span>{formatDateTime(row.created_at)}</span>
+          </div>
         </td>
         <td className="p-3 align-top">
           <div className="font-semibold text-navy">
@@ -218,14 +256,12 @@ function EcoleRowGroup({
               📞
             </a>
             <button
-              onClick={toggle}
-              className={`text-xs font-semibold px-3 py-1.5 rounded ${
-                open
-                  ? "bg-navy text-white"
-                  : "bg-ocre text-white hover:bg-ocre-dark"
-              }`}
+              onClick={remove}
+              disabled={pending}
+              className="text-base hover:scale-110 transition opacity-60 hover:opacity-100 disabled:opacity-30"
+              title="Supprimer cette inscription"
             >
-              {open ? "Fermer" : "Éditer"}
+              🗑️
             </button>
           </div>
         </td>
@@ -238,6 +274,23 @@ function EcoleRowGroup({
         </tr>
       ) : null}
     </>
+  );
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      className={`w-3.5 h-3.5 mt-0.5 text-clay shrink-0 transition-transform ${
+        open ? "rotate-90" : ""
+      }`}
+      aria-hidden
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
   );
 }
 

@@ -49,3 +49,23 @@ export async function PATCH(
   }
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  }
+  const { id } = await params;
+
+  const { error } = await getSupabaseAdmin()
+    .from("inscriptions_stages")
+    .delete()
+    .eq("id", id);
+  if (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Échec suppression" }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}
