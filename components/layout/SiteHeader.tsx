@@ -35,7 +35,7 @@ export function SiteHeader() {
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <span className="hidden md:inline text-white/40">
-              13&nbsp;Avenue&nbsp;de&nbsp;Valrose, 06100&nbsp;Nice
+              65,&nbsp;avenue&nbsp;de&nbsp;Valrose, 06100&nbsp;Nice
             </span>
             <span className="hidden md:inline text-white/20">·</span>
             <Link
