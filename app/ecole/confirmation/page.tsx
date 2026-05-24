@@ -36,10 +36,12 @@ export default function EcoleConfirmationPage() {
           <p className="mt-3 text-sm text-gray-500">
             Une question&nbsp;?{" "}
             <a
-              className="text-navy underline"
-              href="mailto:contact@ats-valrose.fr"
+              className="text-navy underline font-semibold"
+              href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              contact@ats-valrose.fr
+              Contactez le club
             </a>
           </p>
           <div className="mt-8">

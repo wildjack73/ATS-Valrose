@@ -19,13 +19,16 @@ export default async function EcolePage() {
           Inscriptions temporairement indisponibles
         </h1>
         <p className="mt-3 text-gray-600">
-          Aucune saison active n&apos;est configurée. Contactez le club&nbsp;:{" "}
+          Aucune saison active n&apos;est configurée.{" "}
           <a
-            className="text-navy underline"
-            href="mailto:contact@ats-valrose.fr"
+            className="text-navy underline font-semibold"
+            href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            contact@ats-valrose.fr
+            Contactez le club
           </a>
+          .
         </p>
       </div>
     );

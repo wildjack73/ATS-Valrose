@@ -185,23 +185,24 @@ body {
 
 /* === Échange de balle de tennis entre les 2 boutons CTA =================== */
 /* Compose 2 animations indépendantes :
-   - rally-x : déplacement horizontal d'un bouton à l'autre
-   - rally-y : rebond vertical (parabolique) + rotation
-   Période rally-y = moitié de rally-x → 1 arc complet par traversée. */
+   - rally-x : déplacement horizontal d'un bouton à l'autre (7.2s)
+   - rally-y : rebond vertical (parabolique) + rotation (3.6s, moitié de x)
+   Période rally-y = moitié de rally-x → 1 arc complet par traversée.
+   Total = 7.2s (ralenti × 2 par rapport à la 1ère version). */
 
 .rally-x {
   position: absolute;
-  animation: rally-x 3.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  animation: rally-x 7.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 @keyframes rally-x {
-  0%, 100% { left: 40px; }
-  50% { left: calc(100% - 40px - 28px); }
+  0%, 100% { left: 36px; }
+  50% { left: calc(100% - 36px - 40px); }
 }
 
 .rally-y {
   display: inline-block;
-  animation: rally-y 1.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  animation: rally-y 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   transform-origin: center center;
 }
 
@@ -210,8 +211,57 @@ body {
     transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-120px) rotate(180deg);
+    transform: translateY(-130px) rotate(180deg);
   }
+}
+
+/* === Impact pulse synchronisé sur le rally =============================== */
+/* Période 7.2s (= rally-x). La pulse fait son show pendant ~0.7s puis
+   reste dormante jusqu'au prochain cycle.
+   - .impact-pulse-left  : pulse à t=0 (la balle arrive au bouton gauche)
+   - .impact-pulse-right : pulse à t=3.6s (balle arrive au bouton droit)
+   Fonctionne aussi sur mobile (purement CSS, indépendant de la balle). */
+
+@keyframes impact-pulse-fill {
+  0% { transform: scale(0.96); opacity: 0.75; }
+  9% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes impact-pulse-ring {
+  0% { transform: scale(0.97); opacity: 0.9; }
+  9% { transform: scale(1.45); opacity: 0; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+.impact-pulse-left,
+.impact-pulse-right {
+  position: relative;
+  isolation: isolate;
+}
+
+.impact-pulse-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  z-index: -1;
+  pointer-events: none;
+  animation: impact-pulse-fill 7.2s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.impact-pulse-right::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 3px solid currentColor;
+  z-index: -1;
+  pointer-events: none;
+  animation: impact-pulse-ring 7.2s ease-out infinite;
+  animation-delay: 3.6s;
 }
 
 /* Respecter prefers-reduced-motion */
@@ -233,6 +283,11 @@ body {
   .rally-x,
   .rally-y {
     animation: none !important;
+  }
+  .impact-pulse-left::before,
+  .impact-pulse-right::before {
+    animation: none !important;
+    display: none !important;
   }
 }
 

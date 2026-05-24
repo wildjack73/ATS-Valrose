@@ -26,11 +26,13 @@ export function SiteHeader() {
               06&nbsp;46&nbsp;23&nbsp;09&nbsp;43
             </a>
             <a
-              href="mailto:contact@ats-valrose.fr"
+              href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 hover:text-yellow-club transition-colors"
             >
               <IconMail className="w-3.5 h-3.5" />
-              contact@ats-valrose.fr
+              Contact
             </a>
           </div>
           <div className="flex items-center gap-3 ml-auto">

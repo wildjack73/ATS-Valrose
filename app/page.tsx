@@ -45,7 +45,7 @@ export default function HomePage() {
             <div className="flex flex-wrap items-end gap-x-8 gap-y-5 justify-center md:justify-between">
               <Link
                 href="/stages"
-                className="radar-pulse group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
+                className="impact-pulse-left group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
               >
                 <span className="relative z-10 inline-flex items-center gap-2">
                   S&apos;inscrire à un stage
@@ -56,7 +56,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/ecole"
-                className="radar-pulse-ring group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
+                className="impact-pulse-right group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
               >
                 <span className="inline-flex items-center gap-2">
                   S&apos;inscrire à l&apos;école
@@ -284,20 +284,50 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ CONTACT FOOTER ============ */}
+      {/* ============ RÉSERVATION + CONTACT ============ */}
       <section>
         <div className="mx-auto max-w-6xl px-4 py-14 text-center">
           <Reveal>
             <p className="text-sm uppercase tracking-widest text-gray-500 font-bold">
-              Une question ?
+              Vous voulez réserver ou poser une question ?
             </p>
-            <a
-              href="mailto:contact@ats-valrose.fr"
-              className="mt-3 inline-block text-navy text-2xl sm:text-3xl font-extrabold hover:text-yellow-hover transition-colors"
-            >
-              contact@ats-valrose.fr
-            </a>
+            <div className="mt-6 flex flex-wrap gap-3 justify-center">
+              <a
+                href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl bg-navy text-white px-6 py-3 font-bold hover:bg-navy-dark transition shadow-md"
+              >
+                Réserver un terrain ou un coaching →
+              </a>
+              <a
+                href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl bg-white text-navy border-2 border-navy px-6 py-3 font-bold hover:bg-navy hover:text-white transition"
+              >
+                Nous contacter →
+              </a>
+            </div>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ============ LIEN VERS LE SITE PRINCIPAL ============ */}
+      <section className="bg-navy-dark text-white/75 border-t border-white/5">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm">
+          <p>
+            Découvrez l&apos;intégralité du club, l&apos;équipe, les actualités
+            et toutes les activités sur le site officiel :{" "}
+            <a
+              href="https://padel-tennis-nice.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-yellow-club hover:text-yellow-hover hover:underline font-bold"
+            >
+              padel-tennis-nice.fr →
+            </a>
+          </p>
         </div>
       </section>
     </div>
@@ -309,27 +339,50 @@ export default function HomePage() {
 function RallyBall() {
   return (
     <svg
-      viewBox="0 0 64 64"
-      className="w-7 h-7 drop-shadow-[0_4px_12px_rgba(243,197,3,0.55)]"
+      viewBox="0 0 80 80"
+      className="w-10 h-10 drop-shadow-[0_6px_14px_rgba(180,200,40,0.6)]"
       aria-hidden="true"
     >
-      <circle cx="32" cy="32" r="28" fill="#f3c503" />
+      <defs>
+        {/* Gradient radial pour l'effet 3D (clair en haut-gauche → sombre en bas-droite) */}
+        <radialGradient id="rb-grad" cx="35%" cy="28%" r="72%">
+          <stop offset="0%" stopColor="#f6fc7d" />
+          <stop offset="55%" stopColor="#c8d935" />
+          <stop offset="100%" stopColor="#8aa01f" />
+        </radialGradient>
+        {/* Gradient pour le reflet brillant */}
+        <radialGradient id="rb-shine" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Ombre douce sous la balle */}
+      <ellipse cx="40" cy="74" rx="22" ry="3" fill="black" opacity="0.22" />
+
+      {/* Boule */}
+      <circle cx="40" cy="36" r="32" fill="url(#rb-grad)" />
+
+      {/* Coutures latérales (parenthèses) — classique balle de tennis */}
       <path
-        d="M 14 8 Q 4 32 14 56"
+        d="M 16 10 Q 6 36 16 62"
         stroke="white"
-        strokeWidth="2.5"
+        strokeWidth="2.4"
         fill="none"
-        opacity="0.9"
         strokeLinecap="round"
+        opacity="0.95"
       />
       <path
-        d="M 50 8 Q 60 32 50 56"
+        d="M 64 10 Q 74 36 64 62"
         stroke="white"
-        strokeWidth="2.5"
+        strokeWidth="2.4"
         fill="none"
-        opacity="0.9"
         strokeLinecap="round"
+        opacity="0.95"
       />
+
+      {/* Reflet brillant en haut-gauche pour effet 3D */}
+      <ellipse cx="29" cy="20" rx="12" ry="6" fill="url(#rb-shine)" />
     </svg>
   );
 }

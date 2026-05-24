@@ -24,15 +24,34 @@ export default function RootLayout({
             <div>
               <p className="font-bold text-white">ATS&nbsp;Valrose</p>
               <p className="text-xs text-white/60 mt-0.5">
-                © {new Date().getFullYear()} — Tennis &amp; Padel à Nice
+                © {new Date().getFullYear()} — Tennis &amp; Padel à Nice ·{" "}
+                <a
+                  href="https://padel-tennis-nice.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-yellow-club transition-colors"
+                >
+                  padel-tennis-nice.fr
+                </a>
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs">
               <a
-                href="mailto:contact@ats-valrose.fr"
+                href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-yellow-club transition-colors"
               >
-                contact@ats-valrose.fr
+                Contact
+              </a>
+              <span className="text-white/20">·</span>
+              <a
+                href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-yellow-club transition-colors"
+              >
+                Réserver
               </a>
               <span className="text-white/20">·</span>
               <Link

@@ -19,13 +19,15 @@ export default async function TarifsPage() {
           Tarifs non disponibles
         </h1>
         <p className="mt-3 text-gray-600">
-          Contactez le club&nbsp;:{" "}
           <a
-            className="text-navy underline"
-            href="mailto:contact@ats-valrose.fr"
+            className="text-navy underline font-semibold"
+            href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            contact@ats-valrose.fr
+            Contactez le club
           </a>
+          .
         </p>
       </div>
     );
@@ -115,13 +117,16 @@ export default async function TarifsPage() {
               }))}
             />
             <p className="mt-4 text-sm text-gray-600">
-              Pour réserver une leçon, contactez le club&nbsp;:{" "}
+              Pour réserver une leçon ou un coaching&nbsp;:{" "}
               <a
-                className="text-navy underline"
-                href="mailto:contact@ats-valrose.fr"
+                className="text-navy underline font-semibold"
+                href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                contact@ats-valrose.fr
+                Réserver en ligne
               </a>
+              .
             </p>
           </Block>
         ) : null}
@@ -147,15 +152,36 @@ export default async function TarifsPage() {
           </Block>
         ) : null}
 
-        <p className="text-center text-sm text-gray-500">
-          Une question ?{" "}
-          <a
-            className="text-navy underline"
-            href="mailto:contact@ats-valrose.fr"
-          >
-            contact@ats-valrose.fr
-          </a>
-        </p>
+        {/* Réservation + Contact */}
+        <div className="rounded-2xl bg-navy text-white p-6 text-center">
+          <p className="text-xs uppercase tracking-widest text-yellow-club font-bold">
+            Réservation & contact
+          </p>
+          <h3 className="mt-2 text-xl sm:text-2xl font-extrabold">
+            Réservez votre terrain ou votre coaching
+          </h3>
+          <p className="mt-2 text-sm text-white/75">
+            Réservation en ligne directement sur le site officiel du club.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3 justify-center">
+            <a
+              href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-yellow-club text-navy px-5 py-2.5 font-bold text-sm hover:bg-yellow-hover transition"
+            >
+              Réserver un terrain ou un coaching →
+            </a>
+            <a
+              href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-2.5 font-bold text-sm transition"
+            >
+              Nous contacter →
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
