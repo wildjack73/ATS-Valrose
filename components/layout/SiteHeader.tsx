@@ -19,11 +19,11 @@ export function SiteHeader() {
         <div className="mx-auto max-w-6xl px-4 h-9 flex items-center justify-between gap-4">
           <div className="hidden sm:flex items-center gap-5">
             <a
-              href="tel:+33493846789"
+              href="tel:+33646230943"
               className="inline-flex items-center gap-1.5 hover:text-yellow-club transition-colors"
             >
               <IconPhone className="w-3.5 h-3.5" />
-              04&nbsp;93&nbsp;84&nbsp;67&nbsp;89
+              06&nbsp;46&nbsp;23&nbsp;09&nbsp;43
             </a>
             <a
               href="mailto:contact@ats-valrose.fr"
