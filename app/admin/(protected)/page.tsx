@@ -127,11 +127,12 @@ export default async function AdminDashboardPage({
         <DashboardHeader stages={stages} ecole={ecole} bundle={bundle} />
       </div>
 
-      <div className="flex items-center gap-2 mb-4 overflow-x-auto no-print">
+      <div className="flex items-center gap-2 mb-6 overflow-x-auto no-print pb-1">
         <TabLink
           active={tab === "stages"}
           href="/admin?tab=stages"
           accent="cyan"
+          icon="🎾"
         >
           Stages ({stages.length})
         </TabLink>
@@ -139,42 +140,48 @@ export default async function AdminDashboardPage({
           active={tab === "ecole"}
           href="/admin?tab=ecole"
           accent="ocre"
+          icon="🏫"
         >
           École ({ecole.length})
-        </TabLink>
-        <TabLink
-          active={tab === "historique"}
-          href="/admin?tab=historique"
-          accent="navy"
-        >
-          Archives ({totalArchives})
         </TabLink>
         <TabLink
           active={tab === "tarifs"}
           href="/admin?tab=tarifs"
           accent="yellow"
+          icon="💶"
         >
           Tarifs
         </TabLink>
         <TabLink
           active={tab === "stages-org"}
           href="/admin?tab=stages-org"
-          accent="cyan"
+          accent="emerald"
+          icon="📋"
         >
           Organisation Stages
         </TabLink>
         <TabLink
           active={tab === "annuaire"}
           href="/admin?tab=annuaire"
-          accent="navy"
+          accent="violet"
+          icon="📇"
         >
           Annuaire
+        </TabLink>
+        <TabLink
+          active={tab === "historique"}
+          href="/admin?tab=historique"
+          accent="gray"
+          icon="📦"
+        >
+          Archives ({totalArchives})
         </TabLink>
         {/* Planning École masqué pour le moment — réactivable en décommentant
         <TabLink
           active={tab === "planning"}
           href="/admin?tab=planning"
           accent="ocre"
+          icon="📅"
         >
           Planning École
         </TabLink>
@@ -266,35 +273,96 @@ export default async function AdminDashboardPage({
   );
 }
 
+type AccentKey = "cyan" | "ocre" | "yellow" | "emerald" | "violet" | "gray";
+
+const ACCENT_STYLES: Record<
+  AccentKey,
+  {
+    activeBg: string;
+    activeText: string;
+    activeShadow: string;
+    iconText: string;
+    hoverBorder: string;
+    hoverText: string;
+  }
+> = {
+  cyan: {
+    activeBg: "bg-cyan-club",
+    activeText: "text-white",
+    activeShadow: "shadow-cyan-club/40",
+    iconText: "text-cyan-club",
+    hoverBorder: "hover:border-cyan-club",
+    hoverText: "hover:text-cyan-club",
+  },
+  ocre: {
+    activeBg: "bg-ocre",
+    activeText: "text-white",
+    activeShadow: "shadow-ocre/40",
+    iconText: "text-ocre-dark",
+    hoverBorder: "hover:border-ocre",
+    hoverText: "hover:text-ocre-dark",
+  },
+  yellow: {
+    activeBg: "bg-yellow-club",
+    activeText: "text-navy",
+    activeShadow: "shadow-yellow-club/40",
+    iconText: "text-yellow-hover",
+    hoverBorder: "hover:border-yellow-club",
+    hoverText: "hover:text-yellow-hover",
+  },
+  emerald: {
+    activeBg: "bg-emerald-600",
+    activeText: "text-white",
+    activeShadow: "shadow-emerald-600/40",
+    iconText: "text-emerald-700",
+    hoverBorder: "hover:border-emerald-500",
+    hoverText: "hover:text-emerald-700",
+  },
+  violet: {
+    activeBg: "bg-violet-600",
+    activeText: "text-white",
+    activeShadow: "shadow-violet-600/40",
+    iconText: "text-violet-700",
+    hoverBorder: "hover:border-violet-500",
+    hoverText: "hover:text-violet-700",
+  },
+  gray: {
+    activeBg: "bg-gray-600",
+    activeText: "text-white",
+    activeShadow: "shadow-gray-600/30",
+    iconText: "text-gray-500",
+    hoverBorder: "hover:border-gray-400",
+    hoverText: "hover:text-gray-700",
+  },
+};
+
 function TabLink({
   active,
   href,
   children,
   accent,
+  icon,
 }: {
   active: boolean;
   href: string;
   children: React.ReactNode;
-  accent?: "cyan" | "ocre" | "navy" | "yellow";
+  accent: AccentKey;
+  icon: string;
 }) {
-  const activeColor =
-    accent === "cyan"
-      ? "border-cyan-club text-cyan-club"
-      : accent === "ocre"
-        ? "border-ocre text-ocre"
-        : accent === "yellow"
-          ? "border-yellow-hover text-yellow-hover"
-          : "border-navy text-navy";
+  const c = ACCENT_STYLES[accent];
   return (
     <Link
       href={href}
-      className={`px-4 py-2 rounded-t-lg text-sm font-semibold whitespace-nowrap transition-colors ${
+      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border-2 transition-all ${
         active
-          ? `bg-white border-x border-t border-b-2 ${activeColor}`
-          : "text-gray-500 hover:text-navy hover:bg-white/50"
+          ? `${c.activeBg} ${c.activeText} border-transparent shadow-lg ${c.activeShadow}`
+          : `bg-white border-gray-200 text-gray-600 ${c.hoverBorder} ${c.hoverText} hover:-translate-y-0.5`
       }`}
     >
-      {children}
+      <span className={active ? "" : c.iconText} aria-hidden>
+        {icon}
+      </span>
+      <span>{children}</span>
     </Link>
   );
 }
