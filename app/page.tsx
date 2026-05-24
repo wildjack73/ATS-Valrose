@@ -10,8 +10,53 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-navy via-[#0a3a52] to-cyan-club text-white animate-gradient-x">
         <HeroBackground />
 
-        {/* Bloc texte centré (badge + titre + paragraphe) — max-w-6xl */}
-        <div className="relative mx-auto max-w-6xl px-4 pt-20 sm:pt-28 lg:pt-32 text-center">
+        {/* === DESKTOP : boutons absolus dans les coins du hero ============ */}
+        {/* Le wrapper absolu couvre toute la section. Les 2 boutons et la
+            balle sont positionnés verticalement à 50% (alignés avec le
+            titre), horizontalement aux extrémités. */}
+        <div
+          aria-hidden="false"
+          className="hidden md:block absolute inset-0 pointer-events-none animate-fade-in-up"
+          style={{ animationDelay: "400ms" }}
+        >
+          <div className="relative h-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20">
+            <Link
+              href="/stages"
+              className="impact-pulse-left group absolute left-6 sm:left-10 lg:left-20 top-1/2 -translate-y-1/2 pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-[calc(50%+2px)]"
+            >
+              <span className="relative z-10 inline-flex items-center gap-2">
+                S&apos;inscrire à un stage
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </span>
+            </Link>
+
+            <Link
+              href="/ecole"
+              className="impact-pulse-right group absolute right-6 sm:right-10 lg:right-20 top-1/2 -translate-y-1/2 pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-[calc(50%+2px)]"
+            >
+              <span className="inline-flex items-center gap-2">
+                S&apos;inscrire à l&apos;école
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </span>
+            </Link>
+
+            {/* Rally ball entre les 2 boutons, même niveau vertical */}
+            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/2 -translate-y-1/2 h-0">
+              <div className="rally-x">
+                <div className="rally-y">
+                  <RallyBall />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* === Bloc texte centré (badge + titre + paragraphe) — max-w-6xl */}
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32 text-center">
           <p className="animate-fade-in-up mb-6">
             <span className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase tracking-[0.25em] text-yellow-club font-bold px-4 py-1.5 rounded-full bg-navy-dark/60 backdrop-blur-sm border border-yellow-club/40 shadow-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-club animate-pulse-slow" />
@@ -39,50 +84,34 @@ export default function HomePage() {
             Stages de vacances et école de tennis. Tennis, padel, pickleball,
             multi-activités. Encadré par des moniteurs diplômés d&apos;État.
           </p>
-        </div>
 
-        {/* Bloc boutons — plus large que le titre, vraiment dans les coins */}
-        <div className="relative pt-12 pb-20 sm:pb-28 lg:pb-32">
+          {/* === MOBILE : boutons en flow normal sous le paragraphe === */}
           <div
-            className="animate-fade-in-up relative max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20"
+            className="md:hidden animate-fade-in-up mt-10 flex flex-wrap gap-4 justify-center"
             style={{ animationDelay: "400ms" }}
           >
-            <div className="flex flex-wrap items-end gap-x-8 gap-y-5 justify-center md:justify-between">
-              <Link
-                href="/stages"
-                className="impact-pulse-left group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
-              >
-                <span className="relative z-10 inline-flex items-center gap-2">
-                  S&apos;inscrire à un stage
-                  <span className="transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
-                </span>
-              </Link>
-              <Link
-                href="/ecole"
-                className="impact-pulse-right group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
-              >
-                <span className="inline-flex items-center gap-2">
-                  S&apos;inscrire à l&apos;école
-                  <span className="transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
-                </span>
-              </Link>
-            </div>
-
-            {/* Échange de balle entre les 2 boutons (md+ uniquement) */}
-            <div
-              aria-hidden
-              className="hidden md:block pointer-events-none absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 bottom-16 h-0"
+            <Link
+              href="/stages"
+              className="impact-pulse-left group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-base shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
             >
-              <div className="rally-x">
-                <div className="rally-y">
-                  <RallyBall />
-                </div>
-              </div>
-            </div>
+              <span className="relative z-10 inline-flex items-center gap-2">
+                S&apos;inscrire à un stage
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </span>
+            </Link>
+            <Link
+              href="/ecole"
+              className="impact-pulse-right group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-base border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
+            >
+              <span className="inline-flex items-center gap-2">
+                S&apos;inscrire à l&apos;école
+                <span className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </span>
+            </Link>
           </div>
         </div>
 
