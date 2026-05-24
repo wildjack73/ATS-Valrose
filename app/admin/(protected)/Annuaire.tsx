@@ -152,16 +152,13 @@ export default function Annuaire({ clients }: Props) {
                 <th className="text-left p-3">Email</th>
                 <th className="text-left p-3 w-32">Téléphone</th>
                 <th className="text-left p-3">Tags</th>
-                <th className="text-right p-3 w-20">Inscript.</th>
-                <th className="text-right p-3 w-20">Total</th>
-                <th className="text-left p-3 w-24">Dernière</th>
                 <th className="w-20"></th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-gray-500">
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
                     Aucun client ne correspond à la recherche.
                   </td>
                 </tr>
@@ -179,109 +176,84 @@ export default function Annuaire({ clients }: Props) {
 }
 
 function ClientRowComp({ client }: { client: ClientRow }) {
-  const [expanded, setExpanded] = useState(false);
-  const lastDate = client.last_activity
-    ? new Date(client.last_activity).toLocaleDateString("fr-FR")
-    : "—";
-
   return (
-    <>
-      <tr className="border-t hover:bg-gray-50">
-        <td className="p-3 align-top">
-          <div className="font-semibold text-navy">
-            {client.prenom} {client.nom}
+    <tr className="border-t hover:bg-gray-50">
+      <td className="p-3 align-top">
+        <div className="font-semibold text-navy">
+          {client.prenom} {client.nom}
+        </div>
+        {client.niveau ? (
+          <div className="text-xs text-gray-500">{client.niveau}</div>
+        ) : null}
+        {client.code_postal_ville ? (
+          <div className="text-xs text-gray-500">
+            {client.code_postal_ville}
           </div>
-          {client.niveau ? (
-            <div className="text-xs text-gray-500">{client.niveau}</div>
-          ) : null}
-          {client.code_postal_ville ? (
-            <div className="text-xs text-gray-500">
-              {client.code_postal_ville}
-            </div>
-          ) : null}
-        </td>
-        <td className="p-3 text-xs align-top break-all">
-          {client.email ? (
-            <a
-              href={`mailto:${client.email}`}
-              className="text-navy hover:text-yellow-hover hover:underline"
+        ) : null}
+      </td>
+      <td className="p-3 text-xs align-top break-all">
+        {client.email ? (
+          <a
+            href={`mailto:${client.email}`}
+            className="text-navy hover:text-yellow-hover hover:underline"
+          >
+            {client.email}
+          </a>
+        ) : (
+          <span className="text-gray-400 italic">aucun</span>
+        )}
+      </td>
+      <td className="p-3 text-xs align-top whitespace-nowrap">
+        {client.telephone ? (
+          <a
+            href={`tel:${client.telephone.replace(/\s/g, "")}`}
+            className="text-navy hover:text-yellow-hover hover:underline"
+          >
+            {client.telephone}
+          </a>
+        ) : (
+          <span className="text-gray-400 italic">—</span>
+        )}
+      </td>
+      <td className="p-3 align-top">
+        <div className="flex flex-wrap gap-1">
+          {client.tags.map((t, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+              style={{ backgroundColor: t.color }}
+              title={t.label}
             >
-              {client.email}
-            </a>
-          ) : (
-            <span className="text-gray-400 italic">aucun</span>
-          )}
-        </td>
-        <td className="p-3 text-xs align-top whitespace-nowrap">
-          {client.telephone ? (
-            <a
-              href={`tel:${client.telephone.replace(/\s/g, "")}`}
-              className="text-navy hover:text-yellow-hover hover:underline"
-            >
-              {client.telephone}
-            </a>
-          ) : (
-            <span className="text-gray-400 italic">—</span>
-          )}
-        </td>
-        <td className="p-3 align-top">
-          <div className="flex flex-wrap gap-1">
-            {client.tags.map((t, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                style={{ backgroundColor: t.color }}
-                title={t.label}
+              {t.type === "stage" ? "🎾" : "🏫"} {t.saison.replace("Saison ", "")}
+              {t.count > 1 ? ` ×${t.count}` : ""}
+            </span>
+          ))}
+        </div>
+      </td>
+      <td className="p-3 align-top">
+        {client.email || client.telephone ? (
+          <div className="flex items-center gap-1">
+            {client.email ? (
+              <a
+                href={`mailto:${client.email}`}
+                title="Mail"
+                className="text-base hover:scale-110 transition"
               >
-                {t.type === "stage" ? "🎾" : "🏫"} {t.saison.replace("Saison ", "")}
-                {t.count > 1 ? ` ×${t.count}` : ""}
-              </span>
-            ))}
+                📧
+              </a>
+            ) : null}
+            {client.telephone ? (
+              <a
+                href={`tel:${client.telephone.replace(/\s/g, "")}`}
+                title="Tel"
+                className="text-base hover:scale-110 transition"
+              >
+                📞
+              </a>
+            ) : null}
           </div>
-        </td>
-        <td className="p-3 text-right font-bold text-navy align-top">
-          {client.inscriptions_count}
-        </td>
-        <td className="p-3 text-right font-bold text-navy align-top whitespace-nowrap">
-          {client.total_prix > 0 ? `${client.total_prix}€` : "—"}
-        </td>
-        <td className="p-3 text-xs text-gray-600 align-top whitespace-nowrap">
-          {lastDate}
-        </td>
-        <td className="p-3 align-top">
-          {client.email || client.telephone ? (
-            <div className="flex items-center gap-1">
-              {client.email ? (
-                <a
-                  href={`mailto:${client.email}`}
-                  title="Mail"
-                  className="text-base hover:scale-110 transition"
-                >
-                  📧
-                </a>
-              ) : null}
-              {client.telephone ? (
-                <a
-                  href={`tel:${client.telephone.replace(/\s/g, "")}`}
-                  title="Tel"
-                  className="text-base hover:scale-110 transition"
-                >
-                  📞
-                </a>
-              ) : null}
-            </div>
-          ) : null}
-        </td>
-      </tr>
-      {expanded ? (
-        <tr className="bg-gray-50/60">
-          <td colSpan={8} className="p-4 text-xs text-gray-700">
-            <strong>Adresse :</strong> {client.adresse ?? "—"} ·{" "}
-            <strong>CP/Ville :</strong> {client.code_postal_ville ?? "—"} ·{" "}
-            <strong>Naissance :</strong> {client.date_naissance ?? "—"}
-          </td>
-        </tr>
-      ) : null}
-    </>
+        ) : null}
+      </td>
+    </tr>
   );
 }
