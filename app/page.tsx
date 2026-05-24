@@ -39,31 +39,45 @@ export default function HomePage() {
           </p>
 
           <div
-            className="animate-fade-in-up mt-12 flex flex-wrap gap-x-8 gap-y-5 justify-center"
+            className="animate-fade-in-up mt-12 relative max-w-3xl mx-auto"
             style={{ animationDelay: "400ms" }}
           >
-            <Link
-              href="/stages"
-              className="radar-pulse group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
-            >
-              <span className="relative z-10 inline-flex items-center gap-2">
-                S&apos;inscrire à un stage
-                <span className="transition-transform group-hover:translate-x-1">
-                  →
+            <div className="flex flex-wrap items-end gap-x-8 gap-y-5 justify-center md:justify-between">
+              <Link
+                href="/stages"
+                className="radar-pulse group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
+              >
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  S&apos;inscrire à un stage
+                  <span className="transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
                 </span>
-              </span>
-            </Link>
-            <Link
-              href="/ecole"
-              className="radar-pulse-ring group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
-            >
-              <span className="inline-flex items-center gap-2">
-                S&apos;inscrire à l&apos;école
-                <span className="transition-transform group-hover:translate-x-1">
-                  →
+              </Link>
+              <Link
+                href="/ecole"
+                className="radar-pulse-ring group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
+              >
+                <span className="inline-flex items-center gap-2">
+                  S&apos;inscrire à l&apos;école
+                  <span className="transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
                 </span>
-              </span>
-            </Link>
+              </Link>
+            </div>
+
+            {/* Échange de balle entre les 2 boutons (md+ uniquement) */}
+            <div
+              aria-hidden
+              className="hidden md:block pointer-events-none absolute inset-x-0 bottom-16 h-0"
+            >
+              <div className="rally-x">
+                <div className="rally-y">
+                  <RallyBall />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -291,6 +305,34 @@ export default function HomePage() {
 }
 
 // ===== Helpers visuels =====
+
+function RallyBall() {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className="w-7 h-7 drop-shadow-[0_4px_12px_rgba(243,197,3,0.55)]"
+      aria-hidden="true"
+    >
+      <circle cx="32" cy="32" r="28" fill="#f3c503" />
+      <path
+        d="M 14 8 Q 4 32 14 56"
+        stroke="white"
+        strokeWidth="2.5"
+        fill="none"
+        opacity="0.9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 50 8 Q 60 32 50 56"
+        stroke="white"
+        strokeWidth="2.5"
+        fill="none"
+        opacity="0.9"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function Check() {
   return (

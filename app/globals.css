@@ -183,6 +183,37 @@ body {
   animation-delay: 1.2s;
 }
 
+/* === Échange de balle de tennis entre les 2 boutons CTA =================== */
+/* Compose 2 animations indépendantes :
+   - rally-x : déplacement horizontal d'un bouton à l'autre
+   - rally-y : rebond vertical (parabolique) + rotation
+   Période rally-y = moitié de rally-x → 1 arc complet par traversée. */
+
+.rally-x {
+  position: absolute;
+  animation: rally-x 3.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+@keyframes rally-x {
+  0%, 100% { left: 40px; }
+  50% { left: calc(100% - 40px - 28px); }
+}
+
+.rally-y {
+  display: inline-block;
+  animation: rally-y 1.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  transform-origin: center center;
+}
+
+@keyframes rally-y {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-120px) rotate(180deg);
+  }
+}
+
 /* Respecter prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
@@ -198,6 +229,10 @@ body {
   .radar-pulse-ring::after {
     animation: none !important;
     display: none !important;
+  }
+  .rally-x,
+  .rally-y {
+    animation: none !important;
   }
 }
 
