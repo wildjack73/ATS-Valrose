@@ -11,10 +11,11 @@ export default function HomePage() {
         <HeroBackground />
 
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32 text-center">
-          <p
-            className="animate-fade-in-up text-xs uppercase tracking-[0.3em] text-yellow-club font-bold mb-6"
-          >
-            Saison 2026-2027
+          <p className="animate-fade-in-up mb-6">
+            <span className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase tracking-[0.25em] text-yellow-club font-bold px-4 py-1.5 rounded-full bg-navy-dark/60 backdrop-blur-sm border border-yellow-club/40 shadow-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-yellow-club animate-pulse-slow" />
+              Saison 2026-2027
+            </span>
           </p>
 
           <h1
