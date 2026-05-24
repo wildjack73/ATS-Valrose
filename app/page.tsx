@@ -46,10 +46,12 @@ export default function HomePage() {
             </Link>
 
             {/* Rally ball entre les 2 boutons, passe DEVANT eux (z-30 > z-20)
-                et rebondit sur leur dessus (translateY décalé dans rally-y). */}
-            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/2 -translate-y-1/2 h-0 z-30">
-              <div className="rally-x">
-                <div className="rally-y">
+                et rebondit sur leur dessus (translateY décalé dans rally-y).
+                pointer-events-none explicite à tous les niveaux pour que la
+                balle ne bloque JAMAIS les clics sur les boutons en dessous. */}
+            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/2 -translate-y-1/2 h-0 z-30 pointer-events-none">
+              <div className="rally-x pointer-events-none">
+                <div className="rally-y pointer-events-none">
                   <RallyBall />
                 </div>
               </div>
@@ -376,7 +378,7 @@ function RallyBall() {
   return (
     <svg
       viewBox="0 0 80 80"
-      className="w-10 h-10 drop-shadow-[0_6px_14px_rgba(180,200,40,0.6)]"
+      className="w-10 h-10 drop-shadow-[0_6px_14px_rgba(180,200,40,0.6)] pointer-events-none"
       aria-hidden="true"
     >
       <defs>
