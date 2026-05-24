@@ -19,7 +19,7 @@ export default function HomePage() {
           className="hidden md:block absolute inset-0 pointer-events-none animate-fade-in-up"
           style={{ animationDelay: "400ms" }}
         >
-          <div className="relative h-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20">
+          <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20">
             <Link
               href="/stages"
               className="impact-pulse-left group absolute left-6 sm:left-10 lg:left-20 top-1/2 -translate-y-1/2 pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-[calc(50%+2px)]"
