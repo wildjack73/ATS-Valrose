@@ -17,7 +17,7 @@ export default function HomePage() {
             qui peut foirer si la largeur du parent n'est pas calculée). */}
         <div
           aria-hidden="false"
-          className="hidden md:block absolute inset-0 pointer-events-none animate-fade-in-up"
+          className="hidden md:block absolute inset-0 z-10 pointer-events-none animate-fade-in-up"
           style={{ animationDelay: "400ms" }}
         >
           <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20 flex items-center justify-between">
