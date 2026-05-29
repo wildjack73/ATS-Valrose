@@ -192,6 +192,7 @@ export default async function AdminDashboardPage({
         <StagesTable
           rows={stages}
           semaines={bundle?.semaines ?? []}
+          optionsF4={bundle?.optionsF4 ?? []}
           currentSemaine={sp.semaine}
           currentStatut={sp.statut}
         />

@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getTarifsBundle } from "@/lib/data/tarifs-server";
 
 export const runtime = "nodejs";
 
 const STATUTS_VALIDES = ["en_attente", "paye", "annule"] as const;
 
+type F4Item = { jour: string; option: string };
+
 interface PatchBody {
   statut?: string;
   paiement_info?: string | null;
   notes_admin?: string | null;
+  formule_4_selection?: F4Item[];
 }
 
 export async function PATCH(
@@ -35,6 +39,54 @@ export async function PATCH(
   if (body.notes_admin !== undefined) {
     patch.notes_admin = body.notes_admin || null;
   }
+
+  // Édition de la sélection Formule 4 → on recalcule le prix côté serveur
+  if (body.formule_4_selection !== undefined) {
+    const supa = getSupabaseAdmin();
+    const { data: row } = await supa
+      .from("inscriptions_stages")
+      .select("saison_id, formule, dejeuner_jours")
+      .eq("id", id)
+      .maybeSingle();
+    if (!row || row.formule !== "formule_4") {
+      return NextResponse.json(
+        { error: "Sélection F4 modifiable uniquement sur une Formule 4." },
+        { status: 400 },
+      );
+    }
+    const bundle = await getTarifsBundle(row.saison_id);
+    if (!bundle) {
+      return NextResponse.json({ error: "Saison introuvable." }, { status: 400 });
+    }
+    const sel = body.formule_4_selection.filter((it) => it.jour && it.option);
+    // Valider les options + sommer
+    let optionsTotal = 0;
+    for (const it of sel) {
+      const opt = bundle.optionsF4.find((o) => o.code === it.option);
+      if (!opt) {
+        return NextResponse.json(
+          { error: `Option F4 invalide : ${it.option}` },
+          { status: 400 },
+        );
+      }
+      optionsTotal += opt.prix;
+    }
+    // Recalcule le repas à partir des jours déjà enregistrés (prix club = F3)
+    const dejJours = Array.isArray(row.dejeuner_jours)
+      ? (row.dejeuner_jours as string[])
+      : [];
+    const f3 = bundle.formules.find((f) => f.has_dejeuner_option);
+    let prixDejeuner = 0;
+    if (dejJours.length > 0 && f3) {
+      prixDejeuner =
+        dejJours.length >= 5
+          ? f3.prix_dejeuner ?? 0
+          : dejJours.length * (f3.prix_dejeuner_jour ?? 0);
+    }
+    patch.formule_4_selection = sel;
+    patch.prix_total = optionsTotal + prixDejeuner;
+  }
+
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Rien à modifier" }, { status: 400 });
   }

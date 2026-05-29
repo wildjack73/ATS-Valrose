@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import type { InscriptionStageRow } from "@/lib/types/db";
-import type { Semaine } from "@/lib/data/tarifs-types";
+import type { Semaine, OptionF4 } from "@/lib/data/tarifs-types";
 import {
   formatDateTime,
   age,
@@ -21,11 +21,13 @@ const STATUTS = ["en_attente", "paye", "annule"] as const;
 export default function StagesTable({
   rows,
   semaines,
+  optionsF4,
   currentSemaine,
   currentStatut,
 }: {
   rows: InscriptionStageRow[];
   semaines: Semaine[];
+  optionsF4: OptionF4[];
   currentSemaine?: string;
   currentStatut?: string;
 }) {
@@ -137,6 +139,7 @@ export default function StagesTable({
                 <RowGroup
                   key={r.id}
                   row={r}
+                  optionsF4={optionsF4}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -158,6 +161,7 @@ export default function StagesTable({
 
 function RowGroup({
   row,
+  optionsF4,
   open,
   toggle,
   patch,
@@ -165,6 +169,7 @@ function RowGroup({
   pending,
 }: {
   row: InscriptionStageRow;
+  optionsF4: OptionF4[];
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
@@ -300,7 +305,12 @@ function RowGroup({
       {open ? (
         <tr className="border-t bg-navy/5">
           <td colSpan={8} className="p-4">
-            <EditPanel row={row} patch={patch} pending={pending} />
+            <EditPanel
+              row={row}
+              optionsF4={optionsF4}
+              patch={patch}
+              pending={pending}
+            />
           </td>
         </tr>
       ) : null}
@@ -325,12 +335,16 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
+const JOURS_F4 = ["lundi", "mardi", "mercredi", "jeudi", "vendredi"] as const;
+
 function EditPanel({
   row,
+  optionsF4,
   patch,
   pending,
 }: {
   row: InscriptionStageRow;
+  optionsF4: OptionF4[];
   patch: (p: object) => void;
   pending: boolean;
 }) {
@@ -338,16 +352,54 @@ function EditPanel({
   const [paiement, setPaiement] = useState(row.paiement_info ?? "");
   const [notes, setNotes] = useState(row.notes_admin ?? "");
 
+  // État éditable de la sélection F4 : jour -> code option ("" = aucun)
+  const initialF4: Record<string, string> = {};
+  for (const j of JOURS_F4) initialF4[j] = "";
+  const existing = (row.formule_4_selection ?? []) as {
+    jour: string;
+    option: string;
+  }[];
+  for (const it of existing) if (it.jour) initialF4[it.jour] = it.option;
+  const [f4, setF4] = useState<Record<string, string>>(initialF4);
+
   // Re-sync si le row a changé en arrière-plan (refresh)
   useEffect(() => {
     setStatut(row.statut);
     setPaiement(row.paiement_info ?? "");
     setNotes(row.notes_admin ?? "");
-  }, [row.statut, row.paiement_info, row.notes_admin]);
+    const next: Record<string, string> = {};
+    for (const j of JOURS_F4) next[j] = "";
+    for (const it of (row.formule_4_selection ?? []) as {
+      jour: string;
+      option: string;
+    }[]) {
+      if (it.jour) next[it.jour] = it.option;
+    }
+    setF4(next);
+  }, [row.statut, row.paiement_info, row.notes_admin, row.formule_4_selection]);
 
   function save() {
     patch({ statut, paiement_info: paiement, notes_admin: notes });
   }
+
+  function saveF4() {
+    const selection = JOURS_F4.filter((j) => f4[j]).map((j) => ({
+      jour: j,
+      option: f4[j],
+    }));
+    patch({ formule_4_selection: selection });
+  }
+
+  // Prix prévisionnel des options F4 (hors repas, recalculé serveur)
+  const f4Total = JOURS_F4.reduce((sum, j) => {
+    const opt = optionsF4.find((o) => o.code === f4[j]);
+    return sum + (opt?.prix ?? 0);
+  }, 0);
+
+  const f4Dirty =
+    JSON.stringify(
+      JOURS_F4.filter((j) => f4[j]).map((j) => ({ jour: j, option: f4[j] })),
+    ) !== JSON.stringify(existing.filter((it) => it.jour));
 
   const dirty =
     statut !== row.statut ||
@@ -356,6 +408,54 @@ function EditPanel({
 
   return (
     <div className="space-y-3">
+      {/* Éditeur Formule 4 : option par jour */}
+      {row.formule === "formule_4" ? (
+        <div className="rounded-lg border-2 border-cyan-club/40 bg-cyan-club/5 p-3">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <span className="text-xs font-bold text-navy uppercase tracking-wide">
+              Formule 4 — option par jour
+            </span>
+            <span className="text-xs text-gray-600">
+              Total activités&nbsp;:{" "}
+              <strong className="text-navy">{f4Total}€</strong>
+              {row.formule_dejeuner ? " + repas (recalculé à l'enregistrement)" : ""}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {JOURS_F4.map((j) => (
+              <label key={j} className="block">
+                <span className="block text-[11px] font-semibold text-gray-600 capitalize mb-0.5">
+                  {j}
+                </span>
+                <select
+                  value={f4[j]}
+                  disabled={pending}
+                  onChange={(e) => setF4({ ...f4, [j]: e.target.value })}
+                  className="w-full rounded border border-gray-300 px-1.5 py-1 text-xs bg-white"
+                >
+                  <option value="">— Aucun —</option>
+                  {optionsF4.map((o) => (
+                    <option key={o.code} value={o.code}>
+                      {o.label} ({o.prix}€)
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+          <div className="flex justify-end mt-2">
+            <button
+              type="button"
+              onClick={saveF4}
+              disabled={pending || !f4Dirty}
+              className="rounded bg-cyan-club text-navy px-3 py-1.5 text-xs font-bold hover:bg-cyan-light disabled:opacity-40"
+            >
+              {pending ? "…" : "Enregistrer les jours F4"}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
           Statut :
