@@ -18,18 +18,27 @@ import InlineStatusBadge from "./InlineStatusBadge";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
+const FORMULES_FILTRE = [
+  { code: "formule_1", label: "Formule 1 — Baby" },
+  { code: "formule_2", label: "Formule 2 — Demi-journée" },
+  { code: "formule_3", label: "Formule 3 — Journée" },
+  { code: "formule_4", label: "Formule 4 — À la carte" },
+] as const;
+
 export default function StagesTable({
   rows,
   semaines,
   optionsF4,
   currentSemaine,
   currentStatut,
+  currentFormule,
 }: {
   rows: InscriptionStageRow[];
   semaines: Semaine[];
   optionsF4: OptionF4[];
   currentSemaine?: string;
   currentStatut?: string;
+  currentFormule?: string;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -92,6 +101,18 @@ export default function StagesTable({
                 {s.periode} — {s.label}
               </option>
             ))}
+        </select>
+        <select
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+          value={currentFormule ?? ""}
+          onChange={(e) => updateParam("formule", e.target.value)}
+        >
+          <option value="">Toutes les formules</option>
+          {FORMULES_FILTRE.map((f) => (
+            <option key={f.code} value={f.code}>
+              {f.label}
+            </option>
+          ))}
         </select>
         <select
           className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
@@ -205,10 +226,11 @@ function RowGroup({
             {row.niveau ? ` • ${row.niveau}` : ""}
           </div>
         </td>
-        <td className="p-3 text-xs align-top break-all">
+        <td className="p-3 text-xs align-top max-w-[180px]">
           <a
             href={`mailto:${row.email}`}
-            className="text-navy hover:text-yellow-hover hover:underline"
+            title={row.email}
+            className="block truncate text-navy hover:text-yellow-hover hover:underline"
           >
             {row.email}
           </a>

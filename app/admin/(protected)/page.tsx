@@ -29,7 +29,9 @@ import {
 import {
   fetchStageOrganisation,
   fetchInscriptionsCountByDay,
+  fetchEffectifsByDay,
 } from "@/lib/admin/stages-org-queries";
+import EffectifsJour from "./EffectifsJour";
 import { fetchAnnuaireClients } from "@/lib/admin/annuaire-queries";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +43,8 @@ type SearchParams = Promise<{
   semaineId?: string;
   statut?: string;
   saison?: string;
+  formule?: string;
+  effSem?: string;
 }>;
 
 export default async function AdminDashboardPage({
@@ -60,9 +64,11 @@ export default async function AdminDashboardPage({
             ? "planning"
             : sp.tab === "stages-org"
               ? "stages-org"
-              : sp.tab === "annuaire"
-                ? "annuaire"
-                : "stages";
+              : sp.tab === "effectifs"
+                ? "effectifs"
+                : sp.tab === "annuaire"
+                  ? "annuaire"
+                  : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : permettre de visualiser/éditer n'importe quelle saison
@@ -82,7 +88,7 @@ export default async function AdminDashboardPage({
     saisons,
     coaches,
   ] = await Promise.all([
-    fetchStages({ semaine: sp.semaine, statut: sp.statut }),
+    fetchStages({ semaine: sp.semaine, statut: sp.statut, formule: sp.formule }),
     fetchEcole({ statut: sp.statut }),
     fetchHistoriqueStages({ semaine: sp.semaine }),
     fetchHistoriqueSemaines(),
@@ -117,6 +123,12 @@ export default async function AdminDashboardPage({
           ]);
           return { semaine, org, counts };
         })()
+      : null;
+
+  // Effectifs par jour : charger seulement si onglet actif + semaine choisie
+  const effectifsData =
+    tab === "effectifs" && sp.effSem
+      ? await fetchEffectifsByDay(sp.effSem)
       : null;
 
   const totalArchives = historique.length + historiqueEcole.length;
@@ -161,6 +173,14 @@ export default async function AdminDashboardPage({
           Organisation Stages
         </TabLink>
         <TabLink
+          active={tab === "effectifs"}
+          href="/admin?tab=effectifs"
+          accent="cyan"
+          icon="👥"
+        >
+          Effectifs / jour
+        </TabLink>
+        <TabLink
           active={tab === "annuaire"}
           href="/admin?tab=annuaire"
           accent="violet"
@@ -195,6 +215,7 @@ export default async function AdminDashboardPage({
           optionsF4={bundle?.optionsF4 ?? []}
           currentSemaine={sp.semaine}
           currentStatut={sp.statut}
+          currentFormule={sp.formule}
         />
       ) : tab === "ecole" ? (
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
@@ -237,6 +258,18 @@ export default async function AdminDashboardPage({
             inscriptionsCount={
               stageOrgData?.counts ?? { total: 0, matin: {}, apresMidi: {} }
             }
+          />
+        ) : (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
+            Aucune saison active.
+          </div>
+        )
+      ) : tab === "effectifs" ? (
+        bundle ? (
+          <EffectifsJour
+            semaines={bundle.semaines}
+            currentSemaineCode={sp.effSem}
+            data={effectifsData}
           />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">

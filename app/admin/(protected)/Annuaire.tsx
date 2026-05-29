@@ -191,11 +191,12 @@ function ClientRowComp({ client }: { client: ClientRow }) {
           </div>
         ) : null}
       </td>
-      <td className="p-3 text-xs align-top break-all">
+      <td className="p-3 text-xs align-top max-w-[200px]">
         {client.email ? (
           <a
             href={`mailto:${client.email}`}
-            className="text-navy hover:text-yellow-hover hover:underline"
+            title={client.email}
+            className="block truncate text-navy hover:text-yellow-hover hover:underline"
           >
             {client.email}
           </a>

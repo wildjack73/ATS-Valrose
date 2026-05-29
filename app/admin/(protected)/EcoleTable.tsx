@@ -187,10 +187,11 @@ function EcoleRowGroup({
             {row.code_postal_ville ? ` • ${row.code_postal_ville}` : ""}
           </div>
         </td>
-        <td className="p-3 text-xs align-top break-all">
+        <td className="p-3 text-xs align-top max-w-[180px]">
           <a
             href={`mailto:${row.email}`}
-            className="text-navy hover:text-yellow-hover hover:underline"
+            title={row.email}
+            className="block truncate text-navy hover:text-yellow-hover hover:underline"
           >
             {row.email}
           </a>

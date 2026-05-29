@@ -8,6 +8,7 @@ import type {
 export async function fetchStages(filters: {
   semaine?: string;
   statut?: string;
+  formule?: string;
 } = {}): Promise<InscriptionStageRow[]> {
   const supabase = getSupabaseAdmin();
   let q = supabase
@@ -17,6 +18,7 @@ export async function fetchStages(filters: {
 
   if (filters.semaine) q = q.eq("semaine", filters.semaine);
   if (filters.statut) q = q.eq("statut", filters.statut);
+  if (filters.formule) q = q.eq("formule", filters.formule);
 
   const { data, error } = await q;
   if (error) {

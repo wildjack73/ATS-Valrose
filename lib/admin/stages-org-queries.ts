@@ -133,3 +133,96 @@ export async function fetchInscriptionsCountByDay(
     apresMidi,
   };
 }
+
+// ============================================================================
+// Effectifs détaillés par jour : qui est là le matin / l'après-midi + repas
+// ============================================================================
+
+export interface EnfantEffectif {
+  prenom: string;
+  nom: string;
+  formule: string;
+}
+
+export interface EffectifsJour {
+  matin: EnfantEffectif[];
+  apresMidi: EnfantEffectif[];
+  repas: EnfantEffectif[];
+}
+
+/**
+ * Pour une semaine : liste nominative des enfants présents le matin /
+ * l'après-midi / au repas, jour par jour.
+ *
+ * Logique d'attendance :
+ *  - F1/F2 : présents les 5 jours, sur leur créneau (matin ou après-midi)
+ *  - F3 : présents les 5 jours, matin ET après-midi
+ *  - F4 : présents uniquement les jours sélectionnés ; option_3 = journée
+ *    (matin + après-midi), option_1/2 = demi-journée (compté au matin par
+ *    défaut faute de créneau dans la donnée)
+ *  - Repas : enfant présent ce jour-là dans dejeuner_jours
+ */
+export async function fetchEffectifsByDay(
+  semaineCode: string,
+): Promise<{ total: number; jours: Record<string, EffectifsJour> }> {
+  const supa = getSupabaseAdmin();
+  const { data, error } = await supa
+    .from("inscriptions_stages")
+    .select(
+      "prenom, nom, formule, formule_creneau, formule_4_selection, dejeuner_jours, statut",
+    )
+    .eq("semaine", semaineCode)
+    .neq("statut", "annule");
+
+  const JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi"];
+  const jours: Record<string, EffectifsJour> = {};
+  for (const j of JOURS) jours[j] = { matin: [], apresMidi: [], repas: [] };
+
+  if (error) {
+    console.error("fetchEffectifsByDay:", error);
+    return { total: 0, jours };
+  }
+
+  for (const i of data ?? []) {
+    const ins = i as {
+      prenom: string;
+      nom: string;
+      formule: string;
+      formule_creneau: string | null;
+      formule_4_selection: { jour: string; option: string }[] | null;
+      dejeuner_jours: string[] | null;
+    };
+    const enfant: EnfantEffectif = {
+      prenom: ins.prenom,
+      nom: ins.nom,
+      formule: ins.formule,
+    };
+
+    if (ins.formule === "formule_3") {
+      for (const j of JOURS) {
+        jours[j].matin.push(enfant);
+        jours[j].apresMidi.push(enfant);
+      }
+    } else if (ins.formule === "formule_1" || ins.formule === "formule_2") {
+      const cible = ins.formule_creneau === "apres_midi" ? "apresMidi" : "matin";
+      for (const j of JOURS) jours[j][cible].push(enfant);
+    } else if (ins.formule === "formule_4") {
+      for (const s of ins.formule_4_selection ?? []) {
+        if (!jours[s.jour]) continue;
+        if (s.option === "option_3") {
+          jours[s.jour].matin.push(enfant);
+          jours[s.jour].apresMidi.push(enfant);
+        } else {
+          jours[s.jour].matin.push(enfant);
+        }
+      }
+    }
+
+    // Repas
+    for (const j of ins.dejeuner_jours ?? []) {
+      if (jours[j]) jours[j].repas.push(enfant);
+    }
+  }
+
+  return { total: data?.length ?? 0, jours };
+}
