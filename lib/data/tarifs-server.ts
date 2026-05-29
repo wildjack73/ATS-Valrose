@@ -158,7 +158,19 @@ export function calculerPrixStageFromTarifs(
       }
       total += opt.prix;
     }
-    return { prix: total, prixDejeuner: 0 };
+    // Déjeuner optionnel (si la formule l'autorise)
+    let prixDejeuner = 0;
+    if (
+      formule.has_dejeuner_option &&
+      input.dejeunerJours &&
+      input.dejeunerJours.length > 0
+    ) {
+      prixDejeuner =
+        input.dejeunerJours.length >= 5
+          ? formule.prix_dejeuner ?? 0
+          : input.dejeunerJours.length * (formule.prix_dejeuner_jour ?? 0);
+    }
+    return { prix: total + prixDejeuner, prixDejeuner };
   }
 
   let total = formule.prix ?? 0;

@@ -109,6 +109,17 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
         option: o,
       }));
     setValue("formule_4_selection", arr, { shouldValidate: true });
+    // Si on retire un jour (Aucun), on enlève aussi son éventuel déjeuner
+    if (option === "") {
+      const dejActuels = (watch("formule_dejeuner_jours") ?? []) as string[];
+      if (dejActuels.includes(jour)) {
+        setValue(
+          "formule_dejeuner_jours",
+          dejActuels.filter((j) => j !== jour) as StageFormInput["formule_dejeuner_jours"],
+          { shouldValidate: false },
+        );
+      }
+    }
   }
 
   const prixDejeuner = useMemo(() => {
@@ -120,13 +131,15 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
   const prixCalcule = useMemo(() => {
     if (!formule) return 0;
     if (formule.is_a_la_carte) {
-      return Object.values(daySelection)
+      const optionsTotal = Object.values(daySelection)
         .filter((v) => v !== "")
         .reduce(
           (sum, optCode) =>
             sum + (OPTIONS_F4.find((o) => o.code === optCode)?.prix ?? 0),
           0,
         );
+      // Le déjeuner s'ajoute aussi pour la formule à la carte
+      return optionsTotal + prixDejeuner;
     }
     return (formule.prix ?? 0) + prixDejeuner;
   }, [formule, daySelection, OPTIONS_F4, prixDejeuner]);
@@ -454,83 +467,8 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
           </div>
         ) : null}
 
-        {formule?.has_dejeuner_option ? (
-          dejeunerActif ? (
-            <div className="rounded-lg bg-cyan-club/10 border border-cyan-club/30 p-4">
-              <Controller
-                control={control}
-                name="formule_dejeuner_jours"
-                render={({ field }) => {
-                  const selected = (field.value ?? []) as string[];
-                  const all5 = selected.length >= 5;
-                  function toggle(jour: string) {
-                    const next = selected.includes(jour)
-                      ? selected.filter((j) => j !== jour)
-                      : [...selected, jour];
-                    field.onChange(next);
-                  }
-                  return (
-                    <div>
-                      <p className="text-sm font-medium text-navy mb-2">
-                        Déjeuner encadré (optionnel)
-                      </p>
-                      <p className="text-xs text-gray-600 mb-3">
-                        {formule.prix_dejeuner_jour}€ / jour, ou{" "}
-                        {formule.prix_dejeuner}€ la semaine entière (5 jours).
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {JOURS_SEMAINE.map((j) => {
-                          const checked = selected.includes(j.id);
-                          return (
-                            <label
-                              key={j.id}
-                              className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
-                                checked
-                                  ? "border-navy bg-white"
-                                  : "border-gray-300 bg-white/60"
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                className="accent-navy"
-                                checked={checked}
-                                onChange={() => toggle(j.id)}
-                              />
-                              <span>{j.label}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                      {selected.length > 0 ? (
-                        <p className="mt-3 text-sm text-navy">
-                          {all5 ? (
-                            <>
-                              Forfait semaine entière :{" "}
-                              <strong>+{formule.prix_dejeuner}€</strong>
-                            </>
-                          ) : (
-                            <>
-                              {selected.length} jour{selected.length > 1 ? "s" : ""} ×{" "}
-                              {formule.prix_dejeuner_jour}€ ={" "}
-                              <strong>
-                                +{selected.length * formule.prix_dejeuner_jour}€
-                              </strong>
-                            </>
-                          )}
-                        </p>
-                      ) : null}
-                    </div>
-                  );
-                }}
-              />
-            </div>
-          ) : semaineChoisie ? (
-            <p className="text-xs text-gray-500 italic">
-              Déjeuner non proposé pour cette semaine.
-            </p>
-          ) : null
-        ) : null}
-
+        {/* Table à la carte (F4) AVANT le déjeuner, pour que le repas ne
+            propose que les jours réservés */}
         {formule?.is_a_la_carte ? (
           <div className="rounded-lg bg-cyan-club/10 border border-cyan-club/30 p-4 space-y-3">
             <p className="text-sm text-gray-700">
@@ -587,6 +525,102 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
               </p>
             ) : null}
           </div>
+        ) : null}
+
+        {/* Bloc déjeuner — pour toutes les formules qui ont l'option (F2/F3/F4).
+            Pour la F4 (à la carte) on ne propose le repas que sur les jours
+            effectivement réservés. */}
+        {formule?.has_dejeuner_option ? (
+          dejeunerActif ? (
+            (() => {
+              const joursDejeuner = formule.is_a_la_carte
+                ? JOURS_SEMAINE.filter((j) => daySelection[j.id] !== "")
+                : JOURS_SEMAINE;
+              if (formule.is_a_la_carte && joursDejeuner.length === 0) {
+                return (
+                  <p className="text-xs text-gray-500 italic">
+                    Choisissez d&apos;abord vos jours ci-dessus pour ajouter le
+                    déjeuner.
+                  </p>
+                );
+              }
+              return (
+                <div className="rounded-lg bg-cyan-club/10 border border-cyan-club/30 p-4">
+                  <Controller
+                    control={control}
+                    name="formule_dejeuner_jours"
+                    render={({ field }) => {
+                      const selected = (field.value ?? []) as string[];
+                      const all5 = selected.length >= 5;
+                      function toggle(jour: string) {
+                        const next = selected.includes(jour)
+                          ? selected.filter((j) => j !== jour)
+                          : [...selected, jour];
+                        field.onChange(next);
+                      }
+                      return (
+                        <div>
+                          <p className="text-sm font-medium text-navy mb-2">
+                            Déjeuner encadré (optionnel)
+                          </p>
+                          <p className="text-xs text-gray-600 mb-3">
+                            {formule.prix_dejeuner_jour}€ / jour, ou{" "}
+                            {formule.prix_dejeuner}€ la semaine entière (5 jours).
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {joursDejeuner.map((j) => {
+                              const checked = selected.includes(j.id);
+                              return (
+                                <label
+                                  key={j.id}
+                                  className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
+                                    checked
+                                      ? "border-navy bg-white"
+                                      : "border-gray-300 bg-white/60"
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="accent-navy"
+                                    checked={checked}
+                                    onChange={() => toggle(j.id)}
+                                  />
+                                  <span>{j.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          {selected.length > 0 ? (
+                            <p className="mt-3 text-sm text-navy">
+                              {all5 ? (
+                                <>
+                                  Forfait semaine entière :{" "}
+                                  <strong>+{formule.prix_dejeuner}€</strong>
+                                </>
+                              ) : (
+                                <>
+                                  {selected.length} jour
+                                  {selected.length > 1 ? "s" : ""} ×{" "}
+                                  {formule.prix_dejeuner_jour}€ ={" "}
+                                  <strong>
+                                    +{selected.length * formule.prix_dejeuner_jour}€
+                                  </strong>
+                                </>
+                              )}
+                            </p>
+                          ) : null}
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
+              );
+            })()
+          ) : semaineChoisie ? (
+            <p className="text-xs text-gray-500 italic">
+              Déjeuner non proposé pour cette semaine.
+            </p>
+          ) : null
         ) : null}
       </Section>
 
