@@ -331,7 +331,7 @@ export default function HomePage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3 justify-center">
               <a
-                href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+                href="https://tcvalrose.doinsport.club/home"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-xl bg-navy text-white px-6 py-3 font-bold hover:bg-navy-dark transition shadow-md"

@@ -46,7 +46,7 @@ export default function RootLayout({
               </a>
               <span className="text-white/20">·</span>
               <a
-                href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+                href="https://tcvalrose.doinsport.club/home"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-yellow-club transition-colors"

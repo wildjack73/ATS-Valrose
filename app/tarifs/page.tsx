@@ -125,7 +125,7 @@ export default async function TarifsPage() {
               Pour réserver une leçon ou un coaching&nbsp;:{" "}
               <a
                 className="text-navy underline font-semibold"
-                href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+                href="https://tcvalrose.doinsport.club/home"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -166,11 +166,11 @@ export default async function TarifsPage() {
             Réservez votre terrain ou votre coaching
           </h3>
           <p className="mt-2 text-sm text-white/75">
-            Réservation en ligne directement sur le site officiel du club.
+            Réservation en ligne via notre plateforme dédiée.
           </p>
           <div className="mt-5 flex flex-wrap gap-3 justify-center">
             <a
-              href="https://padel-tennis-nice.fr/reservation-padel-tennis-nice-valrose/"
+              href="https://tcvalrose.doinsport.club/home"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-lg bg-yellow-club text-navy px-5 py-2.5 font-bold text-sm hover:bg-yellow-hover transition"
