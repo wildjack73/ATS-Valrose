@@ -297,7 +297,12 @@ body {
 /* === Mode sombre admin ===================================================== */
 /* Le toggle ajoute la classe .admin-dark sur le wrapper racine de l'admin.
    Les règles ci-dessous overrident les classes Tailwind les plus courantes
-   pour les composants admin. Le site public n'est jamais affecté. */
+   pour les composants admin. Le site public n'est jamais affecté.
+   IMPORTANT : tout ce bloc est désactivé à l'impression (cf. @media not print)
+   pour qu'un PDF/impression sorte toujours en mode clair, économise l'encre
+   et reste lisible sur papier. */
+
+@media not print {
 
 .admin-dark {
   color-scheme: dark;
@@ -505,6 +510,8 @@ body {
 .admin-dark .text-gray-600 a {
   color: var(--d-text-dim) !important;
 }
+
+} /* fin @media not print → tout le mode sombre admin ci-dessus */
 
 /* === Impression ============================================================ */
 @media print {
