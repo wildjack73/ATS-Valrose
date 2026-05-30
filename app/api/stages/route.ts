@@ -121,7 +121,7 @@ export async function POST(request: Request) {
   const { data: inserted, error } = await supabase
     .from("inscriptions_stages")
     .insert({
-      saison_id: bundle.saison.id,
+      saison_id: bundle.saisonStages.id,
       nom: data.nom,
       prenom: data.prenom,
       date_naissance: data.date_naissance,

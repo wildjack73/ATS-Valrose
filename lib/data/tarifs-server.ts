@@ -2,6 +2,7 @@ import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import type {
   Saison,
+  SaisonDomaine,
   Formule,
   OptionF4,
   Semaine,
@@ -12,42 +13,68 @@ import type {
 } from "./tarifs-types";
 
 // ============================================================================
-// Saisons
+// Saisons (typées par domaine : 'stages' ou 'ecole')
 // ============================================================================
 
-export async function listSaisons(): Promise<Saison[]> {
-  const { data, error } = await getSupabaseAdmin()
+export async function listSaisons(domaine?: SaisonDomaine): Promise<Saison[]> {
+  let q = getSupabaseAdmin()
     .from("saisons")
     .select("*")
     .order("order_idx", { ascending: false });
+  if (domaine) q = q.eq("domaine", domaine);
+  const { data, error } = await q;
   if (error) throw error;
   return (data ?? []) as Saison[];
 }
 
-export async function getActiveSaison(): Promise<Saison | null> {
+/** Saison active pour un domaine donné (stages ou école). */
+export async function getActiveSaison(
+  domaine: SaisonDomaine,
+): Promise<Saison | null> {
   const { data, error } = await getSupabaseAdmin()
     .from("saisons")
     .select("*")
     .eq("active", true)
+    .eq("domaine", domaine)
     .maybeSingle();
   if (error) throw error;
   return (data as Saison) ?? null;
 }
 
-export async function getSaisonByCode(code: string): Promise<Saison | null> {
+export async function getSaisonByCode(
+  code: string,
+  domaine: SaisonDomaine,
+): Promise<Saison | null> {
   const { data, error } = await getSupabaseAdmin()
     .from("saisons")
     .select("*")
     .eq("code", code)
+    .eq("domaine", domaine)
     .maybeSingle();
   if (error) throw error;
   return (data as Saison) ?? null;
 }
 
+/**
+ * Active la saison donnée, désactive toutes les autres saisons du MÊME
+ * domaine. Les saisons de l'autre domaine ne sont pas touchées.
+ */
 export async function setActiveSaison(saisonId: string): Promise<void> {
   const supa = getSupabaseAdmin();
-  // Désactiver toutes les autres
-  await supa.from("saisons").update({ active: false }).neq("id", saisonId);
+  // Récupérer le domaine de cette saison
+  const { data: target } = await supa
+    .from("saisons")
+    .select("domaine")
+    .eq("id", saisonId)
+    .maybeSingle();
+  if (!target) throw new Error("Saison introuvable");
+  const domaine = (target as { domaine: string }).domaine;
+  // Désactiver les autres du même domaine
+  await supa
+    .from("saisons")
+    .update({ active: false })
+    .eq("domaine", domaine)
+    .neq("id", saisonId);
   // Activer celle-ci
   const { error } = await supa
     .from("saisons")
@@ -57,50 +84,74 @@ export async function setActiveSaison(saisonId: string): Promise<void> {
 }
 
 // ============================================================================
-// Tarifs d'une saison
+// Tarifs : bundle = saison stages + saison école
 // ============================================================================
 
+interface BundleInput {
+  saisonStagesId: string;
+  saisonEcoleId: string;
+}
+
+/**
+ * Bundle de tarifs pour un couple (saison stages, saison école).
+ * Si une seule des deux est fournie, on utilise l'active pour l'autre.
+ */
 export async function getTarifsBundle(
-  saisonId: string,
+  input: BundleInput,
 ): Promise<TarifsBundle | null> {
   const supa = getSupabaseAdmin();
-  const [saisonResp, formules, optionsF4, semaines, cours, licence, autres] =
-    await Promise.all([
-      supa.from("saisons").select("*").eq("id", saisonId).maybeSingle(),
-      supa
-        .from("tarifs_stages_formules")
-        .select("*")
-        .eq("saison_id", saisonId)
-        .order("order_idx"),
-      supa
-        .from("tarifs_options_f4")
-        .select("*")
-        .eq("saison_id", saisonId)
-        .order("order_idx"),
-      supa
-        .from("semaines_stages")
-        .select("*")
-        .eq("saison_id", saisonId)
-        .order("order_idx"),
-      supa
-        .from("tarifs_cours_ecole")
-        .select("*")
-        .eq("saison_id", saisonId)
-        .order("order_idx"),
-      supa
-        .from("tarifs_licence_fft")
-        .select("*")
-        .eq("saison_id", saisonId)
-        .order("order_idx"),
-      supa
-        .from("tarifs_autres")
-        .select("*")
-        .eq("saison_id", saisonId)
-        .order("order_idx"),
-    ]);
+  const { saisonStagesId, saisonEcoleId } = input;
 
-  if (saisonResp.error || !saisonResp.data) {
-    if (saisonResp.error) console.error("getTarifsBundle saison:", saisonResp.error);
+  const [
+    saisonStagesResp,
+    saisonEcoleResp,
+    formules,
+    optionsF4,
+    semaines,
+    cours,
+    licence,
+    autres,
+  ] = await Promise.all([
+    supa.from("saisons").select("*").eq("id", saisonStagesId).maybeSingle(),
+    supa.from("saisons").select("*").eq("id", saisonEcoleId).maybeSingle(),
+    supa
+      .from("tarifs_stages_formules")
+      .select("*")
+      .eq("saison_id", saisonStagesId)
+      .order("order_idx"),
+    supa
+      .from("tarifs_options_f4")
+      .select("*")
+      .eq("saison_id", saisonStagesId)
+      .order("order_idx"),
+    supa
+      .from("semaines_stages")
+      .select("*")
+      .eq("saison_id", saisonStagesId)
+      .order("order_idx"),
+    supa
+      .from("tarifs_cours_ecole")
+      .select("*")
+      .eq("saison_id", saisonEcoleId)
+      .order("order_idx"),
+    supa
+      .from("tarifs_licence_fft")
+      .select("*")
+      .eq("saison_id", saisonEcoleId)
+      .order("order_idx"),
+    supa
+      .from("tarifs_autres")
+      .select("*")
+      .eq("saison_id", saisonEcoleId)
+      .order("order_idx"),
+  ]);
+
+  if (
+    saisonStagesResp.error || !saisonStagesResp.data ||
+    saisonEcoleResp.error || !saisonEcoleResp.data
+  ) {
+    if (saisonStagesResp.error) console.error("getTarifsBundle stages:", saisonStagesResp.error);
+    if (saisonEcoleResp.error) console.error("getTarifsBundle ecole:", saisonEcoleResp.error);
     return null;
   }
 
@@ -112,7 +163,8 @@ export async function getTarifsBundle(
   );
 
   return {
-    saison: saisonResp.data as Saison,
+    saisonStages: saisonStagesResp.data as Saison,
+    saisonEcole: saisonEcoleResp.data as Saison,
     formules: (formules.data ?? []) as Formule[],
     optionsF4: (optionsF4.data ?? []) as OptionF4[],
     semaines: (semaines.data ?? []) as Semaine[],
@@ -123,11 +175,17 @@ export async function getTarifsBundle(
   };
 }
 
-/** Bundle de la saison active, ou null si aucune. */
+/** Bundle des saisons actuellement actives (une par domaine). */
 export async function getActiveTarifsBundle(): Promise<TarifsBundle | null> {
-  const saison = await getActiveSaison();
-  if (!saison) return null;
-  return getTarifsBundle(saison.id);
+  const [sStages, sEcole] = await Promise.all([
+    getActiveSaison("stages"),
+    getActiveSaison("ecole"),
+  ]);
+  if (!sStages || !sEcole) return null;
+  return getTarifsBundle({
+    saisonStagesId: sStages.id,
+    saisonEcoleId: sEcole.id,
+  });
 }
 
 // ============================================================================

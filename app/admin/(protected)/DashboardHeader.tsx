@@ -100,7 +100,7 @@ export default function DashboardHeader({
             <div>
               <p className="text-[10px] uppercase tracking-widest text-cyan-light font-bold">
                 Vacances scolaires
-                {bundle ? ` · Saison ${bundle.saison.code}` : ""}
+                {bundle ? ` · Saison ${bundle.saisonStages.code}` : ""}
               </p>
               <h2 className="text-xl font-extrabold flex items-center gap-2">
                 🎾 Stages
@@ -205,7 +205,7 @@ export default function DashboardHeader({
             <div>
               <p className="text-[10px] uppercase tracking-widest text-yellow-200 font-bold">
                 Saison annuelle
-                {bundle ? ` · ${bundle.saison.code}` : ""}
+                {bundle ? ` · ${bundle.saisonEcole.code}` : ""}
               </p>
               <h2 className="text-xl font-extrabold flex items-center gap-2">
                 🏫 École de tennis

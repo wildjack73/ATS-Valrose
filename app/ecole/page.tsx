@@ -39,7 +39,7 @@ export default async function EcolePage() {
       <section className="bg-gradient-to-br from-clay via-ocre to-ocre-light text-white">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
           <h1 className="text-3xl sm:text-4xl font-extrabold">
-            École de Tennis — {bundle.saison.label}
+            École de Tennis — {bundle.saisonEcole.label}
           </h1>
           <p className="mt-3 text-white/90">
             Inscription annuelle aux cours de tennis et de padel de

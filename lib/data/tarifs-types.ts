@@ -3,12 +3,15 @@
  * Pas de `server-only` ici : utilisables en composants client (en props).
  */
 
+export type SaisonDomaine = "stages" | "ecole";
+
 export interface Saison {
   id: string;
   code: string;
   label: string;
   active: boolean;
   order_idx: number;
+  domaine: SaisonDomaine;
   created_at?: string;
 }
 
@@ -86,7 +89,10 @@ export interface TarifAutre {
  * du serveur aux composants client.
  */
 export interface TarifsBundle {
-  saison: Saison;
+  /** Saison active du domaine STAGES (formules, options F4, semaines). */
+  saisonStages: Saison;
+  /** Saison active du domaine ÉCOLE (cours tennis/padel, licence, autres). */
+  saisonEcole: Saison;
   formules: Formule[];
   optionsF4: OptionF4[];
   semaines: Semaine[];

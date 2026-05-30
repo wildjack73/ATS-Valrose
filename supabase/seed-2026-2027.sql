@@ -4,15 +4,18 @@
 -- À exécuter dans Supabase SQL Editor APRÈS schema.sql.
 -- ============================================================================
 
--- 1. Saison (active par défaut)
-insert into public.saisons (code, label, active, order_idx) values
-  ('2026-2027', 'Saison 2026-2027', true, 100)
-on conflict (code) do update set
+-- 1. Saisons : une par domaine (stages + école) avec le même code.
+--    Depuis la migration 2026-05-24-saisons-par-domaine, les saisons sont
+--    typées et évoluent indépendamment.
+insert into public.saisons (code, label, active, order_idx, domaine) values
+  ('2026-2027', 'Saison 2026-2027', true, 100, 'stages'),
+  ('2026-2027', 'Saison 2026-2027', true, 100, 'ecole')
+on conflict (code, domaine) do update set
   label = excluded.label,
   order_idx = excluded.order_idx;
 
 -- Récupérer l'id pour les inserts suivants
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'stages')
 
 -- 2. Formules stages
 insert into public.tarifs_stages_formules
@@ -34,11 +37,11 @@ on conflict (saison_id, code) do update set
 -- 2bis. Prix déjeuner par jour (8€) pour les formules qui ont l'option
 update public.tarifs_stages_formules
 set prix_dejeuner_jour = 8
-where saison_id = (select id from public.saisons where code = '2026-2027')
+where saison_id = (select id from public.saisons where code = '2026-2027' and domaine = 'stages')
   and has_dejeuner_option = true;
 
 -- 3. Options Formule 4
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'stages')
 insert into public.tarifs_options_f4 (saison_id, code, label, prix, detail, order_idx)
 select s.id, v.* from s, (values
   ('option_1', 'Option 1', 25, 'Matin ou après-midi (1h30)', 10),
@@ -49,7 +52,7 @@ on conflict (saison_id, code) do update set
   label = excluded.label, prix = excluded.prix, detail = excluded.detail, order_idx = excluded.order_idx;
 
 -- 4. Semaines de stages (vacances scolaires Nice — Zone B)
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'stages')
 insert into public.semaines_stages (saison_id, code, periode, label, date_debut, ouverte, order_idx)
 select s.id, v.* from s, (values
   -- Été 2026
@@ -82,7 +85,7 @@ on conflict (saison_id, code) do update set
 -- 4bis. Pas de déjeuner à Noël (restauration fermée) et sur les semaines qui démarrent en juin
 update public.semaines_stages
 set dejeuner_disponible = false
-where saison_id = (select id from public.saisons where code = '2026-2027')
+where saison_id = (select id from public.saisons where code = '2026-2027' and domaine = 'stages')
   and (
     code like 'noel%'
     or (date_debut is not null and extract(month from date_debut) = 6)
@@ -91,12 +94,12 @@ where saison_id = (select id from public.saisons where code = '2026-2027')
 -- Sécurité : les autres semaines de la saison gardent le déjeuner actif
 update public.semaines_stages
 set dejeuner_disponible = true
-where saison_id = (select id from public.saisons where code = '2026-2027')
+where saison_id = (select id from public.saisons where code = '2026-2027' and domaine = 'stages')
   and code not like 'noel%'
   and (date_debut is null or extract(month from date_debut) <> 6);
 
 -- 5. Cours École Tennis
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'ecole')
 insert into public.tarifs_cours_ecole (saison_id, type, code, label, description, prix, order_idx)
 select s.id, 'tennis', v.* from s, (values
   ('baby_tennis',             'Baby Tennis',          'À partir de 3 ans · 1h/semaine',                    250, 10),
@@ -115,7 +118,7 @@ on conflict (saison_id, type, code) do update set
   order_idx = excluded.order_idx;
 
 -- 6. Cours École Padel
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'ecole')
 insert into public.tarifs_cours_ecole (saison_id, type, code, label, description, prix, order_idx)
 select s.id, 'padel', v.* from s, (values
   ('perfectionnement',        'Perfectionnement Padel','1h30/semaine',                             450, 10),
@@ -129,7 +132,7 @@ on conflict (saison_id, type, code) do update set
   order_idx = excluded.order_idx;
 
 -- 7. Licence FFT
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'ecole')
 insert into public.tarifs_licence_fft (saison_id, code, label, prix, order_idx)
 select s.id, v.* from s, (values
   ('non_adulte', 'Non (adulte)',                0, 10),
@@ -142,9 +145,9 @@ on conflict (saison_id, code) do update set
 -- 8. Autres tarifs (leçons / locations / matériel) — pas de unique constraint
 -- → on supprime et réinsère pour idempotence
 delete from public.tarifs_autres
-where saison_id = (select id from public.saisons where code = '2026-2027');
+where saison_id = (select id from public.saisons where code = '2026-2027' and domaine = 'ecole');
 
-with s as (select id from public.saisons where code = '2026-2027')
+with s as (select id from public.saisons where code = '2026-2027' and domaine = 'ecole')
 insert into public.tarifs_autres (saison_id, category, label, prix, detail, order_idx)
 select s.id, v.* from s, (values
   -- Leçons individuelles

@@ -56,7 +56,7 @@ export default async function StagesPage() {
           </h1>
           <p className="mt-3 text-white/90">
             Stages multi-activités (tennis, padel, pickleball) pendant les
-            vacances scolaires. {bundle.saison.label}.
+            vacances scolaires. {bundle.saisonStages.label}.
           </p>
         </div>
       </section>

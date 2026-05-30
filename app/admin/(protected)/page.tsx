@@ -7,7 +7,7 @@ import {
   fetchHistoriqueEcole,
 } from "@/lib/admin/queries";
 import {
-  getActiveTarifsBundle,
+  getActiveSaison,
   getTarifsBundle,
   getSaisonByCode,
   listSaisons,
@@ -42,7 +42,10 @@ type SearchParams = Promise<{
   semaine?: string;
   semaineId?: string;
   statut?: string;
-  saison?: string;
+  /** code de la saison STAGES à visualiser (sinon active) */
+  saisonStages?: string;
+  /** code de la saison ÉCOLE à visualiser (sinon active) */
+  saisonEcole?: string;
   formule?: string;
   effSem?: string;
 }>;
@@ -71,12 +74,28 @@ export default async function AdminDashboardPage({
                   : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
-  // Pour l'onglet Tarifs : permettre de visualiser/éditer n'importe quelle saison
-  const targetSaisonPromise = sp.saison
-    ? getSaisonByCode(sp.saison).then((s) =>
-        s ? getTarifsBundle(s.id) : getActiveTarifsBundle(),
-      )
-    : getActiveTarifsBundle();
+  // Pour l'onglet Tarifs : on peut visualiser/éditer une saison STAGES et une
+  // saison ÉCOLE indépendamment. Si un code est fourni dans l'URL on l'utilise,
+  // sinon on prend la saison active du domaine.
+  const targetBundlePromise = (async () => {
+    const [sStages, sEcole] = await Promise.all([
+      sp.saisonStages
+        ? getSaisonByCode(sp.saisonStages, "stages").then(
+            async (s) => s ?? (await getActiveSaison("stages")),
+          )
+        : getActiveSaison("stages"),
+      sp.saisonEcole
+        ? getSaisonByCode(sp.saisonEcole, "ecole").then(
+            async (s) => s ?? (await getActiveSaison("ecole")),
+          )
+        : getActiveSaison("ecole"),
+    ]);
+    if (!sStages || !sEcole) return null;
+    return getTarifsBundle({
+      saisonStagesId: sStages.id,
+      saisonEcoleId: sEcole.id,
+    });
+  })();
 
   const [
     stages,
@@ -85,7 +104,8 @@ export default async function AdminDashboardPage({
     historiqueSemaines,
     historiqueEcole,
     bundle,
-    saisons,
+    saisonsStages,
+    saisonsEcole,
     coaches,
   ] = await Promise.all([
     fetchStages({ semaine: sp.semaine, statut: sp.statut, formule: sp.formule }),
@@ -93,8 +113,9 @@ export default async function AdminDashboardPage({
     fetchHistoriqueStages({ semaine: sp.semaine }),
     fetchHistoriqueSemaines(),
     fetchHistoriqueEcole(),
-    targetSaisonPromise,
-    listSaisons(),
+    targetBundlePromise,
+    listSaisons("stages"),
+    listSaisons("ecole"),
     fetchCoaches(),
   ]);
 
@@ -102,8 +123,8 @@ export default async function AdminDashboardPage({
   const planningData =
     tab === "planning" && bundle
       ? await Promise.all([
-          fetchGroupesEcole(bundle.saison.id),
-          fetchInscriptionsSansGroupe(bundle.saison.id),
+          fetchGroupesEcole(bundle.saisonEcole.id),
+          fetchInscriptionsSansGroupe(bundle.saisonEcole.id),
         ])
       : null;
 
@@ -221,7 +242,11 @@ export default async function AdminDashboardPage({
         <EcoleTable rows={ecole} currentStatut={sp.statut} />
       ) : tab === "tarifs" ? (
         bundle ? (
-          <TarifsEditor bundle={bundle} saisons={saisons} />
+          <TarifsEditor
+            bundle={bundle}
+            saisonsStages={saisonsStages}
+            saisonsEcole={saisonsEcole}
+          />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
             Aucune saison configurée. Exécute{" "}
@@ -232,7 +257,7 @@ export default async function AdminDashboardPage({
       ) : tab === "planning" ? (
         bundle && planningData ? (
           <PlanningEcole
-            saisonId={bundle.saison.id}
+            saisonId={bundle.saisonEcole.id}
             groupes={planningData[0]}
             coaches={coaches}
             inscriptionsSansGroupe={planningData[1]}

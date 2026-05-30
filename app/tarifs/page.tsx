@@ -45,8 +45,13 @@ export default async function TarifsPage() {
       <section className="bg-gradient-to-br from-navy via-navy to-cyan-club text-white">
         <div className="mx-auto max-w-4xl px-4 py-12">
           <h1 className="text-3xl sm:text-4xl font-extrabold">
-            Tarifs — {bundle.saison.label}
+            Tarifs du club
           </h1>
+          <p className="mt-2 text-white/85 text-sm">
+            🎾 Stages : <strong>{bundle.saisonStages.label}</strong>
+            {" · "}
+            🏫 École : <strong>{bundle.saisonEcole.label}</strong>
+          </p>
           <p className="mt-2 text-white/85">
             Tous les tarifs du club. Pour vous inscrire en ligne, utilisez les
             boutons en bas de chaque section.

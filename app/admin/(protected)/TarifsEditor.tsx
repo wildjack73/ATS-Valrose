@@ -55,17 +55,21 @@ async function apiDelete(resource: Resource, id: string) {
   }
 }
 
+type Domaine = "stages" | "ecole";
+
 export default function TarifsEditor({
   bundle,
-  saisons,
+  saisonsStages,
+  saisonsEcole,
 }: {
   bundle: TarifsBundle;
-  saisons: Saison[];
+  saisonsStages: Saison[];
+  saisonsEcole: Saison[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [creatingSaison, setCreatingSaison] = useState(false);
+  const [creatingFor, setCreatingFor] = useState<Domaine | null>(null);
 
   function refresh() {
     startTransition(() => router.refresh());
@@ -93,27 +97,37 @@ export default function TarifsEditor({
     });
   }
 
-  async function createSaison(code: string, label: string, cloneFrom?: string) {
+  async function createSaison(
+    domaine: Domaine,
+    code: string,
+    label: string,
+    cloneFrom?: string,
+  ) {
     await withError(async () => {
       const res = await fetch(`/api/admin/saisons`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, label, cloneFrom }),
+        body: JSON.stringify({ code, label, domaine, cloneFrom }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error ?? "Échec création");
       }
-      // Naviguer vers la nouvelle saison
-      router.push(`/admin?tab=tarifs&saison=${encodeURIComponent(code)}`);
+      // Naviguer vers la nouvelle saison du bon domaine
+      const param = domaine === "stages" ? "saisonStages" : "saisonEcole";
+      router.push(`/admin?tab=tarifs&${param}=${encodeURIComponent(code)}`);
     });
   }
 
-  function switchSaison(code: string) {
-    router.push(`/admin?tab=tarifs&saison=${encodeURIComponent(code)}`);
+  function switchSaison(domaine: Domaine, code: string) {
+    const param = domaine === "stages" ? "saisonStages" : "saisonEcole";
+    // Conserver l'autre param si présent
+    const other =
+      domaine === "stages"
+        ? `saisonEcole=${encodeURIComponent(bundle.saisonEcole.code)}`
+        : `saisonStages=${encodeURIComponent(bundle.saisonStages.code)}`;
+    router.push(`/admin?tab=tarifs&${param}=${encodeURIComponent(code)}&${other}`);
   }
-
-  const currentCode = bundle.saison.code;
 
   return (
     <div className="space-y-6">
@@ -123,59 +137,47 @@ export default function TarifsEditor({
         </div>
       ) : null}
 
-      {/* Sélecteur de saison */}
-      <div className="rounded-xl bg-navy text-white p-4 flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-xs uppercase tracking-wide text-white/60">
-            Saison
-          </label>
-          <select
-            value={currentCode}
-            onChange={(e) => switchSaison(e.target.value)}
-            disabled={pending}
-            className="rounded bg-white text-navy px-3 py-1.5 text-sm font-semibold"
-          >
-            {saisons.map((s) => (
-              <option key={s.id} value={s.code}>
-                {s.label} {s.active ? "(active)" : ""}
-              </option>
-            ))}
-          </select>
-        </div>
-        {bundle.saison.active ? (
-          <span className="rounded-full bg-green-500 text-white px-3 py-1 text-xs font-bold">
-            ✓ Saison active (affichée sur le site)
-          </span>
-        ) : (
-          <button
-            onClick={() => setActive(bundle.saison.id)}
-            disabled={pending}
-            className="rounded bg-yellow-club text-navy px-3 py-1.5 text-xs font-bold hover:bg-yellow-hover disabled:opacity-50"
-          >
-            Définir cette saison comme active
-          </button>
-        )}
-        <button
-          onClick={() => setCreatingSaison(true)}
-          disabled={pending}
-          className="ml-auto rounded bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 text-xs font-bold border border-white/20"
-        >
-          + Nouvelle saison
-        </button>
+      {/* Sélecteurs : une saison stages + une saison école, indépendantes */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <SaisonSwitcher
+          domaine="stages"
+          accent="cyan"
+          icon="🎾"
+          current={bundle.saisonStages}
+          all={saisonsStages}
+          pending={pending}
+          onSwitch={(code) => switchSaison("stages", code)}
+          onSetActive={() => setActive(bundle.saisonStages.id)}
+          onCreate={() => setCreatingFor("stages")}
+        />
+        <SaisonSwitcher
+          domaine="ecole"
+          accent="ocre"
+          icon="🏫"
+          current={bundle.saisonEcole}
+          all={saisonsEcole}
+          pending={pending}
+          onSwitch={(code) => switchSaison("ecole", code)}
+          onSetActive={() => setActive(bundle.saisonEcole.id)}
+          onCreate={() => setCreatingFor("ecole")}
+        />
       </div>
 
-      {creatingSaison ? (
+      {creatingFor ? (
         <CreateSaisonForm
-          existingSaisons={saisons}
-          onCancel={() => setCreatingSaison(false)}
+          domaine={creatingFor}
+          existingSaisons={
+            creatingFor === "stages" ? saisonsStages : saisonsEcole
+          }
+          onCancel={() => setCreatingFor(null)}
           onCreate={async (code, label, cloneFrom) => {
-            await createSaison(code, label, cloneFrom);
-            setCreatingSaison(false);
+            await createSaison(creatingFor, code, label, cloneFrom);
+            setCreatingFor(null);
           }}
         />
       ) : null}
 
-      <Section title={`🎾 Stages — Formules (saison ${bundle.saison.label})`}>
+      <Section title={`🎾 Stages — Formules (saison ${bundle.saisonStages.label})`}>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase text-gray-500 border-b">
@@ -233,8 +235,8 @@ export default function TarifsEditor({
         action={
           <div className="flex items-center gap-2 flex-wrap">
             <ImportVacancesButton
-              saisonId={bundle.saison.id}
-              saisonCode={bundle.saison.code}
+              saisonId={bundle.saisonStages.id}
+              saisonCode={bundle.saisonStages.code}
               onImport={async (replaceExisting) => {
                 await withError(async () => {
                   const res = await fetch(
@@ -243,9 +245,9 @@ export default function TarifsEditor({
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        saisonId: bundle.saison.id,
+                        saisonId: bundle.saisonStages.id,
                         location: "Nice",
-                        anneeScolaire: bundle.saison.code,
+                        anneeScolaire: bundle.saisonStages.code,
                         replaceExisting,
                       }),
                     },
@@ -258,7 +260,7 @@ export default function TarifsEditor({
               }}
             />
             <AddSemaineButton
-              saisonId={bundle.saison.id}
+              saisonId={bundle.saisonStages.id}
               onAdd={(data) => withError(() => apiPost("semaines", data))}
             />
           </div>
@@ -351,7 +353,7 @@ export default function TarifsEditor({
           }
           action={
             <AddAutreButton
-              saisonId={bundle.saison.id}
+              saisonId={bundle.saisonEcole.id}
               category={cat}
               onAdd={(data) => withError(() => apiPost("autres", data))}
             />
@@ -391,6 +393,75 @@ export default function TarifsEditor({
 }
 
 // ----- Components -----
+
+function SaisonSwitcher({
+  domaine,
+  accent,
+  icon,
+  current,
+  all,
+  pending,
+  onSwitch,
+  onSetActive,
+  onCreate,
+}: {
+  domaine: Domaine;
+  accent: "cyan" | "ocre";
+  icon: string;
+  current: Saison;
+  all: Saison[];
+  pending: boolean;
+  onSwitch: (code: string) => void;
+  onSetActive: () => void;
+  onCreate: () => void;
+}) {
+  const bg = accent === "cyan" ? "bg-cyan-club" : "bg-ocre";
+  const label =
+    domaine === "stages"
+      ? "Saison stages (formules, semaines, options F4)"
+      : "Saison école (cours, licence FFT, leçons, locations)";
+  return (
+    <div className={`rounded-xl ${bg} text-white p-4 flex flex-col gap-3`}>
+      <div className="text-[10px] uppercase tracking-widest font-bold text-white/85">
+        {icon} {label}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={current.code}
+          onChange={(e) => onSwitch(e.target.value)}
+          disabled={pending}
+          className="rounded bg-white text-navy px-3 py-1.5 text-sm font-semibold"
+        >
+          {all.map((s) => (
+            <option key={s.id} value={s.code}>
+              {s.label} {s.active ? "(active)" : ""}
+            </option>
+          ))}
+        </select>
+        {current.active ? (
+          <span className="rounded-full bg-green-500 text-white px-2.5 py-0.5 text-[11px] font-bold">
+            ✓ active
+          </span>
+        ) : (
+          <button
+            onClick={onSetActive}
+            disabled={pending}
+            className="rounded bg-yellow-club text-navy px-3 py-1.5 text-xs font-bold hover:bg-yellow-hover disabled:opacity-50"
+          >
+            Activer
+          </button>
+        )}
+        <button
+          onClick={onCreate}
+          disabled={pending}
+          className="ml-auto rounded bg-white/15 hover:bg-white/25 text-white px-3 py-1.5 text-xs font-bold border border-white/25"
+        >
+          + Nouvelle saison
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function Section({
   title,
@@ -1098,10 +1169,12 @@ function ImportVacancesButton({
 }
 
 function CreateSaisonForm({
+  domaine,
   existingSaisons,
   onCreate,
   onCancel,
 }: {
+  domaine: Domaine;
   existingSaisons: Saison[];
   onCreate: (code: string, label: string, cloneFrom?: string) => Promise<void>;
   onCancel: () => void;
@@ -1121,9 +1194,12 @@ function CreateSaisonForm({
     }
   }
 
+  const domainLabel = domaine === "stages" ? "🎾 Stages" : "🏫 École";
   return (
     <div className="rounded-xl bg-white border-2 border-yellow-club shadow-sm p-5">
-      <h3 className="font-bold text-navy mb-3">Créer une nouvelle saison</h3>
+      <h3 className="font-bold text-navy mb-3">
+        Créer une nouvelle saison {domainLabel}
+      </h3>
       <div className="grid sm:grid-cols-2 gap-3">
         <label className="block">
           <span className="text-xs font-medium text-gray-600">Code</span>

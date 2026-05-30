@@ -80,7 +80,7 @@ export async function POST(request: Request) {
   const { data: inserted, error } = await supabase
     .from("inscriptions_ecole")
     .insert({
-      saison_id: bundle.saison.id,
+      saison_id: bundle.saisonEcole.id,
       nom: data.nom,
       prenom: data.prenom,
       date_naissance: data.date_naissance,
