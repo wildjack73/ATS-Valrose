@@ -21,6 +21,8 @@ import PlanningEcole from "./PlanningEcole";
 import DashboardHeader from "./DashboardHeader";
 import StagesOrganisation from "./StagesOrganisation";
 import CoachesEditor from "./CoachesEditor";
+import AVerifier from "./AVerifier";
+import { fetchChecksRapport } from "@/lib/admin/checks-queries";
 import Annuaire from "./Annuaire";
 import {
   fetchGroupesEcole,
@@ -69,9 +71,11 @@ export default async function AdminDashboardPage({
               ? "stages-org"
               : sp.tab === "coachs"
                 ? "coachs"
-                : sp.tab === "annuaire"
-                  ? "annuaire"
-                  : "stages";
+                : sp.tab === "a-verifier"
+                  ? "a-verifier"
+                  : sp.tab === "annuaire"
+                    ? "annuaire"
+                    : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : on peut visualiser/éditer une saison STAGES et une
@@ -131,6 +135,10 @@ export default async function AdminDashboardPage({
   // Annuaire : charger seulement si onglet actif
   const annuaireData =
     tab === "annuaire" ? await fetchAnnuaireClients() : null;
+
+  // À vérifier : charger seulement si onglet actif
+  const aVerifierRapport =
+    tab === "a-verifier" ? await fetchChecksRapport() : null;
 
   // Stages organisation : charger coachs + compteurs + effectifs (qui est là)
   // pour la semaine sélectionnée
@@ -196,6 +204,14 @@ export default async function AdminDashboardPage({
           icon="👨‍🏫"
         >
           Coachs
+        </TabLink>
+        <TabLink
+          active={tab === "a-verifier"}
+          href="/admin?tab=a-verifier"
+          accent="yellow"
+          icon="📋"
+        >
+          À vérifier
         </TabLink>
         <TabLink
           active={tab === "annuaire"}
@@ -265,6 +281,10 @@ export default async function AdminDashboardPage({
         )
       ) : tab === "coachs" ? (
         <CoachesEditor coaches={coaches} />
+      ) : tab === "a-verifier" ? (
+        aVerifierRapport ? (
+          <AVerifier rapport={aVerifierRapport} />
+        ) : null
       ) : tab === "annuaire" ? (
         <Annuaire clients={annuaireData ?? []} />
       ) : tab === "stages-org" ? (
