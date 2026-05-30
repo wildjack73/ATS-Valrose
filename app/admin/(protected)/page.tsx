@@ -326,6 +326,8 @@ export default async function AdminDashboardPage({
         <EcoleTable
           rows={ecole}
           paiementsByInscription={Object.fromEntries(paiementsEcoleMap)}
+          coursTennis={bundle?.coursTennis ?? []}
+          coursPadel={bundle?.coursPadel ?? []}
           currentStatut={sp.statut}
           currentType={sp.type}
           currentCours={sp.cours}

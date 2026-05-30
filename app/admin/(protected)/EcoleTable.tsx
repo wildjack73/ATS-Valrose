@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
+import type { CoursEcole } from "@/lib/data/tarifs-types";
 import {
   formatDateTime,
   age,
@@ -27,6 +28,8 @@ const STATUTS = ["en_attente", "paye", "annule"] as const;
 export default function EcoleTable({
   rows,
   paiementsByInscription,
+  coursTennis,
+  coursPadel,
   currentStatut,
   currentType,
   currentCours,
@@ -34,6 +37,10 @@ export default function EcoleTable({
 }: {
   rows: InscriptionEcoleRow[];
   paiementsByInscription: Record<string, PaiementClient[]>;
+  /** Tous les cours école de la saison active (pour peupler le filtre Cours
+   *  même quand il n'y a pas encore d'inscription). */
+  coursTennis: CoursEcole[];
+  coursPadel: CoursEcole[];
   currentStatut?: string;
   currentType?: string;
   currentCours?: string;
@@ -52,16 +59,36 @@ export default function EcoleTable({
     router.push(`/admin?${next.toString()}`);
   }
 
-  // ---- Calcul des options de filtres (dérivées des données présentes) ----
+  // ---- Calcul des options de filtres ----
   // Type : tennis / padel / pickleball (statique)
-  // Cours : codes uniques présents dans les inscriptions (label depuis row)
-  // Créneau : valeurs uniques de dispo_mercredi + samedi + semaine
-  const { coursOptions, creneauOptions } = useMemo(() => {
-    const cours = new Map<string, string>(); // code → display label
+  // Cours : LISTE COMPLÈTE des cours de la saison (depuis bundle), pour pouvoir
+  //          filtrer même sur un cours sans aucune inscription pour l'instant.
+  // Créneau : valeurs uniques de dispo_mercredi + samedi + semaine (dérivé des
+  //          inscriptions existantes, suffisant en pratique)
+  const coursOptions = useMemo(() => {
+    const all = [
+      ...coursTennis.map((c) => ({
+        key: `tennis:${c.code}`,
+        label: c.label,
+        type: "tennis" as const,
+        order: c.order_idx,
+      })),
+      ...coursPadel.map((c) => ({
+        key: `padel:${c.code}`,
+        label: c.label,
+        type: "padel" as const,
+        order: c.order_idx,
+      })),
+    ];
+    return all.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "tennis" ? -1 : 1;
+      return a.order - b.order;
+    });
+  }, [coursTennis, coursPadel]);
+
+  const creneauOptions = useMemo(() => {
     const creneaux = new Set<string>();
     for (const r of rows) {
-      for (const c of r.cours_tennis ?? []) cours.set("tennis:" + c, c);
-      for (const c of r.cours_padel ?? []) cours.set("padel:" + c, c);
       for (const raw of [r.dispo_mercredi, r.dispo_samedi, r.dispo_semaine]) {
         if (!raw) continue;
         for (const piece of raw.split(",")) {
@@ -70,12 +97,7 @@ export default function EcoleTable({
         }
       }
     }
-    return {
-      coursOptions: Array.from(cours.entries())
-        .map(([key, code]) => ({ key, code, type: key.split(":")[0] }))
-        .sort((a, b) => a.code.localeCompare(b.code)),
-      creneauOptions: Array.from(creneaux).sort((a, b) => a.localeCompare(b)),
-    };
+    return Array.from(creneaux).sort((a, b) => a.localeCompare(b));
   }, [rows]);
 
   // ---- Filtrage client (statut déjà appliqué côté serveur) ----
@@ -161,10 +183,16 @@ export default function EcoleTable({
         >
           <option value="">Tous les cours</option>
           {coursOptions
-            .filter((o) => !currentType || o.type === currentType)
+            .filter(
+              (o) =>
+                !currentType ||
+                currentType === "pickleball" ||
+                o.type === currentType,
+            )
             .map((o) => (
               <option key={o.key} value={o.key}>
-                {o.type === "tennis" ? "🎾" : "🏓"} {o.code}
+                {o.type === "tennis" ? "Tennis — " : "Padel — "}
+                {o.label}
               </option>
             ))}
         </select>
