@@ -468,12 +468,12 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                     ],
                   },
                   {
-                    titre: "Soir en semaine — 17h-18h",
+                    titre: "Soir en semaine — 17h-18h30",
                     options: [
-                      "Lundi 17h-18h (padel)",
-                      "Mardi 17h-18h (padel)",
-                      "Jeudi 17h-18h (padel)",
-                      "Vendredi 17h-18h (padel)",
+                      "Lundi 17h-18h30 (padel)",
+                      "Mardi 17h-18h30 (padel)",
+                      "Jeudi 17h-18h30 (padel)",
+                      "Vendredi 17h-18h30 (padel)",
                     ],
                   },
                 ],
