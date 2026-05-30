@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
 import {
   formatDateTime,
@@ -28,10 +28,16 @@ export default function EcoleTable({
   rows,
   paiementsByInscription,
   currentStatut,
+  currentType,
+  currentCours,
+  currentCreneau,
 }: {
   rows: InscriptionEcoleRow[];
   paiementsByInscription: Record<string, PaiementClient[]>;
   currentStatut?: string;
+  currentType?: string;
+  currentCours?: string;
+  currentCreneau?: string;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -45,6 +51,63 @@ export default function EcoleTable({
     next.set("tab", "ecole");
     router.push(`/admin?${next.toString()}`);
   }
+
+  // ---- Calcul des options de filtres (dérivées des données présentes) ----
+  // Type : tennis / padel / pickleball (statique)
+  // Cours : codes uniques présents dans les inscriptions (label depuis row)
+  // Créneau : valeurs uniques de dispo_mercredi + samedi + semaine
+  const { coursOptions, creneauOptions } = useMemo(() => {
+    const cours = new Map<string, string>(); // code → display label
+    const creneaux = new Set<string>();
+    for (const r of rows) {
+      for (const c of r.cours_tennis ?? []) cours.set("tennis:" + c, c);
+      for (const c of r.cours_padel ?? []) cours.set("padel:" + c, c);
+      for (const raw of [r.dispo_mercredi, r.dispo_samedi, r.dispo_semaine]) {
+        if (!raw) continue;
+        for (const piece of raw.split(",")) {
+          const v = piece.trim();
+          if (v) creneaux.add(v);
+        }
+      }
+    }
+    return {
+      coursOptions: Array.from(cours.entries())
+        .map(([key, code]) => ({ key, code, type: key.split(":")[0] }))
+        .sort((a, b) => a.code.localeCompare(b.code)),
+      creneauOptions: Array.from(creneaux).sort((a, b) => a.localeCompare(b)),
+    };
+  }, [rows]);
+
+  // ---- Filtrage client (statut déjà appliqué côté serveur) ----
+  const filteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      // Type : tennis / padel / pickleball
+      if (currentType) {
+        if (currentType === "tennis" && !(r.cours_tennis ?? []).length)
+          return false;
+        if (currentType === "padel" && !(r.cours_padel ?? []).length)
+          return false;
+        if (currentType === "pickleball" && !r.licence_pickleball) return false;
+      }
+      // Cours précis (format "tennis:CODE" ou "padel:CODE")
+      if (currentCours) {
+        const [t, code] = currentCours.split(":");
+        if (t === "tennis" && !(r.cours_tennis ?? []).includes(code))
+          return false;
+        if (t === "padel" && !(r.cours_padel ?? []).includes(code))
+          return false;
+      }
+      // Créneau : doit apparaître dans une des 3 dispos
+      if (currentCreneau) {
+        const hay = [r.dispo_mercredi, r.dispo_samedi, r.dispo_semaine]
+          .filter(Boolean)
+          .join(",")
+          .toLowerCase();
+        if (!hay.includes(currentCreneau.toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [rows, currentType, currentCours, currentCreneau]);
 
   async function patchInscription(id: string, patch: object) {
     startTransition(async () => {
@@ -80,19 +143,68 @@ export default function EcoleTable({
 
   return (
     <div className="bg-white border border-gray-200 rounded-b-xl rounded-tr-xl shadow-sm">
-      <div className="p-4 border-b flex flex-wrap items-center gap-3">
+      <div className="p-4 border-b flex flex-wrap items-center gap-2">
+        <select
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+          value={currentType ?? ""}
+          onChange={(e) => updateParam("type", e.target.value)}
+        >
+          <option value="">Tous types</option>
+          <option value="tennis">Tennis</option>
+          <option value="padel">Padel</option>
+          <option value="pickleball">Pickleball</option>
+        </select>
+        <select
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm max-w-[220px]"
+          value={currentCours ?? ""}
+          onChange={(e) => updateParam("cours", e.target.value)}
+        >
+          <option value="">Tous les cours</option>
+          {coursOptions
+            .filter((o) => !currentType || o.type === currentType)
+            .map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.type === "tennis" ? "🎾" : "🏓"} {o.code}
+              </option>
+            ))}
+        </select>
+        <select
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm max-w-[260px]"
+          value={currentCreneau ?? ""}
+          onChange={(e) => updateParam("creneau", e.target.value)}
+        >
+          <option value="">Tous créneaux</option>
+          {creneauOptions.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
         <select
           className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
           value={currentStatut ?? ""}
           onChange={(e) => updateParam("statut", e.target.value)}
         >
-          <option value="">Tous les statuts</option>
+          <option value="">Tous statuts</option>
           {STATUTS.map((s) => (
             <option key={s} value={s}>
               {statutLabel(s)}
             </option>
           ))}
         </select>
+        {(currentType || currentCours || currentCreneau || currentStatut) ? (
+          <button
+            type="button"
+            onClick={() => {
+              const next = new URLSearchParams();
+              next.set("tab", "ecole");
+              router.push(`/admin?${next.toString()}`);
+            }}
+            className="text-xs text-gray-500 hover:text-navy underline"
+          >
+            Réinitialiser
+          </button>
+        ) : null}
         <a
           href={`/api/admin/export/ecole?${params.toString()}`}
           className="ml-auto rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
@@ -116,14 +228,16 @@ export default function EcoleTable({
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {filteredRows.length === 0 ? (
               <tr>
                 <td colSpan={8} className="p-8 text-center text-gray-500">
-                  Aucune inscription pour le moment.
+                  {rows.length === 0
+                    ? "Aucune inscription pour le moment."
+                    : "Aucune inscription ne correspond à ces filtres."}
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
+              filteredRows.map((r) => (
                 <EcoleRowGroup
                   key={r.id}
                   row={r}

@@ -67,6 +67,10 @@ type SearchParams = Promise<{
   /** Onglet Encaissements */
   domaine?: string;
   status?: string;
+  /** Onglet École : filtres complémentaires */
+  type?: string;
+  cours?: string;
+  creneau?: string;
 }>;
 
 export default async function AdminDashboardPage({
@@ -323,6 +327,9 @@ export default async function AdminDashboardPage({
           rows={ecole}
           paiementsByInscription={Object.fromEntries(paiementsEcoleMap)}
           currentStatut={sp.statut}
+          currentType={sp.type}
+          currentCours={sp.cours}
+          currentCreneau={sp.creneau}
         />
       ) : tab === "tarifs" ? (
         bundle ? (
