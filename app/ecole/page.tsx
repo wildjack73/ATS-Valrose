@@ -1,4 +1,5 @@
 import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
+import { fetchSlotsOccupesEcole } from "@/lib/data/ecole-slots";
 import EcoleForm from "./EcoleForm";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +50,10 @@ export default async function EcolePage() {
       </section>
       <section>
         <div className="mx-auto max-w-3xl px-4 py-10">
-          <EcoleForm bundle={bundle} />
+          <EcoleForm
+            bundle={bundle}
+            slotsOccupes={await fetchSlotsOccupesEcole(bundle.saisonEcole.id)}
+          />
         </div>
       </section>
     </div>

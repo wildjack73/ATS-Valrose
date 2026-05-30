@@ -12,6 +12,18 @@ import { NiveauSelect } from "@/components/ui/NiveauSelect";
 import { DateNaissanceInput } from "@/components/ui/DateNaissanceInput";
 import { Section } from "@/components/ui/Section";
 
+/** Identique à lib/data/ecole-slots.ts mais utilisable côté client (sans
+ *  l'import server-only). On matche les libellés indépendamment de la
+ *  casse et des parenthèses pour rester compatible avec d'anciennes
+ *  valeurs stockées ("Lundi 18h30-20h (5 places max)" → "lundi 18h30-20h"). */
+function normalizeSlot(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const MODES_REGLEMENT = [
   { id: "especes", label: "Espèces" },
   { id: "cheque", label: "Chèque" },
@@ -21,7 +33,15 @@ function toggleInArray<T>(arr: T[], value: T): T[] {
   return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
 }
 
-export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
+export default function EcoleForm({
+  bundle,
+  slotsOccupes,
+}: {
+  bundle: TarifsBundle;
+  /** Compteur : créneau normalisé → nb d'inscriptions l'ayant sélectionné.
+   *  Sert à afficher « reste X » / « COMPLET » dynamiquement. */
+  slotsOccupes: Record<string, number>;
+}) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -402,9 +422,10 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
             const hasPadel = coursPadelSel.length > 0;
             const rienChoisi = !hasJeune && !hasAdulteTennis && !hasPadel;
 
+            type Opt = { label: string; max?: number; note?: string };
             const sections: {
               titre: string;
-              groupes: { titre: string; options: string[] }[];
+              groupes: { titre: string; options: Opt[] }[];
             }[] = [];
 
             if (hasJeune) {
@@ -413,19 +434,25 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                 groupes: [
                   {
                     titre: "Mercredi",
-                    options: ["Mercredi matin", "Mercredi après-midi"],
+                    options: [
+                      { label: "Mercredi matin" },
+                      { label: "Mercredi Après-midi" },
+                    ],
                   },
                   {
                     titre: "Samedi",
-                    options: ["Samedi matin", "Samedi après-midi"],
+                    options: [
+                      { label: "Samedi matin" },
+                      { label: "Samedi Après-midi" },
+                    ],
                   },
                   {
                     titre: "Soir en semaine",
                     options: [
-                      "Lundi soir",
-                      "Mardi soir",
-                      "Jeudi soir",
-                      "Vendredi soir",
+                      { label: "Lundi soir" },
+                      { label: "Mardi soir" },
+                      { label: "Jeudi soir" },
+                      { label: "Vendredi soir" },
                     ],
                   },
                 ],
@@ -437,19 +464,23 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                 titre: "🎾 Cours Adultes Tennis",
                 groupes: [
                   {
-                    titre: "Soir en semaine — 18h30-20h (5 places max)",
+                    titre: "Soir en semaine — 18h30-20h",
                     options: [
-                      "Lundi 18h30-20h (5 places max)",
-                      "Mardi 18h30-20h (5 places max)",
-                      "Jeudi 18h30-20h (5 places max)",
-                      "Vendredi 18h30-20h (5 places max)",
+                      { label: "Lundi 18h30-20h", max: 5 },
+                      { label: "Mardi 18h30-20h", max: 5 },
+                      { label: "Jeudi 18h30-20h", max: 5 },
+                      { label: "Vendredi 18h30-20h", max: 5 },
                     ],
                   },
                   {
                     titre: "Samedi",
                     options: [
-                      "Samedi 9h-10h30 (15 places max)",
-                      "Samedi après-midi (non débutant, 5 places max)",
+                      { label: "Samedi 9h-10h30", max: 15 },
+                      {
+                        label: "Samedi Après-midi",
+                        max: 5,
+                        note: "non débutant",
+                      },
                     ],
                   },
                 ],
@@ -461,19 +492,19 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                 titre: "🏓 Cours Padel",
                 groupes: [
                   {
-                    titre: "Après-midi (5 places max)",
+                    titre: "Après-midi",
                     options: [
-                      "Mercredi après-midi (padel, 5 places max)",
-                      "Samedi après-midi (padel, 5 places max)",
+                      { label: "Mercredi Après-midi (padel)", max: 5 },
+                      { label: "Samedi Après-midi (padel)", max: 5 },
                     ],
                   },
                   {
-                    titre: "Soir en semaine — 17h-18h30 (5 places max)",
+                    titre: "Soir en semaine — 17h-18h30",
                     options: [
-                      "Lundi 17h-18h30 (padel, 5 places max)",
-                      "Mardi 17h-18h30 (padel, 5 places max)",
-                      "Jeudi 17h-18h30 (padel, 5 places max)",
-                      "Vendredi 17h-18h30 (padel, 5 places max)",
+                      { label: "Lundi 17h-18h30 (padel)", max: 5 },
+                      { label: "Mardi 17h-18h30 (padel)", max: 5 },
+                      { label: "Jeudi 17h-18h30 (padel)", max: 5 },
+                      { label: "Vendredi 17h-18h30 (padel)", max: 5 },
                     ],
                   },
                 ],
@@ -489,6 +520,18 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
               );
             }
 
+            // Helper : libellé court pour l'affichage du pill (sans répéter
+            // le nom du jour déjà présent dans le sous-titre du groupe)
+            function libelleCourt(label: string): string {
+              return label
+                .replace(/^Mercredi\s/, "")
+                .replace(/^Samedi\s/, "")
+                .replace(/^Lundi\s/, "Lundi ")
+                .replace(/^Mardi\s/, "Mardi ")
+                .replace(/^Jeudi\s/, "Jeudi ")
+                .replace(/^Vendredi\s/, "Vendredi ");
+            }
+
             return (
               <div className="space-y-5">
                 {sections.map((sec) => (
@@ -501,32 +544,64 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {g.options.map((opt) => {
-                            const isChecked = checked.includes(opt);
-                            // Affiche un libellé court (sans le nom du jour
-                            // déjà visible dans le sous-titre du groupe)
-                            const label = opt
-                              .replace(/^Mercredi\s/, "")
-                              .replace(/^Samedi\s/, "")
-                              .replace(/^Lundi\s/, "Lundi ")
-                              .replace(/^Mardi\s/, "Mardi ")
-                              .replace(/^Jeudi\s/, "Jeudi ")
-                              .replace(/^Vendredi\s/, "Vendredi ");
+                            const isChecked = checked.includes(opt.label);
+                            const key = normalizeSlot(opt.label);
+                            const occupes = slotsOccupes[key] ?? 0;
+                            const reste =
+                              opt.max !== undefined
+                                ? Math.max(0, opt.max - occupes)
+                                : undefined;
+                            const complet =
+                              opt.max !== undefined && reste === 0 && !isChecked;
+                            const labelCourt = libelleCourt(opt.label);
                             return (
                               <label
-                                key={opt}
-                                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm transition ${
-                                  isChecked
-                                    ? "border-navy bg-navy text-white"
-                                    : "border-gray-300 bg-white hover:border-navy"
+                                key={opt.label}
+                                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition ${
+                                  complet
+                                    ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed line-through"
+                                    : isChecked
+                                      ? "border-navy bg-navy text-white cursor-pointer"
+                                      : "border-gray-300 bg-white hover:border-navy cursor-pointer"
                                 }`}
                               >
                                 <input
                                   type="checkbox"
                                   className="accent-navy"
                                   checked={isChecked}
-                                  onChange={() => toggle(opt)}
+                                  disabled={complet}
+                                  onChange={() => toggle(opt.label)}
                                 />
-                                <span>{label}</span>
+                                <span>
+                                  {labelCourt}
+                                  {opt.note ? (
+                                    <span className="text-xs opacity-70">
+                                      {" "}
+                                      ({opt.note})
+                                    </span>
+                                  ) : null}
+                                  {opt.max !== undefined ? (
+                                    <span
+                                      className={`ml-2 text-[11px] font-bold ${
+                                        complet
+                                          ? "text-red-600"
+                                          : reste! <= 2
+                                            ? isChecked
+                                              ? "text-yellow-club"
+                                              : "text-orange-600"
+                                            : isChecked
+                                              ? "text-white/70"
+                                              : "text-gray-500"
+                                      }`}
+                                    >
+                                      {complet
+                                        ? "COMPLET"
+                                        : reste === 1
+                                          ? "reste 1 place"
+                                          : `reste ${reste}/${opt.max}`}
+                                    </span>
+                                  ) : null}
+                                </span>
                               </label>
                             );
                           })}
