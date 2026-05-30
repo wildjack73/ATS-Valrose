@@ -422,7 +422,12 @@ export default function EcoleForm({
             const hasPadel = coursPadelSel.length > 0;
             const rienChoisi = !hasJeune && !hasAdulteTennis && !hasPadel;
 
-            type Opt = { label: string; max?: number; note?: string };
+            type Opt = {
+              label: string;     // valeur stockée en DB (avec marqueur de catégorie si besoin)
+              display: string;   // ce qui s'affiche sur la pill
+              max?: number;
+              note?: string;
+            };
             const sections: {
               titre: string;
               groupes: { titre: string; options: Opt[] }[];
@@ -435,24 +440,24 @@ export default function EcoleForm({
                   {
                     titre: "Mercredi",
                     options: [
-                      { label: "Mercredi matin" },
-                      { label: "Mercredi Après-midi" },
+                      { label: "Mercredi matin", display: "matin" },
+                      { label: "Mercredi Après-midi", display: "Après-midi" },
                     ],
                   },
                   {
                     titre: "Samedi",
                     options: [
-                      { label: "Samedi matin" },
-                      { label: "Samedi Après-midi" },
+                      { label: "Samedi matin", display: "matin" },
+                      { label: "Samedi Après-midi", display: "Après-midi" },
                     ],
                   },
                   {
                     titre: "Soir en semaine",
                     options: [
-                      { label: "Lundi soir" },
-                      { label: "Mardi soir" },
-                      { label: "Jeudi soir" },
-                      { label: "Vendredi soir" },
+                      { label: "Lundi soir", display: "Lundi" },
+                      { label: "Mardi soir", display: "Mardi" },
+                      { label: "Jeudi soir", display: "Jeudi" },
+                      { label: "Vendredi soir", display: "Vendredi" },
                     ],
                   },
                 ],
@@ -466,18 +471,27 @@ export default function EcoleForm({
                   {
                     titre: "Soir en semaine — 18h30-20h",
                     options: [
-                      { label: "Lundi 18h30-20h", max: 5 },
-                      { label: "Mardi 18h30-20h", max: 5 },
-                      { label: "Jeudi 18h30-20h", max: 5 },
-                      { label: "Vendredi 18h30-20h", max: 5 },
+                      { label: "Lundi 18h30-20h", display: "Lundi", max: 5 },
+                      { label: "Mardi 18h30-20h", display: "Mardi", max: 5 },
+                      { label: "Jeudi 18h30-20h", display: "Jeudi", max: 5 },
+                      {
+                        label: "Vendredi 18h30-20h",
+                        display: "Vendredi",
+                        max: 5,
+                      },
                     ],
                   },
                   {
                     titre: "Samedi",
                     options: [
-                      { label: "Samedi 9h-10h30", max: 15 },
+                      {
+                        label: "Samedi 9h-10h30",
+                        display: "9h-10h30",
+                        max: 15,
+                      },
                       {
                         label: "Samedi Après-midi",
+                        display: "Après-midi",
                         max: 5,
                         note: "non débutant",
                       },
@@ -494,17 +508,41 @@ export default function EcoleForm({
                   {
                     titre: "Après-midi",
                     options: [
-                      { label: "Mercredi Après-midi (padel)", max: 5 },
-                      { label: "Samedi Après-midi (padel)", max: 5 },
+                      {
+                        label: "Mercredi Après-midi (padel)",
+                        display: "Mercredi",
+                        max: 5,
+                      },
+                      {
+                        label: "Samedi Après-midi (padel)",
+                        display: "Samedi",
+                        max: 5,
+                      },
                     ],
                   },
                   {
                     titre: "Soir en semaine — 17h-18h30",
                     options: [
-                      { label: "Lundi 17h-18h30 (padel)", max: 5 },
-                      { label: "Mardi 17h-18h30 (padel)", max: 5 },
-                      { label: "Jeudi 17h-18h30 (padel)", max: 5 },
-                      { label: "Vendredi 17h-18h30 (padel)", max: 5 },
+                      {
+                        label: "Lundi 17h-18h30 (padel)",
+                        display: "Lundi",
+                        max: 5,
+                      },
+                      {
+                        label: "Mardi 17h-18h30 (padel)",
+                        display: "Mardi",
+                        max: 5,
+                      },
+                      {
+                        label: "Jeudi 17h-18h30 (padel)",
+                        display: "Jeudi",
+                        max: 5,
+                      },
+                      {
+                        label: "Vendredi 17h-18h30 (padel)",
+                        display: "Vendredi",
+                        max: 5,
+                      },
                     ],
                   },
                 ],
@@ -518,18 +556,6 @@ export default function EcoleForm({
                   pour voir les créneaux disponibles.
                 </p>
               );
-            }
-
-            // Helper : libellé court pour l'affichage du pill (sans répéter
-            // le nom du jour déjà présent dans le sous-titre du groupe)
-            function libelleCourt(label: string): string {
-              return label
-                .replace(/^Mercredi\s/, "")
-                .replace(/^Samedi\s/, "")
-                .replace(/^Lundi\s/, "Lundi ")
-                .replace(/^Mardi\s/, "Mardi ")
-                .replace(/^Jeudi\s/, "Jeudi ")
-                .replace(/^Vendredi\s/, "Vendredi ");
             }
 
             return (
@@ -553,7 +579,6 @@ export default function EcoleForm({
                                 : undefined;
                             const complet =
                               opt.max !== undefined && reste === 0 && !isChecked;
-                            const labelCourt = libelleCourt(opt.label);
                             return (
                               <label
                                 key={opt.label}
@@ -573,7 +598,7 @@ export default function EcoleForm({
                                   onChange={() => toggle(opt.label)}
                                 />
                                 <span>
-                                  {labelCourt}
+                                  {opt.display}
                                   {opt.note ? (
                                     <span className="text-xs opacity-70">
                                       {" "}
