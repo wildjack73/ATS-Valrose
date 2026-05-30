@@ -294,6 +294,164 @@ body {
   }
 }
 
+/* === Mode sombre admin ===================================================== */
+/* Le toggle ajoute la classe .admin-dark sur le wrapper racine de l'admin.
+   Les règles ci-dessous overrident les classes Tailwind les plus courantes
+   pour les composants admin. Le site public n'est jamais affecté. */
+
+.admin-dark {
+  color-scheme: dark;
+  --d-canvas: #0a1929;
+  --d-surface: #142235;
+  --d-surface-2: #1d2f47;
+  --d-surface-3: #25395a;
+  --d-border: #2c3e5e;
+  --d-text: #e6edf3;
+  --d-text-dim: #93a4be;
+  --d-text-muted: #6b7e9a;
+  --d-accent: #4dc5e3;
+}
+
+.admin-dark,
+.admin-dark .text-navy,
+.admin-dark .text-navy-dark {
+  color: var(--d-text);
+}
+
+.admin-dark .text-gray-900,
+.admin-dark .text-gray-800,
+.admin-dark .text-gray-700 {
+  color: var(--d-text) !important;
+}
+
+.admin-dark .text-gray-600,
+.admin-dark .text-gray-500 {
+  color: var(--d-text-dim) !important;
+}
+
+.admin-dark .text-gray-400,
+.admin-dark .text-gray-300 {
+  color: var(--d-text-muted) !important;
+}
+
+/* Surfaces */
+.admin-dark .bg-white {
+  background-color: var(--d-surface) !important;
+}
+.admin-dark .bg-gray-50,
+.admin-dark .bg-gray-50\/60,
+.admin-dark .even\:bg-gray-50\/60:nth-of-type(2n) {
+  background-color: var(--d-surface-2) !important;
+}
+.admin-dark .bg-gray-100 {
+  background-color: var(--d-surface-3) !important;
+}
+
+/* Bordures */
+.admin-dark .border,
+.admin-dark .border-t,
+.admin-dark .border-b,
+.admin-dark .border-l,
+.admin-dark .border-r,
+.admin-dark .border-x,
+.admin-dark .border-y,
+.admin-dark .border-gray-100,
+.admin-dark .border-gray-200,
+.admin-dark .border-gray-300,
+.admin-dark .divide-gray-100 > * + *,
+.admin-dark .divide-gray-200 > * + * {
+  border-color: var(--d-border) !important;
+}
+
+/* Inputs / selects / textarea */
+.admin-dark input[type="text"],
+.admin-dark input[type="email"],
+.admin-dark input[type="tel"],
+.admin-dark input[type="search"],
+.admin-dark input[type="date"],
+.admin-dark input[type="number"],
+.admin-dark select,
+.admin-dark textarea {
+  background-color: var(--d-surface-2);
+  color: var(--d-text);
+  border-color: var(--d-border);
+}
+.admin-dark input[type="text"]:focus,
+.admin-dark input[type="email"]:focus,
+.admin-dark input[type="tel"]:focus,
+.admin-dark input[type="search"]:focus,
+.admin-dark input[type="date"]:focus,
+.admin-dark input[type="number"]:focus,
+.admin-dark select:focus,
+.admin-dark textarea:focus {
+  outline-color: var(--d-accent);
+}
+.admin-dark input::placeholder,
+.admin-dark textarea::placeholder {
+  color: var(--d-text-muted);
+}
+
+/* Cartes décoratives qui utilisent un tint */
+.admin-dark .bg-navy\/5,
+.admin-dark .bg-cyan-club\/5,
+.admin-dark .bg-ocre\/5,
+.admin-dark .bg-yellow-club\/10 {
+  background-color: var(--d-surface-3) !important;
+}
+
+/* Headers de section : assombrir les en-têtes gradient pour rester lisibles */
+.admin-dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+.admin-dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+.admin-dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+.admin-dark .bg-emerald-50 *,
+.admin-dark .text-emerald-800 {
+  color: #6ee7b7 !important;
+}
+.admin-dark .text-amber-900 {
+  color: #fcd34d !important;
+}
+.admin-dark .bg-amber-50,
+.admin-dark .border-amber-200 {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+.admin-dark .bg-emerald-50,
+.admin-dark .border-emerald-200 {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+.admin-dark .bg-red-50,
+.admin-dark .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+.admin-dark .text-red-700 {
+  color: #fca5a5 !important;
+}
+.admin-dark .text-emerald-900 {
+  color: #6ee7b7 !important;
+}
+
+/* Hover lignes */
+.admin-dark .hover\:bg-gray-50:hover {
+  background-color: var(--d-surface-3) !important;
+}
+.admin-dark .hover\:bg-yellow-club\/5:hover {
+  background-color: rgba(243, 197, 3, 0.08) !important;
+}
+.admin-dark .hover\:bg-ocre\/5:hover {
+  background-color: rgba(196, 115, 58, 0.1) !important;
+}
+
+/* Boutons de tab inactifs : fond blanc → surface sombre */
+.admin-dark .bg-white.border-gray-200 {
+  background-color: var(--d-surface) !important;
+  border-color: var(--d-border) !important;
+}
+
 /* === Impression ============================================================ */
 @media print {
   /* Page : paysage, marges réduites pour gagner de la place */
