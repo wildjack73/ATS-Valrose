@@ -112,8 +112,8 @@ function shortDetailStage(s: InscriptionStageRow): string {
 
 function shortDetailEcole(e: InscriptionEcoleRow): string {
   const parts: string[] = [];
-  if (e.cours_tennis?.length) parts.push("🎾 " + e.cours_tennis.join(", "));
-  if (e.cours_padel?.length) parts.push("🏓 " + e.cours_padel.join(", "));
+  if (e.cours_tennis?.length) parts.push("Tennis : " + e.cours_tennis.join(", "));
+  if (e.cours_padel?.length) parts.push("Padel : " + e.cours_padel.join(", "));
   return parts.join(" · ") || "—";
 }
 
@@ -318,7 +318,7 @@ export default function Encaissements({
             }}
           />
           <FilterPill
-            label="🎾 Stages"
+            label="Stages"
             active={domaine === "stages"}
             onClick={() => {
               setDomaine("stages");
@@ -326,7 +326,7 @@ export default function Encaissements({
             }}
           />
           <FilterPill
-            label="🏫 École"
+            label="École"
             active={domaine === "ecole"}
             onClick={() => {
               setDomaine("ecole");
@@ -473,13 +473,17 @@ function EncRow({
         className={`border-t cursor-pointer hover:bg-gray-50 transition-colors ${rowTint}`}
       >
         <td className="p-3 text-xs align-top whitespace-nowrap">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <Chevron open={open} />
-            {row.domaine === "stages" ? (
-              <span className="font-semibold text-cyan-club">🎾 Stage</span>
-            ) : (
-              <span className="font-semibold text-ocre-dark">🏫 École</span>
-            )}
+            <span
+              className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
+                row.domaine === "stages"
+                  ? "bg-gray-50 text-gray-700 border-gray-300"
+                  : "bg-gray-50 text-gray-700 border-gray-300"
+              }`}
+            >
+              {row.domaine === "stages" ? "Stage" : "École"}
+            </span>
           </span>
         </td>
         <td className="p-3 align-top">

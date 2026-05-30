@@ -52,43 +52,41 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               type="button"
               onClick={() => setDark((d) => !d)}
               title={dark ? "Mode clair" : "Mode sombre"}
-              aria-label={dark ? "Activer le mode clair" : "Activer le mode sombre"}
-              className="rounded-md bg-white/10 hover:bg-white/20 px-2.5 py-1.5 text-base transition leading-none"
+              aria-label={
+                dark ? "Activer le mode clair" : "Activer le mode sombre"
+              }
+              className="rounded-md bg-white/10 hover:bg-white/20 p-1.5 transition leading-none"
             >
-              {dark ? "☀️" : "🌙"}
+              {dark ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="w-4 h-4"
+                  aria-hidden
+                >
+                  <circle cx="12" cy="12" r="4" />
+                  <path
+                    strokeLinecap="round"
+                    d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="w-4 h-4"
+                  aria-hidden
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
             </button>
             <LogoutButton />
           </div>
-        </div>
-      </div>
-      {/* Bandeau de bienvenue (caché à l'impression).
-          En mode sombre on garde un visuel sobre navy/jaune au lieu du
-          gradient jaune trop éclatant qui clashait avec le dark. */}
-      <div className="no-print mx-auto max-w-6xl px-4 pt-4">
-        <div
-          className={`rounded-xl px-5 py-3 shadow-sm flex items-center gap-3 flex-wrap border ${
-            dark
-              ? "bg-[#1a2b42] border-yellow-club/30 text-white"
-              : "bg-gradient-to-r from-yellow-club via-yellow-200 to-yellow-club text-navy border-transparent"
-          }`}
-        >
-          <span className="text-2xl" aria-hidden>
-            👋
-          </span>
-          <div className="flex-1 min-w-[200px]">
-            <p className="font-extrabold text-base sm:text-lg leading-tight">
-              Bienvenue{" "}
-              <span className={dark ? "text-yellow-club" : ""}>Jérôme</span>
-            </p>
-            <p
-              className={`text-xs sm:text-sm ${dark ? "text-white/65" : "text-navy/80"}`}
-            >
-              best coach ever 🏆
-            </p>
-          </div>
-          <span className="text-2xl" aria-hidden>
-            🎾
-          </span>
         </div>
       </div>
 

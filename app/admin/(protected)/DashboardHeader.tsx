@@ -110,22 +110,22 @@ export default function DashboardHeader({
 
   return (
     <div className="grid lg:grid-cols-2 gap-4 mb-6">
-      {/* ===== STAGES (cyan) ===== */}
-      <section className="rounded-2xl overflow-hidden bg-white border-2 border-cyan-club/30 shadow-sm">
-        <header className="bg-gradient-to-r from-navy via-navy to-cyan-club text-white px-5 py-3">
+      {/* ===== STAGES ===== */}
+      <section className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
+        <header className="bg-navy text-white px-5 py-3 border-b border-navy/50">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-cyan-light font-bold">
+              <p className="text-[10px] uppercase tracking-widest text-white/55 font-medium">
                 Vacances scolaires
-                {bundle ? ` · Saison ${bundle.saisonStages.code}` : ""}
+                {bundle ? ` · ${bundle.saisonStages.code}` : ""}
               </p>
-              <h2 className="text-xl font-extrabold flex items-center gap-2">
-                🎾 Stages
+              <h2 className="text-lg font-semibold tracking-tight">
+                Stages
               </h2>
             </div>
             <Link
               href="/admin?tab=stages"
-              className="text-xs bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded font-semibold"
+              className="text-xs text-white/70 hover:text-white px-2 py-1 transition"
             >
               Voir tout →
             </Link>
@@ -136,19 +136,18 @@ export default function DashboardHeader({
             <BigStat
               value={stagesTotal}
               label="Inscriptions"
-              color="text-navy"
             />
             <BigStat
               value={`${stagesAEncaisser}€`}
               label="À encaisser"
-              color="text-orange-700"
+              color="text-amber-700"
               hint={`${stagesNbAEncaisser} à régler`}
               href="/admin?tab=encaissements&domaine=stages&status=a_regler"
             />
             <BigStat
               value={`${stagesEncaisses}€`}
               label="Encaissés"
-              color="text-green-700"
+              color="text-emerald-700"
               hint={`${stagesNbSoldes} soldé${stagesNbSoldes > 1 ? "s" : ""}`}
               href="/admin?tab=encaissements&domaine=stages"
             />
@@ -156,7 +155,7 @@ export default function DashboardHeader({
 
           {topSemaines.length > 0 ? (
             <div>
-              <p className="text-xs font-bold uppercase text-gray-500 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
                 Top semaines
               </p>
               <ul className="space-y-1.5">
@@ -174,13 +173,13 @@ export default function DashboardHeader({
                       >
                         {data.label}
                       </Link>
-                      <div className="w-24 h-2 rounded bg-gray-100 overflow-hidden">
+                      <div className="w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden">
                         <div
-                          className="h-full bg-cyan-club"
+                          className="h-full bg-navy/70"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-xs font-bold text-navy w-16 text-right">
+                      <span className="text-xs font-medium text-navy w-16 text-right tabular-nums">
                         {data.count} · {data.total}€
                       </span>
                     </li>
@@ -196,7 +195,7 @@ export default function DashboardHeader({
 
           {parFormule.size > 0 ? (
             <div>
-              <p className="text-xs font-bold uppercase text-gray-500 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
                 Par formule
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -205,10 +204,10 @@ export default function DashboardHeader({
                   .map(([code, count]) => (
                     <span
                       key={code}
-                      className="bg-cyan-club/10 text-navy text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ring-cyan-club/30"
+                      className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded border border-gray-200"
                     >
                       {formuleLabel(code as FormuleId).replace("Formule ", "F")}{" "}
-                      <strong>×{count}</strong>
+                      <span className="text-navy font-semibold">×{count}</span>
                     </span>
                   ))}
               </div>
@@ -217,22 +216,22 @@ export default function DashboardHeader({
         </div>
       </section>
 
-      {/* ===== ÉCOLE (ocre) ===== */}
-      <section className="rounded-2xl overflow-hidden bg-white border-2 border-ocre/30 shadow-sm">
-        <header className="bg-gradient-to-r from-clay via-ocre to-ocre-light text-white px-5 py-3">
+      {/* ===== ÉCOLE ===== */}
+      <section className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
+        <header className="bg-navy text-white px-5 py-3 border-b border-navy/50">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-yellow-200 font-bold">
+              <p className="text-[10px] uppercase tracking-widest text-white/55 font-medium">
                 Saison annuelle
                 {bundle ? ` · ${bundle.saisonEcole.code}` : ""}
               </p>
-              <h2 className="text-xl font-extrabold flex items-center gap-2">
-                🏫 École de tennis
+              <h2 className="text-lg font-semibold tracking-tight">
+                École de tennis
               </h2>
             </div>
             <Link
               href="/admin?tab=ecole"
-              className="text-xs bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded font-semibold"
+              className="text-xs text-white/70 hover:text-white px-2 py-1 transition"
             >
               Voir tout →
             </Link>
@@ -240,18 +239,18 @@ export default function DashboardHeader({
         </header>
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <BigStat value={ecoleTotal} label="Inscriptions" color="text-navy" />
+            <BigStat value={ecoleTotal} label="Inscriptions" />
             <BigStat
               value={`${ecoleAEncaisser}€`}
               label="À encaisser"
-              color="text-orange-700"
+              color="text-amber-700"
               hint={`${ecoleNbAEncaisser} à régler`}
               href="/admin?tab=encaissements&domaine=ecole&status=a_regler"
             />
             <BigStat
               value={`${ecoleEncaisses}€`}
               label="Encaissés"
-              color="text-green-700"
+              color="text-emerald-700"
               hint={`${ecoleNbSoldes} soldé${ecoleNbSoldes > 1 ? "s" : ""}`}
               href="/admin?tab=encaissements&domaine=ecole"
             />
@@ -259,7 +258,7 @@ export default function DashboardHeader({
 
           {topCours.length > 0 ? (
             <div>
-              <p className="text-xs font-bold uppercase text-gray-500 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
                 Cours les plus demandés
               </p>
               <ul className="space-y-1.5">
@@ -271,21 +270,19 @@ export default function DashboardHeader({
                     coursLabelById.get(key) ?? key.replace(/^[^:]+:/, "");
                   return (
                     <li key={key} className="flex items-center gap-2 text-sm">
-                      <span className="flex-1 truncate flex items-center gap-1">
-                        <span
-                          className={`inline-block w-1.5 h-1.5 rounded-full ${
-                            isPadel ? "bg-purple-500" : "bg-ocre"
-                          }`}
-                        />
-                        {label}
+                      <span className="flex-1 truncate flex items-center gap-2">
+                        <span className="text-[10px] text-gray-400 uppercase font-medium tracking-wide w-10">
+                          {isPadel ? "Padel" : "Tennis"}
+                        </span>
+                        <span className="text-gray-700">{label}</span>
                       </span>
-                      <div className="w-24 h-2 rounded bg-gray-100 overflow-hidden">
+                      <div className="w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden">
                         <div
-                          className={`h-full ${isPadel ? "bg-purple-500" : "bg-ocre"}`}
+                          className="h-full bg-navy/70"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-xs font-bold text-navy w-10 text-right">
+                      <span className="text-xs font-medium text-navy w-10 text-right tabular-nums">
                         ×{count}
                       </span>
                     </li>
@@ -313,17 +310,19 @@ function BigStat({
 }: {
   value: string | number;
   label: string;
+  /** Couleur d'accent légère — par défaut text-navy.
+   *  Pour À encaisser / Encaissés : tons sobres (slate / gray + petit indicateur). */
   color?: string;
   hint?: string;
   href?: string;
 }) {
   const inner = (
     <>
-      <p className={`text-3xl font-extrabold ${color ?? "text-navy"}`}>
-        {value}
-      </p>
-      <p className="text-[10px] uppercase tracking-wide text-gray-500 font-bold">
+      <p className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mb-1">
         {label}
+      </p>
+      <p className={`text-2xl font-semibold tabular-nums ${color ?? "text-navy"}`}>
+        {value}
       </p>
       {hint ? (
         <p className="text-[10px] text-gray-500 mt-0.5">{hint}</p>
@@ -334,11 +333,11 @@ function BigStat({
     return (
       <Link
         href={href}
-        className="text-center block rounded-lg hover:bg-gray-50 transition py-1 -my-1"
+        className="text-left block rounded-md hover:bg-gray-50 transition px-2 py-1 -mx-2"
       >
         {inner}
       </Link>
     );
   }
-  return <div className="text-center">{inner}</div>;
+  return <div className="text-left">{inner}</div>;
 }

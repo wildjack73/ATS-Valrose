@@ -28,6 +28,17 @@ import { fetchPaiementsListByInscriptions } from "@/lib/data/paiements";
 import Annuaire from "./Annuaire";
 import Encaissements from "./Encaissements";
 import {
+  IconStages,
+  IconEcole,
+  IconTarifs,
+  IconPlanning,
+  IconCoachs,
+  IconCheck,
+  IconAnnuaire,
+  IconArchive,
+  IconEncaissements,
+} from "./Icons";
+import {
   fetchGroupesEcole,
   fetchCoaches,
   fetchInscriptionsSansGroupe,
@@ -221,78 +232,69 @@ export default async function AdminDashboardPage({
         />
       </div>
 
-      <div className="flex items-center gap-2 mb-6 overflow-x-auto no-print pb-1">
+      <div className="flex items-center gap-1 mb-6 overflow-x-auto no-print pb-1 border-b border-gray-200">
         <TabLink
           active={tab === "stages"}
           href="/admin?tab=stages"
-          accent="cyan"
-          icon="🎾"
+          icon={<IconStages />}
         >
-          Stages ({stages.length})
+          Stages <span className="opacity-60">({stages.length})</span>
         </TabLink>
         <TabLink
           active={tab === "ecole"}
           href="/admin?tab=ecole"
-          accent="ocre"
-          icon="🏫"
+          icon={<IconEcole />}
         >
-          École ({ecole.length})
+          École <span className="opacity-60">({ecole.length})</span>
+        </TabLink>
+        <TabLink
+          active={tab === "encaissements"}
+          href="/admin?tab=encaissements"
+          icon={<IconEncaissements />}
+        >
+          Encaissements
         </TabLink>
         <TabLink
           active={tab === "tarifs"}
           href="/admin?tab=tarifs"
-          accent="yellow"
-          icon="💶"
+          icon={<IconTarifs />}
         >
           Tarifs
         </TabLink>
         <TabLink
           active={tab === "stages-org"}
           href="/admin?tab=stages-org"
-          accent="emerald"
-          icon="📋"
+          icon={<IconPlanning />}
         >
           Organisation Stages
         </TabLink>
         <TabLink
           active={tab === "coachs"}
           href="/admin?tab=coachs"
-          accent="cyan"
-          icon="👨‍🏫"
+          icon={<IconCoachs />}
         >
           Coachs
         </TabLink>
         <TabLink
           active={tab === "a-verifier"}
           href="/admin?tab=a-verifier"
-          accent="yellow"
-          icon="📋"
+          icon={<IconCheck />}
         >
           À vérifier
         </TabLink>
         <TabLink
           active={tab === "annuaire"}
           href="/admin?tab=annuaire"
-          accent="violet"
-          icon="📇"
+          icon={<IconAnnuaire />}
         >
           Annuaire
         </TabLink>
         <TabLink
-          active={tab === "encaissements"}
-          href="/admin?tab=encaissements"
-          accent="emerald"
-          icon="💰"
-        >
-          Encaissements
-        </TabLink>
-        <TabLink
           active={tab === "historique"}
           href="/admin?tab=historique"
-          accent="gray"
-          icon="📦"
+          icon={<IconArchive />}
         >
-          Archives ({totalArchives})
+          Archives <span className="opacity-60">({totalArchives})</span>
         </TabLink>
         {/* Planning École masqué pour le moment — réactivable en décommentant
         <TabLink
@@ -419,93 +421,29 @@ export default async function AdminDashboardPage({
   );
 }
 
-type AccentKey = "cyan" | "ocre" | "yellow" | "emerald" | "violet" | "gray";
-
-const ACCENT_STYLES: Record<
-  AccentKey,
-  {
-    activeBg: string;
-    activeText: string;
-    activeShadow: string;
-    iconText: string;
-    hoverBorder: string;
-    hoverText: string;
-  }
-> = {
-  cyan: {
-    activeBg: "bg-cyan-club",
-    activeText: "text-white",
-    activeShadow: "shadow-cyan-club/40",
-    iconText: "text-cyan-club",
-    hoverBorder: "hover:border-cyan-club",
-    hoverText: "hover:text-cyan-club",
-  },
-  ocre: {
-    activeBg: "bg-ocre",
-    activeText: "text-white",
-    activeShadow: "shadow-ocre/40",
-    iconText: "text-ocre-dark",
-    hoverBorder: "hover:border-ocre",
-    hoverText: "hover:text-ocre-dark",
-  },
-  yellow: {
-    activeBg: "bg-yellow-club",
-    activeText: "text-navy",
-    activeShadow: "shadow-yellow-club/40",
-    iconText: "text-yellow-hover",
-    hoverBorder: "hover:border-yellow-club",
-    hoverText: "hover:text-yellow-hover",
-  },
-  emerald: {
-    activeBg: "bg-emerald-600",
-    activeText: "text-white",
-    activeShadow: "shadow-emerald-600/40",
-    iconText: "text-emerald-700",
-    hoverBorder: "hover:border-emerald-500",
-    hoverText: "hover:text-emerald-700",
-  },
-  violet: {
-    activeBg: "bg-violet-600",
-    activeText: "text-white",
-    activeShadow: "shadow-violet-600/40",
-    iconText: "text-violet-700",
-    hoverBorder: "hover:border-violet-500",
-    hoverText: "hover:text-violet-700",
-  },
-  gray: {
-    activeBg: "bg-gray-600",
-    activeText: "text-white",
-    activeShadow: "shadow-gray-600/30",
-    iconText: "text-gray-500",
-    hoverBorder: "hover:border-gray-400",
-    hoverText: "hover:text-gray-700",
-  },
-};
-
+/** Onglet sobre, style « tab underline » (Linear / Stripe Dashboard) :
+ *  pas de couleur de marque, juste un trait actif navy et un hover gris. */
 function TabLink({
   active,
   href,
   children,
-  accent,
   icon,
 }: {
   active: boolean;
   href: string;
   children: React.ReactNode;
-  accent: AccentKey;
-  icon: string;
+  icon: React.ReactNode;
 }) {
-  const c = ACCENT_STYLES[accent];
   return (
     <Link
       href={href}
-      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border-2 transition-all ${
+      className={`inline-flex items-center gap-2 px-3.5 py-2.5 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${
         active
-          ? `${c.activeBg} ${c.activeText} border-transparent shadow-lg ${c.activeShadow}`
-          : `bg-white border-gray-200 text-gray-600 ${c.hoverBorder} ${c.hoverText} hover:-translate-y-0.5`
+          ? "border-navy text-navy font-semibold"
+          : "border-transparent text-gray-500 hover:text-navy hover:border-gray-300"
       }`}
     >
-      <span className={active ? "" : c.iconText} aria-hidden>
+      <span aria-hidden className={active ? "text-navy" : "text-gray-400"}>
         {icon}
       </span>
       <span>{children}</span>

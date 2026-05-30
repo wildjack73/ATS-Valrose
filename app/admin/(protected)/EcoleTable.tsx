@@ -20,6 +20,7 @@ import {
   PaiementBadge,
   type PaiementClient,
 } from "./PaiementsPanel";
+import { IconMail, IconPhone, IconTrash } from "./Icons";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -218,13 +219,17 @@ function EcoleRowGroup({
         <td className="p-3 text-xs align-top">
           {coursTennisLabels(row.cours_tennis) ? (
             <div>
-              <span className="text-gray-500">🎾</span>{" "}
+              <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium mr-1">
+                Tennis
+              </span>
               {coursTennisLabels(row.cours_tennis)}
             </div>
           ) : null}
           {coursPadelLabels(row.cours_padel) ? (
             <div>
-              <span className="text-purple-500">🏓</span>{" "}
+              <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium mr-1">
+                Padel
+              </span>
               {coursPadelLabels(row.cours_padel)}
             </div>
           ) : null}
@@ -259,28 +264,31 @@ function EcoleRowGroup({
           />
         </td>
         <td className="p-3 whitespace-nowrap">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-gray-400">
             <a
               href={`mailto:${row.email}?subject=${encodeURIComponent(`Inscription École ${row.prenom} ${row.nom}`)}`}
-              className="text-base hover:scale-110 transition"
+              className="p-1.5 rounded hover:bg-gray-100 hover:text-navy transition"
               title={`Écrire à ${row.email}`}
+              aria-label={`Écrire à ${row.email}`}
             >
-              📧
+              <IconMail />
             </a>
             <a
               href={`tel:${row.telephone.replace(/\s/g, "")}`}
-              className="text-base hover:scale-110 transition"
+              className="p-1.5 rounded hover:bg-gray-100 hover:text-navy transition"
               title={`Appeler ${row.telephone}`}
+              aria-label={`Appeler ${row.telephone}`}
             >
-              📞
+              <IconPhone />
             </a>
             <button
               onClick={remove}
               disabled={pending}
-              className="text-base hover:scale-110 transition opacity-60 hover:opacity-100 disabled:opacity-30"
+              className="p-1.5 rounded hover:bg-red-50 hover:text-red-600 transition disabled:opacity-30"
               title="Supprimer cette inscription"
+              aria-label="Supprimer cette inscription"
             >
-              🗑️
+              <IconTrash />
             </button>
           </div>
         </td>
@@ -294,21 +302,21 @@ function EcoleRowGroup({
             <div className="ml-5 text-xs space-y-1">
               {row.notes ? (
                 <div className="text-gray-700">
-                  <span className="font-semibold text-clay">
-                    💬 Note famille&nbsp;:
+                  <span className="font-semibold text-navy">
+                    Note famille&nbsp;:
                   </span>{" "}
                   <span className="italic">{row.notes}</span>
                 </div>
               ) : null}
               {row.notes_admin ? (
                 <div className="text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                  <span className="font-semibold">🔒 Note admin&nbsp;:</span>{" "}
+                  <span className="font-semibold">Note admin&nbsp;:</span>{" "}
                   {row.notes_admin}
                 </div>
               ) : null}
               {row.paiement_info ? (
                 <div className="text-emerald-900 bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
-                  <span className="font-semibold">💶 Règlement&nbsp;:</span>{" "}
+                  <span className="font-semibold">Règlement&nbsp;:</span>{" "}
                   {row.paiement_info}
                 </div>
               ) : null}

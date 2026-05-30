@@ -14,20 +14,16 @@ export interface PaiementClient {
   notes: string | null;
 }
 
-const MOYENS: { code: MoyenPaiement; label: string; emoji: string }[] = [
-  { code: "especes", label: "Espèces", emoji: "💵" },
-  { code: "cheque", label: "Chèque", emoji: "📝" },
-  { code: "virement", label: "Virement", emoji: "🏦" },
-  { code: "cb", label: "Carte bleue", emoji: "💳" },
-  { code: "autre", label: "Autre", emoji: "•" },
+const MOYENS: { code: MoyenPaiement; label: string }[] = [
+  { code: "especes", label: "Espèces" },
+  { code: "cheque", label: "Chèque" },
+  { code: "virement", label: "Virement" },
+  { code: "cb", label: "Carte bleue" },
+  { code: "autre", label: "Autre" },
 ];
 
 function moyenLabel(m: MoyenPaiement): string {
   return MOYENS.find((x) => x.code === m)?.label ?? m;
-}
-
-function moyenEmoji(m: MoyenPaiement): string {
-  return MOYENS.find((x) => x.code === m)?.emoji ?? "•";
 }
 
 function formatDateFR(d: string): string {
@@ -60,21 +56,21 @@ export function PaiementBadge({
   const reste = prixTotal - totalPaye;
   if (reste <= 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
-        ✓ Soldé
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+        Soldé
       </span>
     );
   }
   if (totalPaye <= 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
-        💰 0 / {prixTotal}€
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+        0 / {prixTotal}€
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
-      💰 {totalPaye} / {prixTotal}€ ({reste}€ dû)
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-800 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
+      {totalPaye} / {prixTotal}€
     </span>
   );
 }
@@ -178,10 +174,10 @@ export function PaiementsPanel({
         : "border-blue-300 bg-blue-50";
 
   return (
-    <div className={`rounded-lg border-2 ${soldStateClass} p-3`}>
+    <div className={`rounded-md border ${soldStateClass} p-3`}>
       <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-        <span className="text-xs font-bold text-navy uppercase tracking-wide">
-          💰 Paiements
+        <span className="text-xs font-semibold text-navy uppercase tracking-wide">
+          Paiements
         </span>
         <span className="text-xs font-bold text-navy">
           Reçu&nbsp;: <span>{totalPaye}€</span> / <span>{prixTotal}€</span>
@@ -200,13 +196,10 @@ export function PaiementsPanel({
               key={p.id}
               className="flex items-center gap-2 bg-white rounded border border-gray-200 px-2 py-1.5 text-xs"
             >
-              <span className="text-base" title={moyenLabel(p.moyen)}>
-                {moyenEmoji(p.moyen)}
-              </span>
-              <span className="font-bold text-navy whitespace-nowrap">
+              <span className="font-semibold text-navy whitespace-nowrap tabular-nums">
                 {p.montant}€
               </span>
-              <span className="text-gray-500 whitespace-nowrap">
+              <span className="text-gray-500 whitespace-nowrap tabular-nums">
                 {formatDateFR(p.date_paiement)}
               </span>
               <span className="text-gray-700">{moyenLabel(p.moyen)}</span>
@@ -226,8 +219,20 @@ export function PaiementsPanel({
                 disabled={pending}
                 className="ml-auto text-gray-400 hover:text-red-600 disabled:opacity-30"
                 title="Supprimer ce paiement"
+                aria-label="Supprimer ce paiement"
               >
-                🗑
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-3.5 h-3.5"
+                  aria-hidden
+                >
+                  <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" />
+                </svg>
               </button>
             </li>
           ))}
@@ -263,7 +268,7 @@ export function PaiementsPanel({
             >
               {MOYENS.map((m) => (
                 <option key={m.code} value={m.code}>
-                  {m.emoji} {m.label}
+                  {m.label}
                 </option>
               ))}
             </select>
