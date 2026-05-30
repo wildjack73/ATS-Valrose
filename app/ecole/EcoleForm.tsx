@@ -361,37 +361,96 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
       <Section
         step={4}
         title="Disponibilités"
-        description="Choisissez le créneau qui vous arrangerait. Aide le club à constituer les groupes."
+        description="Cochez tous les créneaux qui vous arrangent. Aide le club à constituer les groupes."
       >
-        <Field label="Créneau souhaité" htmlFor="dispo_semaine">
-          <select
-            id="dispo_semaine"
-            className={inputClass}
-            {...register("dispo_semaine")}
-          >
-            <option value="">— Pas de préférence —</option>
-            <optgroup label="Mercredi">
-              <option value="Mercredi matin">Mercredi matin</option>
-              <option value="Mercredi après-midi">Mercredi après-midi</option>
-              <option value="Mercredi (matin ou après-midi)">
-                Mercredi (matin ou après-midi)
-              </option>
-            </optgroup>
-            <optgroup label="Samedi">
-              <option value="Samedi matin">Samedi matin</option>
-              <option value="Samedi après-midi">Samedi après-midi</option>
-              <option value="Samedi (matin ou après-midi)">
-                Samedi (matin ou après-midi)
-              </option>
-            </optgroup>
-            <optgroup label="Soir en semaine">
-              <option value="Lundi soir">Lundi soir</option>
-              <option value="Mardi soir">Mardi soir</option>
-              <option value="Jeudi soir">Jeudi soir</option>
-              <option value="Vendredi soir">Vendredi soir</option>
-            </optgroup>
-          </select>
-        </Field>
+        <Controller
+          control={control}
+          name="dispo_semaine"
+          render={({ field }) => {
+            const checked = (field.value ?? "")
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+
+            function toggle(creneau: string) {
+              const next = checked.includes(creneau)
+                ? checked.filter((j) => j !== creneau)
+                : [...checked, creneau];
+              field.onChange(next.join(", "));
+            }
+
+            const GROUPES: { titre: string; options: string[] }[] = [
+              {
+                titre: "Mercredi",
+                options: ["Mercredi matin", "Mercredi après-midi"],
+              },
+              {
+                titre: "Samedi",
+                options: ["Samedi matin", "Samedi après-midi"],
+              },
+              {
+                titre: "Soir en semaine",
+                options: [
+                  "Lundi soir",
+                  "Mardi soir",
+                  "Jeudi soir",
+                  "Vendredi soir",
+                ],
+              },
+            ];
+
+            return (
+              <div className="space-y-3">
+                {GROUPES.map((g) => (
+                  <div key={g.titre}>
+                    <p className="text-xs font-bold uppercase text-gray-500 tracking-wide mb-1.5">
+                      {g.titre}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {g.options.map((opt) => {
+                        const isChecked = checked.includes(opt);
+                        // Affiche juste la fin du libellé (ex: "matin")
+                        // après le nom du jour pour les groupes mercredi/samedi
+                        const label = opt
+                          .replace(/^Mercredi\s/, "")
+                          .replace(/^Samedi\s/, "");
+                        return (
+                          <label
+                            key={opt}
+                            className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm transition ${
+                              isChecked
+                                ? "border-navy bg-navy text-white"
+                                : "border-gray-300 bg-white hover:border-navy"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="accent-navy"
+                              checked={isChecked}
+                              onChange={() => toggle(opt)}
+                            />
+                            <span>{label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                {checked.length === 0 ? (
+                  <p className="text-xs text-gray-500 italic">
+                    Aucun créneau sélectionné (= aucune préférence).
+                  </p>
+                ) : (
+                  <p className="text-xs text-navy">
+                    <strong>{checked.length}</strong> créneau
+                    {checked.length > 1 ? "x" : ""} sélectionné
+                    {checked.length > 1 ? "s" : ""}.
+                  </p>
+                )}
+              </div>
+            );
+          }}
+        />
       </Section>
 
       <Section
