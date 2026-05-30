@@ -61,6 +61,26 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </div>
+      {/* Bandeau de bienvenue (caché à l'impression) */}
+      <div className="no-print mx-auto max-w-6xl px-4 pt-4">
+        <div className="rounded-xl bg-gradient-to-r from-yellow-club via-yellow-200 to-yellow-club text-navy px-5 py-3 shadow-md flex items-center gap-3 flex-wrap">
+          <span className="text-2xl" aria-hidden>
+            👋
+          </span>
+          <div className="flex-1 min-w-[200px]">
+            <p className="font-extrabold text-base sm:text-lg leading-tight">
+              Bienvenue Jérôme
+            </p>
+            <p className="text-xs sm:text-sm text-navy/80">
+              best coach ever 🏆
+            </p>
+          </div>
+          <span className="text-2xl" aria-hidden>
+            🎾
+          </span>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
     </div>
   );
