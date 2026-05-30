@@ -121,7 +121,7 @@ on conflict (saison_id, type, code) do update set
 with s as (select id from public.saisons where code = '2026-2027' and domaine = 'ecole')
 insert into public.tarifs_cours_ecole (saison_id, type, code, label, description, prix, order_idx)
 select s.id, 'padel', v.* from s, (values
-  ('perfectionnement',        'Perfectionnement Padel','1h30/semaine',                             450, 10),
+  ('perfectionnement',        'Perfectionnement Padel','Jeunes de 7 à 17 ans · 1h30/semaine',      450, 10),
   ('cours_adultes_annuel',    'Cours Adultes Padel',   'Adultes · 1h30/semaine · saison complète', 680, 20),
   ('cours_adultes_trimestre', 'Cours Adultes Padel',   'Adultes · 1h30/semaine · 1 trimestre',     240, 30)
 ) as v(code, label, description, prix, order_idx)
