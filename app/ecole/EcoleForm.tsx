@@ -437,19 +437,19 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                 titre: "🎾 Cours Adultes Tennis",
                 groupes: [
                   {
-                    titre: "Soir en semaine — 18h30-20h",
+                    titre: "Soir en semaine — 18h30-20h (5 places max)",
                     options: [
-                      "Lundi 18h30-20h",
-                      "Mardi 18h30-20h",
-                      "Jeudi 18h30-20h",
-                      "Vendredi 18h30-20h",
+                      "Lundi 18h30-20h (5 places max)",
+                      "Mardi 18h30-20h (5 places max)",
+                      "Jeudi 18h30-20h (5 places max)",
+                      "Vendredi 18h30-20h (5 places max)",
                     ],
                   },
                   {
                     titre: "Samedi",
                     options: [
                       "Samedi 9h-10h30 (15 places max)",
-                      "Samedi après-midi (non débutant)",
+                      "Samedi après-midi (non débutant, 5 places max)",
                     ],
                   },
                 ],
