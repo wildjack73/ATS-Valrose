@@ -61,17 +61,28 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </div>
-      {/* Bandeau de bienvenue (caché à l'impression) */}
+      {/* Bandeau de bienvenue (caché à l'impression).
+          En mode sombre on garde un visuel sobre navy/jaune au lieu du
+          gradient jaune trop éclatant qui clashait avec le dark. */}
       <div className="no-print mx-auto max-w-6xl px-4 pt-4">
-        <div className="rounded-xl bg-gradient-to-r from-yellow-club via-yellow-200 to-yellow-club text-navy px-5 py-3 shadow-md flex items-center gap-3 flex-wrap">
+        <div
+          className={`rounded-xl px-5 py-3 shadow-sm flex items-center gap-3 flex-wrap border ${
+            dark
+              ? "bg-[#1a2b42] border-yellow-club/30 text-white"
+              : "bg-gradient-to-r from-yellow-club via-yellow-200 to-yellow-club text-navy border-transparent"
+          }`}
+        >
           <span className="text-2xl" aria-hidden>
             👋
           </span>
           <div className="flex-1 min-w-[200px]">
             <p className="font-extrabold text-base sm:text-lg leading-tight">
-              Bienvenue Jérôme
+              Bienvenue{" "}
+              <span className={dark ? "text-yellow-club" : ""}>Jérôme</span>
             </p>
-            <p className="text-xs sm:text-sm text-navy/80">
+            <p
+              className={`text-xs sm:text-sm ${dark ? "text-white/65" : "text-navy/80"}`}
+            >
               best coach ever 🏆
             </p>
           </div>

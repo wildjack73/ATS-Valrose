@@ -520,34 +520,34 @@ body {
 
 /* -- Polish dashboard ------------------------------------------------- */
 
-/* Cards Stages + École : remplacer les gradients fluo par des dégradés
-   très sobres qui gardent juste un *hint* de couleur à droite, et
-   rapprocher les bordures du ton de la marque sans saturer. */
+/* Cards Stages + École : headers en dégradé contenu vers la couleur de
+   marque (saturation modérée) → on garde une vraie identité visuelle
+   sans tomber dans le fluo. */
 .admin-dark .bg-gradient-to-r.from-navy.to-cyan-club,
 .admin-dark .bg-gradient-to-r.from-navy.via-navy.to-cyan-club {
   background-image: linear-gradient(
     to right,
-    #122237 0%,
-    #15293f 55%,
-    #1a3c50 100%
+    #0c2536 0%,
+    #154058 55%,
+    #1f6788 100%
   ) !important;
 }
 .admin-dark .bg-gradient-to-r.from-clay.to-ocre-light,
 .admin-dark .bg-gradient-to-r.from-clay.via-ocre.to-ocre-light {
   background-image: linear-gradient(
     to right,
-    #1f1a22 0%,
-    #2a221e 55%,
-    #3a2a20 100%
+    #2a1815 0%,
+    #4a2a18 55%,
+    #6b3d1f 100%
   ) !important;
 }
 
-/* Bordures de cards : moins saturées en dark */
+/* Bordures de cards : moins saturées qu'en mode clair mais bien visibles */
 .admin-dark .border-cyan-club\/30 {
-  border-color: rgba(45, 181, 214, 0.22) !important;
+  border-color: rgba(45, 181, 214, 0.35) !important;
 }
 .admin-dark .border-ocre\/30 {
-  border-color: rgba(196, 115, 58, 0.22) !important;
+  border-color: rgba(196, 115, 58, 0.35) !important;
 }
 
 /* Texte d'éyebrow dans les headers de cards : moins flashy */
