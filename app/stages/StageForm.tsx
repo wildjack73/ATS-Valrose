@@ -87,6 +87,10 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
   // a bien été choisie ET que cette semaine accepte le déjeuner.
   const semaineAccepteDejeuner =
     !!semaineChoisie && semaineChoisie.dejeuner_disponible !== false;
+  // Une semaine est explicitement « sans déjeuner » → on cache la mention
+  // « Option déjeuner disponible » dans la description des formules.
+  const semaineSansDejeuner =
+    !!semaineChoisie && semaineChoisie.dejeuner_disponible === false;
   const dejeunerActif =
     !!formule?.has_dejeuner_option && semaineAccepteDejeuner;
 
@@ -329,7 +333,7 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
                           <span className="flex-1">{s.label}</span>
                           {s.dejeuner_disponible === false ? (
                             <span className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
-                              sans déjeuner
+                              sans déjeuner encadré
                             </span>
                           ) : null}
                         </label>
@@ -406,7 +410,9 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
                           </div>
                         </div>
                         <p className="mt-2 text-sm text-gray-700">
-                          {f.description}
+                          {semaineSansDejeuner
+                            ? retirerMentionDejeuner(f.description ?? "")
+                            : f.description}
                         </p>
                         <p className="mt-1 text-xs text-gray-500">
                           {f.details_horaires}
@@ -668,4 +674,16 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
       </div>
     </form>
   );
+}
+
+/**
+ * Retire de la description d'une formule la phrase « Option déjeuner
+ * encadré disponible (35€ la semaine ou 8€ le jour). » quand la semaine
+ * choisie ne propose pas de déjeuner. Nettoie aussi les espaces doubles.
+ */
+function retirerMentionDejeuner(desc: string): string {
+  return desc
+    .replace(/\s*Option déjeuner encadré disponible[^.]*\.\s*/giu, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
