@@ -461,19 +461,19 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
                 titre: "🏓 Cours Padel",
                 groupes: [
                   {
-                    titre: "Après-midi",
+                    titre: "Après-midi (5 places max)",
                     options: [
-                      "Mercredi après-midi (padel)",
-                      "Samedi après-midi (padel)",
+                      "Mercredi après-midi (padel, 5 places max)",
+                      "Samedi après-midi (padel, 5 places max)",
                     ],
                   },
                   {
-                    titre: "Soir en semaine — 17h-18h30",
+                    titre: "Soir en semaine — 17h-18h30 (5 places max)",
                     options: [
-                      "Lundi 17h-18h30 (padel)",
-                      "Mardi 17h-18h30 (padel)",
-                      "Jeudi 17h-18h30 (padel)",
-                      "Vendredi 17h-18h30 (padel)",
+                      "Lundi 17h-18h30 (padel, 5 places max)",
+                      "Mardi 17h-18h30 (padel, 5 places max)",
+                      "Jeudi 17h-18h30 (padel, 5 places max)",
+                      "Vendredi 17h-18h30 (padel, 5 places max)",
                     ],
                   },
                 ],
