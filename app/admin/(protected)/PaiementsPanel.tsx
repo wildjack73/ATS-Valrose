@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import DateInputFR from "./DateInputFR";
 
 export type MoyenPaiement = "especes" | "cheque" | "virement" | "cb" | "autre";
 
@@ -275,10 +276,9 @@ export function PaiementsPanel({
           </label>
           <label className="block">
             <span className="text-[10px] text-gray-500">Date</span>
-            <input
-              type="date"
+            <DateInputFR
               value={datePaiement}
-              onChange={(e) => setDatePaiement(e.target.value)}
+              onChange={setDatePaiement}
               className="w-full rounded border border-gray-300 px-1.5 py-1 text-xs"
             />
           </label>

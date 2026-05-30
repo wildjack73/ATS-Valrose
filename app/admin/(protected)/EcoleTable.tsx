@@ -264,10 +264,10 @@ function EcoleRowGroup({
           />
         </td>
         <td className="p-3 whitespace-nowrap">
-          <div className="flex items-center gap-1 text-gray-400">
+          <div className="flex items-center gap-2 text-gray-400">
             <a
               href={`mailto:${row.email}?subject=${encodeURIComponent(`Inscription École ${row.prenom} ${row.nom}`)}`}
-              className="p-1.5 rounded hover:bg-gray-100 hover:text-navy transition"
+              className="hover:text-navy transition"
               title={`Écrire à ${row.email}`}
               aria-label={`Écrire à ${row.email}`}
             >
@@ -275,7 +275,7 @@ function EcoleRowGroup({
             </a>
             <a
               href={`tel:${row.telephone.replace(/\s/g, "")}`}
-              className="p-1.5 rounded hover:bg-gray-100 hover:text-navy transition"
+              className="hover:text-navy transition"
               title={`Appeler ${row.telephone}`}
               aria-label={`Appeler ${row.telephone}`}
             >
@@ -284,7 +284,7 @@ function EcoleRowGroup({
             <button
               onClick={remove}
               disabled={pending}
-              className="p-1.5 rounded hover:bg-red-50 hover:text-red-600 transition disabled:opacity-30"
+              className="hover:text-red-600 transition disabled:opacity-30"
               title="Supprimer cette inscription"
               aria-label="Supprimer cette inscription"
             >

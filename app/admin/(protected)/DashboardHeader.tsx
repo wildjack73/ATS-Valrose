@@ -41,27 +41,6 @@ export default function DashboardHeader({
     else stagesNbAEncaisser += 1;
   }
 
-  // Top semaines (les 5 avec le plus d'inscriptions)
-  const stagesParSemaine = new Map<
-    string,
-    { count: number; total: number; label: string }
-  >();
-  for (const s of stages) {
-    const existing = stagesParSemaine.get(s.semaine) ?? {
-      count: 0,
-      total: 0,
-      label: s.semaine_label,
-    };
-    stagesParSemaine.set(s.semaine, {
-      count: existing.count + 1,
-      total: existing.total + s.prix_total,
-      label: s.semaine_label,
-    });
-  }
-  const topSemaines = Array.from(stagesParSemaine.entries())
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 5);
-
   // Répartition par formule
   const parFormule = new Map<string, number>();
   for (const s of stages) {
@@ -152,46 +131,6 @@ export default function DashboardHeader({
               href="/admin?tab=encaissements&domaine=stages"
             />
           </div>
-
-          {topSemaines.length > 0 ? (
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                Top semaines
-              </p>
-              <ul className="space-y-1.5">
-                {topSemaines.map(([code, data]) => {
-                  const max = topSemaines[0][1].count;
-                  const pct = (data.count / max) * 100;
-                  return (
-                    <li
-                      key={code}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <Link
-                        href={`/admin?tab=stages&semaine=${code}`}
-                        className="flex-1 truncate hover:text-navy"
-                      >
-                        {data.label}
-                      </Link>
-                      <div className="w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                        <div
-                          className="h-full bg-navy/70"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-navy w-16 text-right tabular-nums">
-                        {data.count} · {data.total}€
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-400 italic">
-              Aucune inscription stage pour le moment.
-            </p>
-          )}
 
           {parFormule.size > 0 ? (
             <div>

@@ -69,6 +69,7 @@ export default async function TarifsPage() {
           <Table
             rows={bundle.coursTennis.map((c) => ({
               label: c.label,
+              detail: c.description,
               prix: `${c.prix}€`,
             }))}
           />
@@ -80,6 +81,7 @@ export default async function TarifsPage() {
             <Table
               rows={bundle.coursPadel.map((c) => ({
                 label: c.label,
+                detail: c.description,
                 prix: `${c.prix}€`,
               }))}
             />
@@ -236,16 +238,27 @@ function Block({
   );
 }
 
-function Table({ rows }: { rows: { label: string; prix: string }[] }) {
+function Table({
+  rows,
+}: {
+  rows: { label: string; detail?: string | null; prix: string }[];
+}) {
   return (
     <ul className="divide-y divide-gray-100">
       {rows.map((r, i) => (
         <li
           key={i}
-          className="flex items-center justify-between gap-4 py-2.5 text-sm"
+          className="flex items-start justify-between gap-4 py-3 text-sm"
         >
-          <span className="text-gray-800">{r.label}</span>
-          <span className="font-bold text-navy whitespace-nowrap">
+          <div className="min-w-0">
+            <p className="text-gray-900 font-medium">{r.label}</p>
+            {r.detail ? (
+              <p className="mt-0.5 text-xs text-gray-500 leading-snug">
+                {r.detail}
+              </p>
+            ) : null}
+          </div>
+          <span className="font-bold text-navy whitespace-nowrap shrink-0">
             {r.prix}
           </span>
         </li>
