@@ -27,10 +27,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   return (
     <div
-      className={`min-h-screen ${dark ? "admin-dark bg-[#0a1929]" : "bg-gray-50"}`}
+      className={`min-h-screen ${dark ? "admin-dark" : "bg-gray-50"}`}
     >
       <div
-        className={`no-print ${dark ? "bg-[#0a1929] border-b border-white/5" : "bg-navy"} text-white`}
+        className={`no-print ${dark ? "admin-dark-topbar border-b border-white/5" : "bg-navy"} text-white`}
       >
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between text-sm">
           <div className="flex items-center gap-4">

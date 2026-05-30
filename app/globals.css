@@ -315,6 +315,13 @@ body {
   --d-text-dim: #b6c2d6;      /* polish : texte secondaire plus lisible */
   --d-text-muted: #7c8eaa;
   --d-accent: #4dc5e3;
+  background-color: var(--d-canvas);  /* fond canvas géré ici (et plus inline)
+                                          → automatiquement annulé en print */
+}
+
+/* La topbar sombre prend la même teinte que le canvas */
+.admin-dark-topbar {
+  background-color: var(--d-canvas, #0a1929);
 }
 
 .admin-dark,
