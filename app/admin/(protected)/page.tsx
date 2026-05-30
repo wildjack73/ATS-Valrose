@@ -20,6 +20,7 @@ import TarifsEditor from "./TarifsEditor";
 import PlanningEcole from "./PlanningEcole";
 import DashboardHeader from "./DashboardHeader";
 import StagesOrganisation from "./StagesOrganisation";
+import CoachesEditor from "./CoachesEditor";
 import Annuaire from "./Annuaire";
 import {
   fetchGroupesEcole,
@@ -66,9 +67,11 @@ export default async function AdminDashboardPage({
             ? "planning"
             : sp.tab === "stages-org"
               ? "stages-org"
-              : sp.tab === "annuaire"
-                ? "annuaire"
-                : "stages";
+              : sp.tab === "coachs"
+                ? "coachs"
+                : sp.tab === "annuaire"
+                  ? "annuaire"
+                  : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : on peut visualiser/éditer une saison STAGES et une
@@ -187,6 +190,14 @@ export default async function AdminDashboardPage({
           Organisation Stages
         </TabLink>
         <TabLink
+          active={tab === "coachs"}
+          href="/admin?tab=coachs"
+          accent="cyan"
+          icon="👨‍🏫"
+        >
+          Coachs
+        </TabLink>
+        <TabLink
           active={tab === "annuaire"}
           href="/admin?tab=annuaire"
           accent="violet"
@@ -252,6 +263,8 @@ export default async function AdminDashboardPage({
             Aucune saison active pour gérer le planning.
           </div>
         )
+      ) : tab === "coachs" ? (
+        <CoachesEditor coaches={coaches} />
       ) : tab === "annuaire" ? (
         <Annuaire clients={annuaireData ?? []} />
       ) : tab === "stages-org" ? (
