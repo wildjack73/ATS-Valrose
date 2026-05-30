@@ -26,6 +26,7 @@ import { fetchChecksRapport } from "@/lib/admin/checks-queries";
 import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
 import { fetchPaiementsListByInscriptions } from "@/lib/data/paiements";
 import Annuaire from "./Annuaire";
+import Encaissements from "./Encaissements";
 import {
   fetchGroupesEcole,
   fetchCoaches,
@@ -52,6 +53,9 @@ type SearchParams = Promise<{
   saisonEcole?: string;
   formule?: string;
   effSem?: string;
+  /** Onglet Encaissements */
+  domaine?: string;
+  status?: string;
 }>;
 
 export default async function AdminDashboardPage({
@@ -77,7 +81,9 @@ export default async function AdminDashboardPage({
                   ? "a-verifier"
                   : sp.tab === "annuaire"
                     ? "annuaire"
-                    : "stages";
+                    : sp.tab === "encaissements"
+                      ? "encaissements"
+                      : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : on peut visualiser/éditer une saison STAGES et une
@@ -125,12 +131,42 @@ export default async function AdminDashboardPage({
     fetchCoaches(),
   ]);
 
+  // Pour l'onglet Encaissements : on a besoin de TOUS les stages + école sans
+  // filtre statut (sinon l'onglet hérite des filtres de l'onglet précédent).
+  const [stagesAll, ecoleAll] =
+    tab === "encaissements"
+      ? await Promise.all([fetchStages({}), fetchEcole({})])
+      : [stages, ecole];
+
   // Paiements : charger en parallèle pour les inscriptions actives stages/école.
   // On hydrate ainsi chaque panneau "💰 Paiements" sans round-trip réseau.
+  // L'onglet encaissements utilise la version "all" → on dédoublonne les ids.
+  const allStagesIds = Array.from(
+    new Set([...stages.map((r) => r.id), ...stagesAll.map((r) => r.id)]),
+  );
+  const allEcoleIds = Array.from(
+    new Set([...ecole.map((r) => r.id), ...ecoleAll.map((r) => r.id)]),
+  );
   const [paiementsStagesMap, paiementsEcoleMap] = await Promise.all([
-    fetchPaiementsListByInscriptions("stages", stages.map((r) => r.id)),
-    fetchPaiementsListByInscriptions("ecole", ecole.map((r) => r.id)),
+    fetchPaiementsListByInscriptions("stages", allStagesIds),
+    fetchPaiementsListByInscriptions("ecole", allEcoleIds),
   ]);
+
+  // Maps id → total payé (€) pour le dashboard
+  const paiementsStagesTotaux = new Map<string, number>();
+  for (const [id, list] of paiementsStagesMap) {
+    paiementsStagesTotaux.set(
+      id,
+      list.reduce((sum, p) => sum + p.montant, 0),
+    );
+  }
+  const paiementsEcoleTotaux = new Map<string, number>();
+  for (const [id, list] of paiementsEcoleMap) {
+    paiementsEcoleTotaux.set(
+      id,
+      list.reduce((sum, p) => sum + p.montant, 0),
+    );
+  }
 
   // Planning : on charge groupes + non-placés seulement si l'onglet est actif
   const planningData =
@@ -176,7 +212,13 @@ export default async function AdminDashboardPage({
   return (
     <>
       <div className="no-print">
-        <DashboardHeader stages={stages} ecole={ecole} bundle={bundle} />
+        <DashboardHeader
+          stages={stages}
+          ecole={ecole}
+          bundle={bundle}
+          paiementsStages={paiementsStagesTotaux}
+          paiementsEcole={paiementsEcoleTotaux}
+        />
       </div>
 
       <div className="flex items-center gap-2 mb-6 overflow-x-auto no-print pb-1">
@@ -235,6 +277,14 @@ export default async function AdminDashboardPage({
           icon="📇"
         >
           Annuaire
+        </TabLink>
+        <TabLink
+          active={tab === "encaissements"}
+          href="/admin?tab=encaissements"
+          accent="emerald"
+          icon="💰"
+        >
+          Encaissements
         </TabLink>
         <TabLink
           active={tab === "historique"}
@@ -308,6 +358,15 @@ export default async function AdminDashboardPage({
         ) : null
       ) : tab === "annuaire" ? (
         <Annuaire clients={annuaireData ?? []} />
+      ) : tab === "encaissements" ? (
+        <Encaissements
+          stages={stagesAll}
+          ecole={ecoleAll}
+          paiementsStages={Object.fromEntries(paiementsStagesMap)}
+          paiementsEcole={Object.fromEntries(paiementsEcoleMap)}
+          initialDomaine={sp.domaine}
+          initialStatus={sp.status}
+        />
       ) : tab === "stages-org" ? (
         bundle ? (
           <StagesOrganisation

@@ -4,6 +4,9 @@ import type { TarifsBundle } from "@/lib/data/tarifs-types";
 import { formuleLabel } from "@/lib/admin/format";
 import type { FormuleId } from "@/lib/data/stages";
 
+/** Map id-inscription → total déjà payé (en €). */
+type PaiementsTotaux = Map<string, number>;
+
 /**
  * Dashboard "command center" en haut de l'admin :
  * - bloc STAGES (cyan) avec stats + répartition par semaine
@@ -13,20 +16,30 @@ export default function DashboardHeader({
   stages,
   ecole,
   bundle,
+  paiementsStages,
+  paiementsEcole,
 }: {
   stages: InscriptionStageRow[];
   ecole: InscriptionEcoleRow[];
   bundle: TarifsBundle | null;
+  paiementsStages: PaiementsTotaux;
+  paiementsEcole: PaiementsTotaux;
 }) {
-  // ----- STAGES -----
+  // ----- STAGES (chiffres basés sur les paiements RÉELS, hors annulés) -----
   const stagesTotal = stages.length;
-  const stagesEnAttente = stages.filter((s) => s.statut === "en_attente");
-  const stagesPaye = stages.filter((s) => s.statut === "paye");
-  const stagesAEncaisser = stagesEnAttente.reduce(
-    (sum, s) => sum + s.prix_total,
-    0,
-  );
-  const stagesEncaisses = stagesPaye.reduce((sum, s) => sum + s.prix_total, 0);
+  const stagesActifs = stages.filter((s) => s.statut !== "annule");
+  let stagesEncaisses = 0;
+  let stagesAEncaisser = 0;
+  let stagesNbSoldes = 0;
+  let stagesNbAEncaisser = 0;
+  for (const s of stagesActifs) {
+    const paye = paiementsStages.get(s.id) ?? 0;
+    const reste = Math.max(0, s.prix_total - paye);
+    stagesEncaisses += Math.min(paye, s.prix_total);
+    stagesAEncaisser += reste;
+    if (reste === 0) stagesNbSoldes += 1;
+    else stagesNbAEncaisser += 1;
+  }
 
   // Top semaines (les 5 avec le plus d'inscriptions)
   const stagesParSemaine = new Map<
@@ -57,16 +70,20 @@ export default function DashboardHeader({
 
   // ----- ÉCOLE -----
   const ecoleTotal = ecole.length;
-  const ecoleEnAttente = ecole.filter((e) => e.statut === "en_attente");
-  const ecolePaye = ecole.filter((e) => e.statut === "paye");
-  const ecoleAEncaisser = ecoleEnAttente.reduce(
-    (sum, e) => sum + (e.prix_total ?? 0),
-    0,
-  );
-  const ecoleEncaisses = ecolePaye.reduce(
-    (sum, e) => sum + (e.prix_total ?? 0),
-    0,
-  );
+  const ecoleActifs = ecole.filter((e) => e.statut !== "annule");
+  let ecoleEncaisses = 0;
+  let ecoleAEncaisser = 0;
+  let ecoleNbSoldes = 0;
+  let ecoleNbAEncaisser = 0;
+  for (const e of ecoleActifs) {
+    const px = e.prix_total ?? 0;
+    const paye = paiementsEcole.get(e.id) ?? 0;
+    const reste = Math.max(0, px - paye);
+    ecoleEncaisses += Math.min(paye, px);
+    ecoleAEncaisser += reste;
+    if (px > 0 && reste === 0) ecoleNbSoldes += 1;
+    else if (reste > 0) ecoleNbAEncaisser += 1;
+  }
 
   // Top cours école
   const coursCounts = new Map<string, number>();
@@ -125,13 +142,15 @@ export default function DashboardHeader({
               value={`${stagesAEncaisser}€`}
               label="À encaisser"
               color="text-orange-700"
-              hint={`${stagesEnAttente.length} en attente`}
+              hint={`${stagesNbAEncaisser} à régler`}
+              href="/admin?tab=encaissements&domaine=stages&status=a_regler"
             />
             <BigStat
               value={`${stagesEncaisses}€`}
               label="Encaissés"
               color="text-green-700"
-              hint={`${stagesPaye.length} payés`}
+              hint={`${stagesNbSoldes} soldé${stagesNbSoldes > 1 ? "s" : ""}`}
+              href="/admin?tab=encaissements&domaine=stages"
             />
           </div>
 
@@ -226,13 +245,15 @@ export default function DashboardHeader({
               value={`${ecoleAEncaisser}€`}
               label="À encaisser"
               color="text-orange-700"
-              hint={`${ecoleEnAttente.length} en attente`}
+              hint={`${ecoleNbAEncaisser} à régler`}
+              href="/admin?tab=encaissements&domaine=ecole&status=a_regler"
             />
             <BigStat
               value={`${ecoleEncaisses}€`}
               label="Encaissés"
               color="text-green-700"
-              hint={`${ecolePaye.length} payés`}
+              hint={`${ecoleNbSoldes} soldé${ecoleNbSoldes > 1 ? "s" : ""}`}
+              href="/admin?tab=encaissements&domaine=ecole"
             />
           </div>
 
@@ -288,14 +309,16 @@ function BigStat({
   label,
   color,
   hint,
+  href,
 }: {
   value: string | number;
   label: string;
   color?: string;
   hint?: string;
+  href?: string;
 }) {
-  return (
-    <div className="text-center">
+  const inner = (
+    <>
       <p className={`text-3xl font-extrabold ${color ?? "text-navy"}`}>
         {value}
       </p>
@@ -305,6 +328,17 @@ function BigStat({
       {hint ? (
         <p className="text-[10px] text-gray-500 mt-0.5">{hint}</p>
       ) : null}
-    </div>
+    </>
   );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="text-center block rounded-lg hover:bg-gray-50 transition py-1 -my-1"
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return <div className="text-center">{inner}</div>;
 }
