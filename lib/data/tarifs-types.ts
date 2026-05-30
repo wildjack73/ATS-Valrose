@@ -30,6 +30,10 @@ export interface Formule {
   prix_dejeuner_jour: number;     // par jour individuel
   details_horaires: string | null;
   order_idx: number;
+  /** Si true, le club a temporairement fermé cette formule (complète, etc.).
+   *  Affichée en barré « COMPLET » dans le formulaire public, non
+   *  sélectionnable. */
+  ferme: boolean;
 }
 
 export interface OptionF4 {
@@ -63,6 +67,9 @@ export interface CoursEcole {
   description: string | null;
   prix: number;
   order_idx: number;
+  /** Si true, ce cours est temporairement fermé aux inscriptions (complet,
+   *  pas de coach dispo, etc.). Affiché en « COMPLET » dans le formulaire. */
+  ferme: boolean;
 }
 
 export interface LicenceFftRow {

@@ -23,6 +23,7 @@ const RESOURCE_ALLOWED_FIELDS: Record<string, string[]> = {
     "prix_dejeuner_jour",
     "details_horaires",
     "order_idx",
+    "ferme",
   ],
   "options-f4": ["label", "prix", "detail", "order_idx"],
   semaines: [
@@ -34,7 +35,7 @@ const RESOURCE_ALLOWED_FIELDS: Record<string, string[]> = {
     "code",
     "order_idx",
   ],
-  "cours-ecole": ["label", "description", "prix", "order_idx"],
+  "cours-ecole": ["label", "description", "prix", "order_idx", "ferme"],
   "licence-fft": ["label", "prix", "order_idx"],
   autres: ["category", "label", "prix", "detail", "order_idx"],
 };

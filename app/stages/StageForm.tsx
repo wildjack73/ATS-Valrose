@@ -369,13 +369,17 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
             <div className="grid gap-3">
               {FORMULES.map((f) => {
                 const checked = field.value === f.code;
+                const ferme = f.ferme;
                 return (
                   <label
                     key={f.code}
-                    className={`block rounded-xl border-2 p-4 cursor-pointer transition ${
-                      checked
-                        ? "border-yellow-club bg-yellow-club/10"
-                        : "border-gray-200 hover:border-cyan-club"
+                    aria-disabled={ferme}
+                    className={`block rounded-xl border-2 p-4 transition ${
+                      ferme
+                        ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-70"
+                        : checked
+                          ? "border-yellow-club bg-yellow-club/10 cursor-pointer"
+                          : "border-gray-200 hover:border-cyan-club cursor-pointer"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -383,24 +387,44 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
                         type="radio"
                         className="mt-1 accent-navy"
                         value={f.code}
-                        checked={checked}
+                        checked={checked && !ferme}
+                        disabled={ferme}
                         onChange={() => field.onChange(f.code)}
                       />
                       <div className="flex-1">
                         <div className="flex items-baseline justify-between gap-2 flex-wrap">
                           <div>
-                            <h3 className="font-bold text-navy">{f.titre}</h3>
+                            <h3
+                              className={`font-bold ${
+                                ferme ? "text-gray-500 line-through" : "text-navy"
+                              }`}
+                            >
+                              {f.titre}
+                              {ferme ? (
+                                <span className="ml-2 inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-700 align-middle no-underline">
+                                  Complet
+                                </span>
+                              ) : null}
+                            </h3>
                             <p className="text-sm text-gray-600">
                               {f.sous_titre}
                             </p>
                           </div>
                           <div className="text-right">
                             {typeof f.prix === "number" ? (
-                              <span className="text-2xl font-extrabold text-navy">
+                              <span
+                                className={`text-2xl font-extrabold ${
+                                  ferme ? "text-gray-400 line-through" : "text-navy"
+                                }`}
+                              >
                                 {f.prix}€
                               </span>
                             ) : (
-                              <span className="text-lg font-bold text-navy">
+                              <span
+                                className={`text-lg font-bold ${
+                                  ferme ? "text-gray-400 line-through" : "text-navy"
+                                }`}
+                              >
                                 À la carte
                               </span>
                             )}

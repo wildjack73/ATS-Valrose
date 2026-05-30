@@ -71,6 +71,7 @@ export default async function TarifsPage() {
               label: c.label,
               detail: c.description,
               prix: `${c.prix}€`,
+              ferme: c.ferme,
             }))}
           />
         </Block>
@@ -83,6 +84,7 @@ export default async function TarifsPage() {
                 label: c.label,
                 detail: c.description,
                 prix: `${c.prix}€`,
+                ferme: c.ferme,
               }))}
             />
           </Block>
@@ -241,24 +243,46 @@ function Block({
 function Table({
   rows,
 }: {
-  rows: { label: string; detail?: string | null; prix: string }[];
+  rows: {
+    label: string;
+    detail?: string | null;
+    prix: string;
+    ferme?: boolean;
+  }[];
 }) {
   return (
     <ul className="divide-y divide-gray-100">
       {rows.map((r, i) => (
         <li
           key={i}
-          className="flex items-start justify-between gap-4 py-3 text-sm"
+          className={`flex items-start justify-between gap-4 py-3 text-sm ${
+            r.ferme ? "opacity-60" : ""
+          }`}
         >
           <div className="min-w-0">
-            <p className="text-gray-900 font-medium">{r.label}</p>
+            <p
+              className={`font-medium ${
+                r.ferme ? "text-gray-500 line-through" : "text-gray-900"
+              }`}
+            >
+              {r.label}
+              {r.ferme ? (
+                <span className="ml-2 inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-700 align-middle no-underline">
+                  Complet
+                </span>
+              ) : null}
+            </p>
             {r.detail ? (
               <p className="mt-0.5 text-xs text-gray-500 leading-snug">
                 {r.detail}
               </p>
             ) : null}
           </div>
-          <span className="font-bold text-navy whitespace-nowrap shrink-0">
+          <span
+            className={`font-bold whitespace-nowrap shrink-0 ${
+              r.ferme ? "text-gray-400 line-through" : "text-navy"
+            }`}
+          >
             {r.prix}
           </span>
         </li>

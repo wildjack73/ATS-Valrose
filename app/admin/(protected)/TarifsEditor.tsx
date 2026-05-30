@@ -190,6 +190,7 @@ export default function TarifsEditor({
               <th className="text-left py-2 pr-2">Sous-titre</th>
               <th className="text-right py-2 pr-2">Prix</th>
               <th className="text-right py-2 pr-2">Déjeuner</th>
+              <th className="text-center py-2 pr-2 w-28">État</th>
               <th className="text-right py-2 pr-2 w-32"></th>
             </tr>
           </thead>
@@ -563,6 +564,9 @@ function FormuleRow({
               <span className="text-gray-400">—</span>
             )}
           </td>
+          <td className="py-2 pr-2 text-center">
+            <OuvertFermeBadge ferme={row.ferme} />
+          </td>
           <td className="py-2 pr-2 text-right">
             <RowButtons
               disabled={disabled}
@@ -573,7 +577,9 @@ function FormuleRow({
         </>
       ) : (
         <>
-          <td className="py-2 pr-2">{row.titre}</td>
+          <td className={`py-2 pr-2 ${row.ferme ? "line-through text-gray-400" : ""}`}>
+            {row.titre}
+          </td>
           <td className="py-2 pr-2 text-gray-600">{row.sous_titre}</td>
           <td className="py-2 pr-2 text-right font-bold text-navy">
             {row.prix !== null ? `${row.prix}€` : "—"}
@@ -587,6 +593,13 @@ function FormuleRow({
             ) : (
               "—"
             )}
+          </td>
+          <td className="py-2 pr-2 text-center">
+            <OuvertFermeToggle
+              ferme={row.ferme}
+              disabled={disabled}
+              onToggle={() => onSave({ ferme: !row.ferme })}
+            />
           </td>
           <td className="py-2 pr-2 text-right">
             <button
@@ -798,6 +811,7 @@ function CoursTable({
           <th className="text-left py-2 pr-2">Label</th>
           <th className="text-left py-2 pr-2">Description</th>
           <th className="text-right py-2 pr-2">Prix annuel</th>
+          <th className="text-center py-2 pr-2 w-28">État</th>
           <th className="text-right py-2 pr-2 w-32"></th>
         </tr>
       </thead>
@@ -862,17 +876,29 @@ function CoursRow({
               onChange={(e) => setPrix(e.target.value)}
             />
           </td>
+          <td className="py-2 pr-2 text-center">
+            <OuvertFermeBadge ferme={row.ferme} />
+          </td>
           <td className="py-2 pr-2 text-right">
             <RowButtons disabled={disabled} onSave={save} onCancel={() => setEditing(false)} />
           </td>
         </>
       ) : (
         <>
-          <td className="py-2 pr-2">{row.label}</td>
+          <td className={`py-2 pr-2 ${row.ferme ? "line-through text-gray-400" : ""}`}>
+            {row.label}
+          </td>
           <td className="py-2 pr-2 text-xs text-gray-600">
             {row.description ?? <span className="text-gray-400 italic">—</span>}
           </td>
           <td className="py-2 pr-2 text-right font-bold text-navy">{row.prix}€</td>
+          <td className="py-2 pr-2 text-center">
+            <OuvertFermeToggle
+              ferme={row.ferme}
+              disabled={disabled}
+              onToggle={() => onSave({ ferme: !row.ferme })}
+            />
+          </td>
           <td className="py-2 pr-2 text-right">
             <button
               onClick={() => setEditing(true)}
@@ -885,6 +911,50 @@ function CoursRow({
         </>
       )}
     </tr>
+  );
+}
+
+function OuvertFermeBadge({ ferme }: { ferme: boolean }) {
+  return (
+    <span
+      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+        ferme
+          ? "bg-red-50 text-red-700 border-red-300"
+          : "bg-emerald-50 text-emerald-700 border-emerald-300"
+      }`}
+    >
+      {ferme ? "Fermé" : "Ouvert"}
+    </span>
+  );
+}
+
+function OuvertFermeToggle({
+  ferme,
+  disabled,
+  onToggle,
+}: {
+  ferme: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={disabled}
+      title={
+        ferme
+          ? "Cliquer pour rouvrir aux inscriptions"
+          : "Cliquer pour fermer temporairement les inscriptions"
+      }
+      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border transition hover:scale-105 disabled:opacity-40 ${
+        ferme
+          ? "bg-red-50 text-red-700 border-red-300 hover:bg-red-100"
+          : "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+      }`}
+    >
+      {ferme ? "Fermé" : "Ouvert"}
+    </button>
   );
 }
 

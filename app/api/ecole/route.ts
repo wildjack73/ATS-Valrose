@@ -46,19 +46,37 @@ export async function POST(request: Request) {
     );
   }
 
-  // Valider les codes
+  // Valider les codes + refuser si le cours est temporairement fermé
   for (const code of data.cours_tennis ?? []) {
-    if (!bundle.coursTennis.find((c) => c.code === code)) {
+    const cours = bundle.coursTennis.find((c) => c.code === code);
+    if (!cours) {
       return NextResponse.json(
         { error: `Cours tennis invalide : ${code}` },
         { status: 400 },
       );
     }
+    if (cours.ferme) {
+      return NextResponse.json(
+        {
+          error: `Le cours « ${cours.label} » est actuellement complet. Merci de choisir un autre cours.`,
+        },
+        { status: 400 },
+      );
+    }
   }
   for (const code of data.cours_padel ?? []) {
-    if (!bundle.coursPadel.find((c) => c.code === code)) {
+    const cours = bundle.coursPadel.find((c) => c.code === code);
+    if (!cours) {
       return NextResponse.json(
         { error: `Cours padel invalide : ${code}` },
+        { status: 400 },
+      );
+    }
+    if (cours.ferme) {
+      return NextResponse.json(
+        {
+          error: `Le cours « ${cours.label} » est actuellement complet. Merci de choisir un autre cours.`,
+        },
         { status: 400 },
       );
     }

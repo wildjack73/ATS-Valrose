@@ -271,20 +271,25 @@ export default function EcoleForm({
               <div className="grid gap-2">
                 {COURS_TENNIS.map((c: CoursEcole) => {
                   const checked = (field.value ?? []).includes(c.code);
+                  const ferme = c.ferme;
                   return (
                     <label
                       key={c.id}
-                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
-                        checked
-                          ? "border-ocre bg-ocre/10"
-                          : "border-gray-300 hover:border-ocre/50"
+                      aria-disabled={ferme}
+                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 text-sm ${
+                        ferme
+                          ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-70"
+                          : checked
+                            ? "border-ocre bg-ocre/10 cursor-pointer"
+                            : "border-gray-300 hover:border-ocre/50 cursor-pointer"
                       }`}
                     >
                       <span className="flex items-start gap-2">
                         <input
                           type="checkbox"
                           className="accent-ocre mt-0.5"
-                          checked={checked}
+                          checked={checked && !ferme}
+                          disabled={ferme}
                           onChange={() =>
                             field.onChange(
                               toggleInArray<string>(
@@ -295,7 +300,18 @@ export default function EcoleForm({
                           }
                         />
                         <span>
-                          <span className="font-medium">{c.label}</span>
+                          <span
+                            className={`font-medium ${
+                              ferme ? "line-through text-gray-500" : ""
+                            }`}
+                          >
+                            {c.label}
+                          </span>
+                          {ferme ? (
+                            <span className="ml-2 inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-700 align-middle">
+                              Complet
+                            </span>
+                          ) : null}
                           {c.description ? (
                             <span className="block text-xs text-gray-500 mt-0.5">
                               {c.description}
@@ -303,7 +319,11 @@ export default function EcoleForm({
                           ) : null}
                         </span>
                       </span>
-                      <span className="font-bold text-navy whitespace-nowrap">
+                      <span
+                        className={`font-bold whitespace-nowrap ${
+                          ferme ? "text-gray-400 line-through" : "text-navy"
+                        }`}
+                      >
                         {c.prix}€
                       </span>
                     </label>
@@ -325,20 +345,25 @@ export default function EcoleForm({
               <div className="grid gap-2">
                 {COURS_PADEL.map((c: CoursEcole) => {
                   const checked = (field.value ?? []).includes(c.code);
+                  const ferme = c.ferme;
                   return (
                     <label
                       key={c.id}
-                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
-                        checked
-                          ? "border-ocre bg-ocre/10"
-                          : "border-gray-300 hover:border-ocre/50"
+                      aria-disabled={ferme}
+                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 text-sm ${
+                        ferme
+                          ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-70"
+                          : checked
+                            ? "border-ocre bg-ocre/10 cursor-pointer"
+                            : "border-gray-300 hover:border-ocre/50 cursor-pointer"
                       }`}
                     >
                       <span className="flex items-start gap-2">
                         <input
                           type="checkbox"
                           className="accent-ocre mt-0.5"
-                          checked={checked}
+                          checked={checked && !ferme}
+                          disabled={ferme}
                           onChange={() =>
                             field.onChange(
                               toggleInArray<string>(
@@ -349,7 +374,18 @@ export default function EcoleForm({
                           }
                         />
                         <span>
-                          <span className="font-medium">{c.label}</span>
+                          <span
+                            className={`font-medium ${
+                              ferme ? "line-through text-gray-500" : ""
+                            }`}
+                          >
+                            {c.label}
+                          </span>
+                          {ferme ? (
+                            <span className="ml-2 inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-700 align-middle">
+                              Complet
+                            </span>
+                          ) : null}
                           {c.description ? (
                             <span className="block text-xs text-gray-500 mt-0.5">
                               {c.description}
@@ -357,7 +393,11 @@ export default function EcoleForm({
                           ) : null}
                         </span>
                       </span>
-                      <span className="font-bold text-navy whitespace-nowrap">
+                      <span
+                        className={`font-bold whitespace-nowrap ${
+                          ferme ? "text-gray-400 line-through" : "text-navy"
+                        }`}
+                      >
                         {c.prix}€
                       </span>
                     </label>

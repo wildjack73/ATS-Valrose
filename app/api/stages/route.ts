@@ -97,6 +97,18 @@ export async function POST(request: Request) {
     );
   }
 
+  // Refuser si la formule est temporairement fermée aux inscriptions
+  const formuleChoisie = bundle.formules.find((f) => f.code === data.formule);
+  if (formuleChoisie?.ferme) {
+    return NextResponse.json(
+      {
+        error:
+          "Cette formule est actuellement complète. Merci de choisir une autre formule ou de nous contacter.",
+      },
+      { status: 400 },
+    );
+  }
+
   // Filtrer les jours déjeuner si la semaine ne le propose pas
   const dejeunerJours =
     semaine.dejeuner_disponible === false ? [] : data.formule_dejeuner_jours ?? [];
