@@ -361,37 +361,84 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
       <Section
         step={4}
         title="Disponibilités"
-        description="Indiquez les créneaux qui vous arrangent (texte libre)."
+        description="Indiquez les créneaux qui vous arrangent. Aide le club à constituer les groupes."
       >
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Mercredi" htmlFor="dispo_mercredi">
-            <input
+            <select
               id="dispo_mercredi"
-              type="text"
               className={inputClass}
-              placeholder="ex: 14h-17h"
               {...register("dispo_mercredi")}
-            />
+            >
+              <option value="">— Aucune préférence —</option>
+              <option value="Matin">Matin</option>
+              <option value="Après-midi">Après-midi</option>
+              <option value="Matin ou après-midi">Matin ou après-midi</option>
+              <option value="Indifférent">Indifférent</option>
+            </select>
           </Field>
           <Field label="Samedi" htmlFor="dispo_samedi">
-            <input
+            <select
               id="dispo_samedi"
-              type="text"
               className={inputClass}
-              placeholder="ex: matin"
               {...register("dispo_samedi")}
-            />
-          </Field>
-          <Field label="Semaine (lun-ven)" htmlFor="dispo_semaine">
-            <input
-              id="dispo_semaine"
-              type="text"
-              className={inputClass}
-              placeholder="ex: lundi 18h"
-              {...register("dispo_semaine")}
-            />
+            >
+              <option value="">— Aucune préférence —</option>
+              <option value="Matin">Matin</option>
+              <option value="Après-midi">Après-midi</option>
+              <option value="Matin ou après-midi">Matin ou après-midi</option>
+            </select>
           </Field>
         </div>
+
+        <Field label="Soirs disponibles en semaine" htmlFor="dispo_semaine">
+          <Controller
+            control={control}
+            name="dispo_semaine"
+            render={({ field }) => {
+              const checked = (field.value ?? "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+              function toggle(jour: string) {
+                const next = checked.includes(jour)
+                  ? checked.filter((j) => j !== jour)
+                  : [...checked, jour];
+                field.onChange(next.join(", "));
+              }
+              return (
+                <div className="flex flex-wrap gap-2">
+                  {(["Lundi", "Mardi", "Jeudi", "Vendredi"] as const).map(
+                    (jour) => {
+                      const isChecked = checked.includes(jour);
+                      return (
+                        <label
+                          key={jour}
+                          className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
+                            isChecked
+                              ? "border-navy bg-white"
+                              : "border-gray-300 bg-white/60"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="accent-navy"
+                            checked={isChecked}
+                            onChange={() => toggle(jour)}
+                          />
+                          <span>
+                            {jour}{" "}
+                            <span className="text-gray-500 text-xs">soir</span>
+                          </span>
+                        </label>
+                      );
+                    },
+                  )}
+                </div>
+              );
+            }}
+          />
+        </Field>
       </Section>
 
       <Section
