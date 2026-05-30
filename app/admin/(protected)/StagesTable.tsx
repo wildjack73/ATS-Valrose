@@ -15,6 +15,11 @@ import {
   statutRowClass,
 } from "@/lib/admin/format";
 import InlineStatusBadge from "./InlineStatusBadge";
+import {
+  PaiementsPanel,
+  PaiementBadge,
+  type PaiementClient,
+} from "./PaiementsPanel";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -29,6 +34,7 @@ export default function StagesTable({
   rows,
   semaines,
   optionsF4,
+  paiementsByInscription,
   currentSemaine,
   currentStatut,
   currentFormule,
@@ -36,6 +42,7 @@ export default function StagesTable({
   rows: InscriptionStageRow[];
   semaines: Semaine[];
   optionsF4: OptionF4[];
+  paiementsByInscription: Record<string, PaiementClient[]>;
   currentSemaine?: string;
   currentStatut?: string;
   currentFormule?: string;
@@ -161,6 +168,7 @@ export default function StagesTable({
                   key={r.id}
                   row={r}
                   optionsF4={optionsF4}
+                  paiements={paiementsByInscription[r.id] ?? []}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -183,6 +191,7 @@ export default function StagesTable({
 function RowGroup({
   row,
   optionsF4,
+  paiements,
   open,
   toggle,
   patch,
@@ -191,12 +200,14 @@ function RowGroup({
 }: {
   row: InscriptionStageRow;
   optionsF4: OptionF4[];
+  paiements: PaiementClient[];
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
   remove: () => void;
   pending: boolean;
 }) {
+  const totalPaye = paiements.reduce((s, p) => s + p.montant, 0);
   // Clic sur la ligne = toggle, mais on évite si le clic vient d'un élément
   // interactif (lien, bouton, input) — sinon on bloque mailto:, tel:, etc.
   function handleRowClick(e: React.MouseEvent<HTMLTableRowElement>) {
@@ -255,7 +266,14 @@ function RowGroup({
           </div>
         </td>
         <td className="p-3 text-right font-bold text-navy align-top whitespace-nowrap">
-          {row.prix_total}€
+          <div>{row.prix_total}€</div>
+          <div className="mt-1 flex justify-end">
+            <PaiementBadge
+              totalPaye={totalPaye}
+              prixTotal={row.prix_total}
+              statut={row.statut}
+            />
+          </div>
         </td>
         <td className="p-3">
           <InlineStatusBadge
@@ -330,6 +348,7 @@ function RowGroup({
             <EditPanel
               row={row}
               optionsF4={optionsF4}
+              paiements={paiements}
               patch={patch}
               pending={pending}
             />
@@ -362,11 +381,13 @@ const JOURS_F4 = ["lundi", "mardi", "mercredi", "jeudi", "vendredi"] as const;
 function EditPanel({
   row,
   optionsF4,
+  paiements,
   patch,
   pending,
 }: {
   row: InscriptionStageRow;
   optionsF4: OptionF4[];
+  paiements: PaiementClient[];
   patch: (p: object) => void;
   pending: boolean;
 }) {
@@ -430,6 +451,14 @@ function EditPanel({
 
   return (
     <div className="space-y-3">
+      {/* 💰 Paiements (en haut, c'est le geste le plus fréquent) */}
+      <PaiementsPanel
+        inscriptionType="stages"
+        inscriptionId={row.id}
+        prixTotal={row.prix_total}
+        initial={paiements}
+      />
+
       {/* Éditeur Formule 4 : option par jour */}
       {row.formule === "formule_4" ? (
         <div className="rounded-lg border-2 border-cyan-club/40 bg-cyan-club/5 p-3">

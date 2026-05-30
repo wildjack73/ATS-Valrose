@@ -15,14 +15,21 @@ import {
   statutRowClass,
 } from "@/lib/admin/format";
 import InlineStatusBadge from "./InlineStatusBadge";
+import {
+  PaiementsPanel,
+  PaiementBadge,
+  type PaiementClient,
+} from "./PaiementsPanel";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
 export default function EcoleTable({
   rows,
+  paiementsByInscription,
   currentStatut,
 }: {
   rows: InscriptionEcoleRow[];
+  paiementsByInscription: Record<string, PaiementClient[]>;
   currentStatut?: string;
 }) {
   const router = useRouter();
@@ -119,6 +126,7 @@ export default function EcoleTable({
                 <EcoleRowGroup
                   key={r.id}
                   row={r}
+                  paiements={paiementsByInscription[r.id] ?? []}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -138,6 +146,7 @@ export default function EcoleTable({
 
 function EcoleRowGroup({
   row,
+  paiements,
   open,
   toggle,
   patch,
@@ -145,12 +154,14 @@ function EcoleRowGroup({
   pending,
 }: {
   row: InscriptionEcoleRow;
+  paiements: PaiementClient[];
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
   remove: () => void;
   pending: boolean;
 }) {
+  const totalPaye = paiements.reduce((s, p) => s + p.montant, 0);
   const dispo = [
     row.dispo_mercredi ? `Mer: ${row.dispo_mercredi}` : null,
     row.dispo_samedi ? `Sam: ${row.dispo_samedi}` : null,
@@ -228,8 +239,15 @@ function EcoleRowGroup({
             {licenceFftLabel(row.licence_fft)}
           </div>
         </td>
-        <td className="p-3 text-right font-bold text-navy align-top">
-          {row.prix_total}€
+        <td className="p-3 text-right font-bold text-navy align-top whitespace-nowrap">
+          <div>{row.prix_total}€</div>
+          <div className="mt-1 flex justify-end">
+            <PaiementBadge
+              totalPaye={totalPaye}
+              prixTotal={row.prix_total}
+              statut={row.statut}
+            />
+          </div>
         </td>
         <td className="p-3 align-top">
           <InlineStatusBadge
@@ -301,7 +319,12 @@ function EcoleRowGroup({
       {open ? (
         <tr className="border-t bg-ocre/5">
           <td colSpan={8} className="p-4">
-            <EcoleEditPanel row={row} patch={patch} pending={pending} />
+            <EcoleEditPanel
+              row={row}
+              paiements={paiements}
+              patch={patch}
+              pending={pending}
+            />
           </td>
         </tr>
       ) : null}
@@ -328,10 +351,12 @@ function Chevron({ open }: { open: boolean }) {
 
 function EcoleEditPanel({
   row,
+  paiements,
   patch,
   pending,
 }: {
   row: InscriptionEcoleRow;
+  paiements: PaiementClient[];
   patch: (p: object) => void;
   pending: boolean;
 }) {
@@ -356,6 +381,14 @@ function EcoleEditPanel({
 
   return (
     <div className="space-y-3">
+      {/* 💰 Paiements (en haut, geste le plus fréquent) */}
+      <PaiementsPanel
+        inscriptionType="ecole"
+        inscriptionId={row.id}
+        prixTotal={row.prix_total}
+        initial={paiements}
+      />
+
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
           Statut :

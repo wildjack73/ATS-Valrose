@@ -24,6 +24,7 @@ import CoachesEditor from "./CoachesEditor";
 import AVerifier from "./AVerifier";
 import { fetchChecksRapport } from "@/lib/admin/checks-queries";
 import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
+import { fetchPaiementsListByInscriptions } from "@/lib/data/paiements";
 import Annuaire from "./Annuaire";
 import {
   fetchGroupesEcole,
@@ -122,6 +123,13 @@ export default async function AdminDashboardPage({
     listSaisons("stages"),
     listSaisons("ecole"),
     fetchCoaches(),
+  ]);
+
+  // Paiements : charger en parallèle pour les inscriptions actives stages/école.
+  // On hydrate ainsi chaque panneau "💰 Paiements" sans round-trip réseau.
+  const [paiementsStagesMap, paiementsEcoleMap] = await Promise.all([
+    fetchPaiementsListByInscriptions("stages", stages.map((r) => r.id)),
+    fetchPaiementsListByInscriptions("ecole", ecole.map((r) => r.id)),
   ]);
 
   // Planning : on charge groupes + non-placés seulement si l'onglet est actif
@@ -253,12 +261,17 @@ export default async function AdminDashboardPage({
           rows={stages}
           semaines={bundle?.semaines ?? []}
           optionsF4={bundle?.optionsF4 ?? []}
+          paiementsByInscription={Object.fromEntries(paiementsStagesMap)}
           currentSemaine={sp.semaine}
           currentStatut={sp.statut}
           currentFormule={sp.formule}
         />
       ) : tab === "ecole" ? (
-        <EcoleTable rows={ecole} currentStatut={sp.statut} />
+        <EcoleTable
+          rows={ecole}
+          paiementsByInscription={Object.fromEntries(paiementsEcoleMap)}
+          currentStatut={sp.statut}
+        />
       ) : tab === "tarifs" ? (
         bundle ? (
           <TarifsEditor
