@@ -551,12 +551,12 @@ export default function EcoleForm({
                       {
                         label: "Mercredi Après-midi (padel)",
                         display: "Mercredi",
-                        max: 5,
+                        max: 4,
                       },
                       {
                         label: "Samedi Après-midi (padel)",
                         display: "Samedi",
-                        max: 5,
+                        max: 4,
                       },
                     ],
                   },
@@ -566,22 +566,22 @@ export default function EcoleForm({
                       {
                         label: "Lundi 17h-18h30 (padel)",
                         display: "Lundi",
-                        max: 5,
+                        max: 4,
                       },
                       {
                         label: "Mardi 17h-18h30 (padel)",
                         display: "Mardi",
-                        max: 5,
+                        max: 4,
                       },
                       {
                         label: "Jeudi 17h-18h30 (padel)",
                         display: "Jeudi",
-                        max: 5,
+                        max: 4,
                       },
                       {
                         label: "Vendredi 17h-18h30 (padel)",
                         display: "Vendredi",
-                        max: 5,
+                        max: 4,
                       },
                     ],
                   },

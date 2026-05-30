@@ -19,6 +19,7 @@ import { DateNaissanceInput } from "@/components/ui/DateNaissanceInput";
 import { Section } from "@/components/ui/Section";
 
 type DaySelection = Record<string, string>; // jour -> optionCode | ""
+type DayCreneau = Record<string, "matin" | "apres_midi" | null>;
 
 const EMPTY_DAYS: DaySelection = {
   lundi: "",
@@ -27,6 +28,22 @@ const EMPTY_DAYS: DaySelection = {
   jeudi: "",
   vendredi: "",
 };
+const EMPTY_CRENEAU: DayCreneau = {
+  lundi: null,
+  mardi: null,
+  mercredi: null,
+  jeudi: null,
+  vendredi: null,
+};
+
+/** Une option F4 demande un créneau si son détail mentionne « matin » ET
+ *  « après-midi » (typiquement « Matin ou après-midi (1h30) ») par opposition
+ *  à « Journée complète » qui ne nécessite pas de choix. */
+function optionF4NeedsCreneau(opt: OptionF4 | undefined): boolean {
+  if (!opt) return false;
+  const d = (opt.detail ?? "").toLowerCase();
+  return d.includes("matin") && (d.includes("après-midi") || d.includes("apres-midi"));
+}
 
 function groupSemaines(semaines: Semaine[]): Record<string, Semaine[]> {
   const out: Record<string, Semaine[]> = {};
@@ -43,6 +60,7 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [daySelection, setDaySelection] = useState<DaySelection>(EMPTY_DAYS);
+  const [dayCreneau, setDayCreneau] = useState<DayCreneau>(EMPTY_CRENEAU);
 
   const FORMULES = bundle.formules;
   const OPTIONS_F4 = bundle.optionsF4;
@@ -103,16 +121,35 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semaineCode, semaineAccepteDejeuner]);
 
+  function syncF4Selection(sel: DaySelection, cren: DayCreneau) {
+    const arr = Object.entries(sel)
+      .filter(([, v]) => v !== "")
+      .map(([j, o]) => {
+        const opt = OPTIONS_F4.find((x) => x.code === o);
+        // Si l'option ne demande pas de créneau (journée complète), on
+        // n'envoie pas le champ (ou null), même si une valeur résiduelle
+        // traîne dans le state.
+        const creneau = optionF4NeedsCreneau(opt) ? cren[j] ?? null : null;
+        return {
+          jour: j as "lundi" | "mardi" | "mercredi" | "jeudi" | "vendredi",
+          option: o,
+          creneau,
+        };
+      });
+    setValue("formule_4_selection", arr, { shouldValidate: true });
+  }
+
   function updateDay(jour: string, option: string) {
     const next = { ...daySelection, [jour]: option };
+    const opt = OPTIONS_F4.find((x) => x.code === option);
+    // Si on passe à une option sans créneau (ou Aucun), on reset le créneau
+    // de ce jour pour éviter des valeurs fantômes.
+    const nextCreneau = optionF4NeedsCreneau(opt)
+      ? dayCreneau
+      : { ...dayCreneau, [jour]: null };
     setDaySelection(next);
-    const arr = Object.entries(next)
-      .filter(([, v]) => v !== "")
-      .map(([j, o]) => ({
-        jour: j as "lundi" | "mardi" | "mercredi" | "jeudi" | "vendredi",
-        option: o,
-      }));
-    setValue("formule_4_selection", arr, { shouldValidate: true });
+    setDayCreneau(nextCreneau);
+    syncF4Selection(next, nextCreneau);
     // Si on retire un jour (Aucun), on enlève aussi son éventuel déjeuner
     if (option === "") {
       const dejActuels = (watch("formule_dejeuner_jours") ?? []) as string[];
@@ -124,6 +161,12 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
         );
       }
     }
+  }
+
+  function updateCreneau(jour: string, creneau: "matin" | "apres_midi") {
+    const nextCreneau = { ...dayCreneau, [jour]: creneau };
+    setDayCreneau(nextCreneau);
+    syncF4Selection(daySelection, nextCreneau);
   }
 
   const prixDejeuner = useMemo(() => {
@@ -150,6 +193,27 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
 
   async function onSubmit(values: StageFormInput) {
     setServerError(null);
+
+    // Validation client : si on est en F4, chaque jour avec une option
+    // demi-journée doit avoir un créneau choisi
+    if (formule?.is_a_la_carte) {
+      const missing: string[] = [];
+      for (const item of values.formule_4_selection ?? []) {
+        const opt = OPTIONS_F4.find((o) => o.code === item.option);
+        if (optionF4NeedsCreneau(opt) && !item.creneau) {
+          missing.push(item.jour);
+        }
+      }
+      if (missing.length > 0) {
+        setServerError(
+          `Pour la Formule 4, précisez « Matin » ou « Après-midi » pour : ${missing
+            .map((d) => d.charAt(0).toUpperCase() + d.slice(1))
+            .join(", ")}.`,
+        );
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/stages", {
@@ -554,6 +618,67 @@ export default function StageForm({ bundle }: { bundle: TarifsBundle }) {
                 {errors.formule_4_selection.message as string}
               </p>
             ) : null}
+
+            {/* Picker créneau pour les options demi-journée (Opt 1 / Opt 2) */}
+            {(() => {
+              const joursDemiJournee = JOURS_SEMAINE.filter((j) => {
+                const opt = OPTIONS_F4.find(
+                  (o) => o.code === daySelection[j.id],
+                );
+                return optionF4NeedsCreneau(opt);
+              });
+              if (joursDemiJournee.length === 0) return null;
+              return (
+                <div className="mt-3 rounded-md border border-cyan-club/40 bg-white p-3">
+                  <p className="text-sm font-semibold text-navy mb-2">
+                    Précisez matin ou après-midi
+                  </p>
+                  <ul className="space-y-2">
+                    {joursDemiJournee.map((j) => {
+                      const optCode = daySelection[j.id];
+                      const opt = OPTIONS_F4.find((o) => o.code === optCode);
+                      const cur = dayCreneau[j.id];
+                      return (
+                        <li
+                          key={j.id}
+                          className="flex flex-wrap items-center gap-3 text-sm"
+                        >
+                          <span className="font-medium w-24">{j.label}</span>
+                          <span className="text-xs text-gray-500 w-20">
+                            {opt?.label}
+                          </span>
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`f4creneau-${j.id}`}
+                              className="accent-navy"
+                              checked={cur === "matin"}
+                              onChange={() => updateCreneau(j.id, "matin")}
+                            />
+                            <span>Matin</span>
+                          </label>
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`f4creneau-${j.id}`}
+                              className="accent-navy"
+                              checked={cur === "apres_midi"}
+                              onChange={() => updateCreneau(j.id, "apres_midi")}
+                            />
+                            <span>Après-midi</span>
+                          </label>
+                          {!cur ? (
+                            <span className="text-xs text-amber-600 font-medium">
+                              ← à choisir
+                            </span>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })()}
           </div>
         ) : null}
 

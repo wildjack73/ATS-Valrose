@@ -58,13 +58,22 @@ export function creneauLabel(c: string | null): string {
 }
 
 export function f4SelectionLabel(
-  sel: { jour: string; option: string }[] | null,
+  sel:
+    | {
+        jour: string;
+        option: string;
+        creneau?: "matin" | "apres_midi" | null;
+      }[]
+    | null,
 ): string {
   if (!sel || sel.length === 0) return "";
   return sel
     .map((s) => {
       const opt = OPTIONS_F4[s.option as keyof typeof OPTIONS_F4];
-      return `${s.jour} (${opt?.label ?? s.option}, ${opt?.prix ?? 0}€)`;
+      const cre = s.creneau
+        ? ` ${s.creneau === "matin" ? "matin" : "après-midi"}`
+        : "";
+      return `${s.jour}${cre} (${opt?.label ?? s.option}, ${opt?.prix ?? 0}€)`;
     })
     .join(", ");
 }

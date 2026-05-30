@@ -9,6 +9,9 @@ import { z } from "zod";
 const f4SelectionSchema = z.object({
   jour: z.enum(["lundi", "mardi", "mercredi", "jeudi", "vendredi"]),
   option: z.string().min(1),
+  /** Créneau matin/après-midi requis pour les options demi-journée
+   *  (Option 1 et Option 2). Null/absent pour Option 3 (journée complète). */
+  creneau: z.enum(["matin", "apres_midi"]).nullable().optional(),
 });
 
 export const stageFormSchema = z

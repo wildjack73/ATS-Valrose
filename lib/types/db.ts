@@ -36,7 +36,13 @@ export interface InscriptionStageRow {
   formule_dejeuner: boolean;
   dejeuner_jours: JourSemaine[] | null;
   formule_4_selection:
-    | { jour: JourSemaine; option: OptionF4 }[]
+    | {
+        jour: JourSemaine;
+        option: OptionF4;
+        /** Créneau matin/après-midi pour les options demi-journée
+         *  (Option 1 et 2). Null pour Option 3 (journée complète). */
+        creneau?: "matin" | "apres_midi" | null;
+      }[]
     | null;
 
   semaine: string;

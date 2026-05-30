@@ -109,6 +109,28 @@ export async function POST(request: Request) {
     );
   }
 
+  // Validation F4 : chaque jour avec une option demi-journée doit avoir
+  // un créneau (matin / apres_midi). On s'appuie sur le détail de l'option
+  // (mention « matin … après-midi ») pour détecter les demi-journées —
+  // même heuristique que le formulaire client.
+  if (formuleChoisie?.is_a_la_carte && data.formule_4_selection) {
+    for (const item of data.formule_4_selection) {
+      const opt = bundle.optionsF4.find((o) => o.code === item.option);
+      const detail = (opt?.detail ?? "").toLowerCase();
+      const isDemiJournee =
+        detail.includes("matin") &&
+        (detail.includes("après-midi") || detail.includes("apres-midi"));
+      if (isDemiJournee && !item.creneau) {
+        return NextResponse.json(
+          {
+            error: `Pour le jour « ${item.jour} », précisez « Matin » ou « Après-midi ».`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+  }
+
   // Filtrer les jours déjeuner si la semaine ne le propose pas
   const dejeunerJours =
     semaine.dejeuner_disponible === false ? [] : data.formule_dejeuner_jours ?? [];

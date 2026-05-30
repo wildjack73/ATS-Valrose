@@ -420,15 +420,37 @@ function EditPanel({
   const [paiement, setPaiement] = useState(row.paiement_info ?? "");
   const [notes, setNotes] = useState(row.notes_admin ?? "");
 
+  type Creneau = "matin" | "apres_midi" | null;
+  function needsCreneau(opt: OptionF4 | undefined): boolean {
+    if (!opt) return false;
+    const d = (opt.detail ?? "").toLowerCase();
+    return (
+      d.includes("matin") &&
+      (d.includes("après-midi") || d.includes("apres-midi"))
+    );
+  }
+
   // État éditable de la sélection F4 : jour -> code option ("" = aucun)
   const initialF4: Record<string, string> = {};
-  for (const j of JOURS_F4) initialF4[j] = "";
+  const initialCreneau: Record<string, Creneau> = {};
+  for (const j of JOURS_F4) {
+    initialF4[j] = "";
+    initialCreneau[j] = null;
+  }
   const existing = (row.formule_4_selection ?? []) as {
     jour: string;
     option: string;
+    creneau?: Creneau;
   }[];
-  for (const it of existing) if (it.jour) initialF4[it.jour] = it.option;
+  for (const it of existing) {
+    if (it.jour) {
+      initialF4[it.jour] = it.option;
+      initialCreneau[it.jour] = it.creneau ?? null;
+    }
+  }
   const [f4, setF4] = useState<Record<string, string>>(initialF4);
+  const [f4Creneau, setF4Creneau] =
+    useState<Record<string, Creneau>>(initialCreneau);
 
   // Re-sync si le row a changé en arrière-plan (refresh)
   useEffect(() => {
@@ -436,14 +458,23 @@ function EditPanel({
     setPaiement(row.paiement_info ?? "");
     setNotes(row.notes_admin ?? "");
     const next: Record<string, string> = {};
-    for (const j of JOURS_F4) next[j] = "";
+    const nextCre: Record<string, Creneau> = {};
+    for (const j of JOURS_F4) {
+      next[j] = "";
+      nextCre[j] = null;
+    }
     for (const it of (row.formule_4_selection ?? []) as {
       jour: string;
       option: string;
+      creneau?: Creneau;
     }[]) {
-      if (it.jour) next[it.jour] = it.option;
+      if (it.jour) {
+        next[it.jour] = it.option;
+        nextCre[it.jour] = it.creneau ?? null;
+      }
     }
     setF4(next);
+    setF4Creneau(nextCre);
   }, [row.statut, row.paiement_info, row.notes_admin, row.formule_4_selection]);
 
   function save() {
@@ -451,10 +482,14 @@ function EditPanel({
   }
 
   function saveF4() {
-    const selection = JOURS_F4.filter((j) => f4[j]).map((j) => ({
-      jour: j,
-      option: f4[j],
-    }));
+    const selection = JOURS_F4.filter((j) => f4[j]).map((j) => {
+      const opt = optionsF4.find((o) => o.code === f4[j]);
+      return {
+        jour: j,
+        option: f4[j],
+        creneau: needsCreneau(opt) ? f4Creneau[j] ?? null : null,
+      };
+    });
     patch({ formule_4_selection: selection });
   }
 
@@ -466,8 +501,24 @@ function EditPanel({
 
   const f4Dirty =
     JSON.stringify(
-      JOURS_F4.filter((j) => f4[j]).map((j) => ({ jour: j, option: f4[j] })),
-    ) !== JSON.stringify(existing.filter((it) => it.jour));
+      JOURS_F4.filter((j) => f4[j]).map((j) => {
+        const opt = optionsF4.find((o) => o.code === f4[j]);
+        return {
+          jour: j,
+          option: f4[j],
+          creneau: needsCreneau(opt) ? f4Creneau[j] ?? null : null,
+        };
+      }),
+    ) !==
+    JSON.stringify(
+      existing
+        .filter((it) => it.jour)
+        .map((it) => ({
+          jour: it.jour,
+          option: it.option,
+          creneau: it.creneau ?? null,
+        })),
+    );
 
   const dirty =
     statut !== row.statut ||
@@ -498,26 +549,54 @@ function EditPanel({
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {JOURS_F4.map((j) => (
-              <label key={j} className="block">
-                <span className="block text-[11px] font-semibold text-gray-600 capitalize mb-0.5">
-                  {j}
-                </span>
-                <select
-                  value={f4[j]}
-                  disabled={pending}
-                  onChange={(e) => setF4({ ...f4, [j]: e.target.value })}
-                  className="w-full rounded border border-gray-300 px-1.5 py-1 text-xs bg-white"
-                >
-                  <option value="">— Aucun —</option>
-                  {optionsF4.map((o) => (
-                    <option key={o.code} value={o.code}>
-                      {o.label} ({o.prix}€)
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ))}
+            {JOURS_F4.map((j) => {
+              const opt = optionsF4.find((o) => o.code === f4[j]);
+              const showCreneau = needsCreneau(opt);
+              return (
+                <label key={j} className="block">
+                  <span className="block text-[11px] font-semibold text-gray-600 capitalize mb-0.5">
+                    {j}
+                  </span>
+                  <select
+                    value={f4[j]}
+                    disabled={pending}
+                    onChange={(e) => setF4({ ...f4, [j]: e.target.value })}
+                    className="w-full rounded border border-gray-300 px-1.5 py-1 text-xs bg-white"
+                  >
+                    <option value="">— Aucun —</option>
+                    {optionsF4.map((o) => (
+                      <option key={o.code} value={o.code}>
+                        {o.label} ({o.prix}€)
+                      </option>
+                    ))}
+                  </select>
+                  {showCreneau ? (
+                    <select
+                      value={f4Creneau[j] ?? ""}
+                      disabled={pending}
+                      onChange={(e) =>
+                        setF4Creneau({
+                          ...f4Creneau,
+                          [j]:
+                            e.target.value === ""
+                              ? null
+                              : (e.target.value as "matin" | "apres_midi"),
+                        })
+                      }
+                      className={`w-full rounded border px-1.5 py-1 text-xs bg-white mt-1 ${
+                        f4Creneau[j]
+                          ? "border-gray-300"
+                          : "border-amber-400 text-amber-700"
+                      }`}
+                    >
+                      <option value="">— Créneau ? —</option>
+                      <option value="matin">Matin</option>
+                      <option value="apres_midi">Après-midi</option>
+                    </select>
+                  ) : null}
+                </label>
+              );
+            })}
           </div>
           <div className="flex justify-end mt-2">
             <button

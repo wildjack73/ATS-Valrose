@@ -9,7 +9,13 @@ export interface InscriptionAVerifier {
   telephone: string;
   semaine_label: string;
   formule: string;
-  formule_4_selection: { jour: string; option: string }[] | null;
+  formule_4_selection:
+    | {
+        jour: string;
+        option: string;
+        creneau?: "matin" | "apres_midi" | null;
+      }[]
+    | null;
   dejeuner_jours: string[] | null;
   prix_total: number;
   notes_admin: string;
