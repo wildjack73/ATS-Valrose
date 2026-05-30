@@ -7,7 +7,13 @@ import { statutLabel } from "@/lib/admin/format";
 import { PaiementsPanel, type PaiementClient } from "./PaiementsPanel";
 
 type Domaine = "stages" | "ecole";
-type StatusFilter = "tout" | "a_regler" | "partiel" | "solde" | "annule";
+type StatusFilter =
+  | "tout"
+  | "a_regler"
+  | "partiel"
+  | "solde"
+  | "annule"
+  | "desactive";
 
 interface UnifiedRow {
   id: string;
@@ -21,7 +27,7 @@ interface UnifiedRow {
   totalPaye: number;
   reste: number;
   statut: string; // statut de l'inscription (en_attente / paye / annule)
-  etat: "solde" | "partiel" | "a_regler" | "annule";
+  etat: "solde" | "partiel" | "a_regler" | "annule" | "desactive";
   paiements: PaiementClient[];
 }
 
@@ -29,7 +35,9 @@ function classifie(
   prixTotal: number,
   totalPaye: number,
   statut: string,
+  desactive: boolean,
 ): UnifiedRow["etat"] {
+  if (desactive) return "desactive";
   if (statut === "annule") return "annule";
   if (prixTotal <= 0) return "solde"; // pas de montant attendu = OK
   if (totalPaye <= 0) return "a_regler";
@@ -90,6 +98,8 @@ function etatLabel(etat: UnifiedRow["etat"]): string {
       return "À régler";
     case "annule":
       return "Annulé";
+    case "desactive":
+      return "Désactivé";
   }
 }
 
@@ -103,6 +113,8 @@ function etatBadge(etat: UnifiedRow["etat"]): string {
       return "bg-amber-50 text-amber-800 border-amber-300";
     case "annule":
       return "bg-gray-100 text-gray-600 border-gray-300";
+    case "desactive":
+      return "bg-slate-100 text-slate-600 border-slate-300";
   }
 }
 
@@ -141,7 +153,7 @@ export default function Encaissements({
       : "tout",
   );
   const [status, setStatus] = useState<StatusFilter>(
-    (["tout", "a_regler", "partiel", "solde", "annule"] as const).includes(
+    (["tout", "a_regler", "partiel", "solde", "annule", "desactive"] as const).includes(
       initialStatus as StatusFilter,
     )
       ? (initialStatus as StatusFilter)
@@ -170,7 +182,7 @@ export default function Encaissements({
         totalPaye: paye,
         reste: Math.max(0, s.prix_total - paye),
         statut: s.statut,
-        etat: classifie(s.prix_total, paye, s.statut),
+        etat: classifie(s.prix_total, paye, s.statut, s.desactive),
         paiements: paiementsStages[s.id] ?? [],
       });
     }
@@ -192,7 +204,7 @@ export default function Encaissements({
         totalPaye: paye,
         reste: Math.max(0, px - paye),
         statut: e.statut,
-        etat: classifie(px, paye, e.statut),
+        etat: classifie(px, paye, e.statut, e.desactive),
         paiements: paiementsEcole[e.id] ?? [],
       });
     }
@@ -221,6 +233,7 @@ export default function Encaissements({
       partiel: 1,
       solde: 2,
       annule: 3,
+      desactive: 4,
     };
     return [...filtered].sort((a, b) => {
       if (a.etat !== b.etat) return order[a.etat] - order[b.etat];
@@ -239,9 +252,10 @@ export default function Encaissements({
       nbAReg = 0,
       nbPartiel = 0,
       nbSolde = 0,
-      nbAnnule = 0;
+      nbAnnule = 0,
+      nbDesactive = 0;
     for (const r of filtered) {
-      if (r.etat !== "annule") {
+      if (r.etat !== "annule" && r.etat !== "desactive") {
         totalDu += r.prixTotal;
         totalPaye += r.totalPaye;
         totalReste += r.reste;
@@ -249,9 +263,19 @@ export default function Encaissements({
       if (r.etat === "a_regler") nbAReg++;
       else if (r.etat === "partiel") nbPartiel++;
       else if (r.etat === "solde") nbSolde++;
-      else nbAnnule++;
+      else if (r.etat === "annule") nbAnnule++;
+      else nbDesactive++;
     }
-    return { totalDu, totalPaye, totalReste, nbAReg, nbPartiel, nbSolde, nbAnnule };
+    return {
+      totalDu,
+      totalPaye,
+      totalReste,
+      nbAReg,
+      nbPartiel,
+      nbSolde,
+      nbAnnule,
+      nbDesactive,
+    };
   }, [filtered]);
 
   function updateUrlParam(key: string, value: string) {

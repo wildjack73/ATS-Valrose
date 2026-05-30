@@ -48,6 +48,9 @@ export interface InscriptionStageRow {
   statut: StatutInscription;
   paiement_info: string | null;
   notes_admin: string | null;
+  /** Mise en pause temporaire (différent de « annulé ») : la ligne
+   *  reste mais n'est plus comptée et la place est libérée. */
+  desactive: boolean;
 }
 
 export type InscriptionStageInsert = Omit<
@@ -89,6 +92,9 @@ export interface InscriptionEcoleRow {
   statut: StatutInscription;
   paiement_info: string | null;
   notes_admin: string | null;
+  /** Mise en pause temporaire (différent de « annulé ») : la ligne
+   *  reste mais n'est plus comptée et la place est libérée. */
+  desactive: boolean;
 }
 
 export type InscriptionEcoleInsert = Omit<

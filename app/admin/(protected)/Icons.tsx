@@ -170,3 +170,20 @@ export function IconTrash(props: IconProps) {
     </S>
   );
 }
+
+export function IconPause(props: IconProps) {
+  return (
+    <S {...props}>
+      <rect x="6" y="4" width="4" height="16" rx="1" />
+      <rect x="14" y="4" width="4" height="16" rx="1" />
+    </S>
+  );
+}
+
+export function IconPlay(props: IconProps) {
+  return (
+    <S {...props}>
+      <path d="M5 3l14 9-14 9V3z" />
+    </S>
+  );
+}

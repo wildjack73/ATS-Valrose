@@ -20,7 +20,7 @@ import {
   PaiementBadge,
   type PaiementClient,
 } from "./PaiementsPanel";
-import { IconMail, IconPhone, IconTrash } from "./Icons";
+import { IconMail, IconPhone, IconTrash, IconPause, IconPlay } from "./Icons";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -221,7 +221,9 @@ function RowGroup({
     <>
       <tr
         onClick={handleRowClick}
-        className={`border-t cursor-pointer hover:bg-yellow-club/5 transition-colors ${statutRowClass(row.statut)}`}
+        className={`border-t cursor-pointer hover:bg-yellow-club/5 transition-colors ${statutRowClass(row.statut)} ${
+          row.desactive ? "opacity-50 [&_*]:line-through" : ""
+        }`}
       >
         <td className="p-3 whitespace-nowrap text-gray-600 text-xs align-top">
           <div className="flex items-start gap-2">
@@ -289,7 +291,7 @@ function RowGroup({
           <div className="flex items-center gap-2 text-gray-400">
             <a
               href={`mailto:${row.email}?subject=${encodeURIComponent(`Inscription stage ${row.semaine_label} - ${row.prenom} ${row.nom}`)}`}
-              className="hover:text-navy transition"
+              className="hover:text-navy transition no-underline"
               title={`Écrire à ${row.email}`}
               aria-label={`Écrire à ${row.email}`}
             >
@@ -297,16 +299,35 @@ function RowGroup({
             </a>
             <a
               href={`tel:${row.telephone.replace(/\s/g, "")}`}
-              className="hover:text-navy transition"
+              className="hover:text-navy transition no-underline"
               title={`Appeler ${row.telephone}`}
               aria-label={`Appeler ${row.telephone}`}
             >
               <IconPhone />
             </a>
             <button
+              onClick={() => patch({ desactive: !row.desactive })}
+              disabled={pending}
+              className={`transition disabled:opacity-30 no-underline ${
+                row.desactive
+                  ? "text-emerald-600 hover:text-emerald-700"
+                  : "hover:text-amber-600"
+              }`}
+              title={
+                row.desactive
+                  ? "Réactiver cette inscription"
+                  : "Désactiver temporairement (libère la place, exclut des chiffres)"
+              }
+              aria-label={
+                row.desactive ? "Réactiver" : "Désactiver temporairement"
+              }
+            >
+              {row.desactive ? <IconPlay /> : <IconPause />}
+            </button>
+            <button
               onClick={remove}
               disabled={pending}
-              className="hover:text-red-600 transition disabled:opacity-30"
+              className="hover:text-red-600 transition disabled:opacity-30 no-underline"
               title="Supprimer cette inscription"
               aria-label="Supprimer cette inscription"
             >

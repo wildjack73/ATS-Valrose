@@ -10,6 +10,7 @@ interface PatchBody {
   statut?: string;
   paiement_info?: string | null;
   notes_admin?: string | null;
+  desactive?: boolean;
 }
 
 export async function PATCH(
@@ -34,6 +35,9 @@ export async function PATCH(
   }
   if (body.notes_admin !== undefined) {
     patch.notes_admin = body.notes_admin || null;
+  }
+  if (body.desactive !== undefined) {
+    patch.desactive = Boolean(body.desactive);
   }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Rien à modifier" }, { status: 400 });

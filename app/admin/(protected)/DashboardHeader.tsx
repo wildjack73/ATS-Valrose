@@ -25,9 +25,12 @@ export default function DashboardHeader({
   paiementsStages: PaiementsTotaux;
   paiementsEcole: PaiementsTotaux;
 }) {
-  // ----- STAGES (chiffres basés sur les paiements RÉELS, hors annulés) -----
+  // ----- STAGES (chiffres basés sur les paiements RÉELS, hors annulés
+  //              ET hors désactivés) -----
   const stagesTotal = stages.length;
-  const stagesActifs = stages.filter((s) => s.statut !== "annule");
+  const stagesActifs = stages.filter(
+    (s) => s.statut !== "annule" && !s.desactive,
+  );
   let stagesEncaisses = 0;
   let stagesAEncaisser = 0;
   let stagesNbSoldes = 0;
@@ -49,7 +52,9 @@ export default function DashboardHeader({
 
   // ----- ÉCOLE -----
   const ecoleTotal = ecole.length;
-  const ecoleActifs = ecole.filter((e) => e.statut !== "annule");
+  const ecoleActifs = ecole.filter(
+    (e) => e.statut !== "annule" && !e.desactive,
+  );
   let ecoleEncaisses = 0;
   let ecoleAEncaisser = 0;
   let ecoleNbSoldes = 0;

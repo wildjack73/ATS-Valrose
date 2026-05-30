@@ -16,16 +16,18 @@ export function normalizeSlot(s: string): string {
 /**
  * Compte combien de fois chaque créneau apparaît dans le champ
  * dispo_semaine des inscriptions école de la saison donnée. Les
- * inscriptions annulées sont exclues.
+ * inscriptions annulées OU temporairement désactivées sont exclues
+ * (elles libèrent leur place).
  */
 export async function fetchSlotsOccupesEcole(
   saisonId: string,
 ): Promise<Record<string, number>> {
   const { data, error } = await getSupabaseAdmin()
     .from("inscriptions_ecole")
-    .select("dispo_semaine, statut")
+    .select("dispo_semaine, statut, desactive")
     .eq("saison_id", saisonId)
-    .neq("statut", "annule");
+    .neq("statut", "annule")
+    .neq("desactive", true);
 
   if (error) {
     console.error("fetchSlotsOccupesEcole:", error);
