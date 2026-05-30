@@ -361,7 +361,7 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
       <Section
         step={4}
         title="Disponibilités"
-        description="Cochez tous les créneaux qui vous arrangent. Aide le club à constituer les groupes."
+        description="Cochez tous les créneaux qui vous arrangent. Les créneaux affichés dépendent des cours sélectionnés ci-dessus."
       >
         <Controller
           control={control}
@@ -379,61 +379,160 @@ export default function EcoleForm({ bundle }: { bundle: TarifsBundle }) {
               field.onChange(next.join(", "));
             }
 
-            const GROUPES: { titre: string; options: string[] }[] = [
-              {
-                titre: "Mercredi",
-                options: ["Mercredi matin", "Mercredi après-midi"],
-              },
-              {
-                titre: "Samedi",
-                options: ["Samedi matin", "Samedi après-midi"],
-              },
-              {
-                titre: "Soir en semaine",
-                options: [
-                  "Lundi soir",
-                  "Mardi soir",
-                  "Jeudi soir",
-                  "Vendredi soir",
+            const coursTennisSel = (watch("cours_tennis") ?? []) as string[];
+            const coursPadelSel = (watch("cours_padel") ?? []) as string[];
+
+            const YOUTH_CODES = new Set([
+              "baby_tennis",
+              "mini_tennis",
+              "initiation",
+              "perfectionnement",
+              "centre_entrainement",
+              "demi_journee",
+            ]);
+            const ADULTE_TENNIS_CODES = new Set([
+              "cours_adultes_annuel",
+              "cours_adultes_trimestre",
+            ]);
+
+            const hasJeune = coursTennisSel.some((c) => YOUTH_CODES.has(c));
+            const hasAdulteTennis = coursTennisSel.some((c) =>
+              ADULTE_TENNIS_CODES.has(c),
+            );
+            const hasPadel = coursPadelSel.length > 0;
+            const rienChoisi = !hasJeune && !hasAdulteTennis && !hasPadel;
+
+            const sections: {
+              titre: string;
+              groupes: { titre: string; options: string[] }[];
+            }[] = [];
+
+            if (hasJeune) {
+              sections.push({
+                titre: "🎾 Cours jeunes",
+                groupes: [
+                  {
+                    titre: "Mercredi",
+                    options: ["Mercredi matin", "Mercredi après-midi"],
+                  },
+                  {
+                    titre: "Samedi",
+                    options: ["Samedi matin", "Samedi après-midi"],
+                  },
+                  {
+                    titre: "Soir en semaine",
+                    options: [
+                      "Lundi soir",
+                      "Mardi soir",
+                      "Jeudi soir",
+                      "Vendredi soir",
+                    ],
+                  },
                 ],
-              },
-            ];
+              });
+            }
+
+            if (hasAdulteTennis) {
+              sections.push({
+                titre: "🎾 Cours Adultes Tennis",
+                groupes: [
+                  {
+                    titre: "Soir en semaine — 18h30-20h",
+                    options: [
+                      "Lundi 18h30-20h",
+                      "Mardi 18h30-20h",
+                      "Jeudi 18h30-20h",
+                      "Vendredi 18h30-20h",
+                    ],
+                  },
+                  {
+                    titre: "Samedi",
+                    options: [
+                      "Samedi 9h-10h30 (15 places max)",
+                      "Samedi après-midi (non débutant)",
+                    ],
+                  },
+                ],
+              });
+            }
+
+            if (hasPadel) {
+              sections.push({
+                titre: "🏓 Cours Padel",
+                groupes: [
+                  {
+                    titre: "Après-midi",
+                    options: [
+                      "Mercredi après-midi (padel)",
+                      "Samedi après-midi (padel)",
+                    ],
+                  },
+                  {
+                    titre: "Soir en semaine — 17h-18h",
+                    options: [
+                      "Lundi 17h-18h (padel)",
+                      "Mardi 17h-18h (padel)",
+                      "Jeudi 17h-18h (padel)",
+                      "Vendredi 17h-18h (padel)",
+                    ],
+                  },
+                ],
+              });
+            }
+
+            if (rienChoisi) {
+              return (
+                <p className="text-sm text-gray-600 italic bg-gray-50 border border-gray-200 rounded-md px-4 py-3">
+                  ⬆ Sélectionnez d&apos;abord un ou plusieurs cours ci-dessus
+                  pour voir les créneaux disponibles.
+                </p>
+              );
+            }
 
             return (
-              <div className="space-y-3">
-                {GROUPES.map((g) => (
-                  <div key={g.titre}>
-                    <p className="text-xs font-bold uppercase text-gray-500 tracking-wide mb-1.5">
-                      {g.titre}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {g.options.map((opt) => {
-                        const isChecked = checked.includes(opt);
-                        // Affiche juste la fin du libellé (ex: "matin")
-                        // après le nom du jour pour les groupes mercredi/samedi
-                        const label = opt
-                          .replace(/^Mercredi\s/, "")
-                          .replace(/^Samedi\s/, "");
-                        return (
-                          <label
-                            key={opt}
-                            className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm transition ${
-                              isChecked
-                                ? "border-navy bg-navy text-white"
-                                : "border-gray-300 bg-white hover:border-navy"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              className="accent-navy"
-                              checked={isChecked}
-                              onChange={() => toggle(opt)}
-                            />
-                            <span>{label}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
+              <div className="space-y-5">
+                {sections.map((sec) => (
+                  <div key={sec.titre} className="space-y-3">
+                    <p className="text-sm font-bold text-navy">{sec.titre}</p>
+                    {sec.groupes.map((g) => (
+                      <div key={g.titre} className="pl-2">
+                        <p className="text-xs font-bold uppercase text-gray-500 tracking-wide mb-1.5">
+                          {g.titre}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {g.options.map((opt) => {
+                            const isChecked = checked.includes(opt);
+                            // Affiche un libellé court (sans le nom du jour
+                            // déjà visible dans le sous-titre du groupe)
+                            const label = opt
+                              .replace(/^Mercredi\s/, "")
+                              .replace(/^Samedi\s/, "")
+                              .replace(/^Lundi\s/, "Lundi ")
+                              .replace(/^Mardi\s/, "Mardi ")
+                              .replace(/^Jeudi\s/, "Jeudi ")
+                              .replace(/^Vendredi\s/, "Vendredi ");
+                            return (
+                              <label
+                                key={opt}
+                                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm transition ${
+                                  isChecked
+                                    ? "border-navy bg-navy text-white"
+                                    : "border-gray-300 bg-white hover:border-navy"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="accent-navy"
+                                  checked={isChecked}
+                                  onChange={() => toggle(opt)}
+                                />
+                                <span>{label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
                 {checked.length === 0 ? (
