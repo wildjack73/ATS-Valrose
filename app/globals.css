@@ -305,10 +305,10 @@ body {
   --d-surface: #142235;
   --d-surface-2: #1d2f47;
   --d-surface-3: #25395a;
-  --d-border: #2c3e5e;
+  --d-border: #3a4d72;        /* polish : bordure un cran plus claire */
   --d-text: #e6edf3;
-  --d-text-dim: #93a4be;
-  --d-text-muted: #6b7e9a;
+  --d-text-dim: #b6c2d6;      /* polish : texte secondaire plus lisible */
+  --d-text-muted: #7c8eaa;
   --d-accent: #4dc5e3;
 }
 
@@ -450,6 +450,60 @@ body {
 .admin-dark .bg-white.border-gray-200 {
   background-color: var(--d-surface) !important;
   border-color: var(--d-border) !important;
+}
+
+/* -- Polish ciblé ----------------------------------------------------- */
+
+/* (A) Chips formules dans le DashboardHeader : bg-cyan-club/10 ring-cyan-club/30 */
+.admin-dark .bg-cyan-club\/10 {
+  background-color: rgba(45, 181, 214, 0.22) !important;
+  color: #b3eaff !important;
+}
+.admin-dark .ring-cyan-club\/30 {
+  --tw-ring-color: rgba(77, 197, 227, 0.55) !important;
+}
+
+/* (A) Selects à l'intérieur des saison switchers cyan/ocre : on garde
+       du blanc pour contraster avec la bande colorée du switcher */
+.admin-dark .bg-cyan-club select,
+.admin-dark .bg-ocre select,
+.admin-dark .bg-cyan-club input[type="text"],
+.admin-dark .bg-ocre input[type="text"] {
+  background-color: #ffffff !important;
+  color: #0d2e3f !important;
+  border-color: transparent !important;
+}
+
+/* (B) Pills statuts inactives de InlineStatusBadge :
+       fond blanc + texte gris-500 → leur donner un fond plus marqué
+       pour les détacher du fond de ligne. */
+.admin-dark button.bg-white.text-gray-500 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #c8d3e3 !important;
+}
+.admin-dark button.bg-white.text-gray-500:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--d-text) !important;
+}
+
+/* (C) Icônes emoji d'actions (📧 📞 🗑️ 💬) :
+       on les éclaircit par filter pour qu'elles ressortent sur fond sombre */
+.admin-dark td a[title^="Écrire"],
+.admin-dark td a[title^="Appeler"],
+.admin-dark td button[title^="Supprimer"] {
+  filter: brightness(1.15) saturate(1.15);
+}
+/* Le 🗑️ a opacity-60 par défaut → on le booste */
+.admin-dark td button[title^="Supprimer"].opacity-60 {
+  opacity: 0.9;
+}
+
+/* (D) Bordures gérées via --d-border bumpé en début de section */
+
+/* (E) Date colonne et autres petits textes secondaires : .text-xs text-gray-600
+       → géré via --d-text-dim bumpé. On force aussi sur les liens */
+.admin-dark .text-gray-600 a {
+  color: var(--d-text-dim) !important;
 }
 
 /* === Impression ============================================================ */
