@@ -4,6 +4,10 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Coach } from "@/lib/data/planning-types";
 import type { Semaine } from "@/lib/data/tarifs-types";
+import type {
+  EffectifsJour as EffJour,
+  EnfantEffectif,
+} from "@/lib/admin/stages-org-queries";
 
 type StageSession =
   | "matin"
@@ -31,7 +35,16 @@ interface Props {
     matin: Record<string, number>;
     apresMidi: Record<string, number>;
   };
+  /** Effectifs nominatifs par jour (matin / après-midi / repas) */
+  effectifs: { total: number; jours: Record<string, EffJour> } | null;
 }
+
+const FORMULE_SHORT: Record<string, string> = {
+  formule_1: "F1",
+  formule_2: "F2",
+  formule_3: "F3",
+  formule_4: "F4",
+};
 
 const JOURS_SEMAINE = [
   { id: "lundi", label: "Lundi" },
@@ -52,6 +65,7 @@ export default function StagesOrganisation({
   coaches,
   organisation,
   inscriptionsCount,
+  effectifs,
 }: Props) {
   const router = useRouter();
   const params = useSearchParams();
@@ -389,7 +403,146 @@ export default function StagesOrganisation({
               </table>
             </div>
           </section>
+
+          {/* ===== Effectifs nominatifs par jour ===== */}
+          {effectifs ? (
+            <>
+              {/* Récap compteurs (en-tête écran + imprimé) */}
+              <section
+                className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm"
+                style={{ pageBreakBefore: "always" }}
+              >
+                <header className="bg-gradient-to-r from-navy to-cyan-club text-white px-5 py-3">
+                  <h2 className="text-lg font-extrabold">
+                    👥 Effectifs par jour
+                    <span className="text-sm font-normal text-white/80 ml-2">
+                      ({effectifs.total} inscrit
+                      {effectifs.total > 1 ? "s" : ""})
+                    </span>
+                  </h2>
+                </header>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100 text-gray-700 text-xs uppercase">
+                        <th className="px-3 py-2 border text-left">Jour</th>
+                        <th className="px-3 py-2 border text-center">
+                          🌅 Matin
+                        </th>
+                        <th className="px-3 py-2 border text-center">
+                          🌇 Après-midi
+                        </th>
+                        <th className="px-3 py-2 border text-center">
+                          🍽️ Repas
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {JOURS_SEMAINE.map((j) => {
+                        const d = effectifs.jours[j.id];
+                        if (!d) return null;
+                        return (
+                          <tr key={j.id} className="even:bg-gray-50/60">
+                            <td className="px-3 py-2 border font-bold bg-navy/5 text-navy">
+                              {j.label}
+                            </td>
+                            <td className="px-3 py-2 border text-center text-lg font-extrabold text-cyan-club">
+                              {d.matin.length}
+                            </td>
+                            <td className="px-3 py-2 border text-center text-lg font-extrabold text-ocre-dark">
+                              {d.apresMidi.length}
+                            </td>
+                            <td className="px-3 py-2 border text-center text-lg font-extrabold text-emerald-600">
+                              {d.repas.length}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* Détail nominatif par jour */}
+              {JOURS_SEMAINE.map((j) => {
+                const d = effectifs.jours[j.id];
+                if (!d) return null;
+                if (
+                  d.matin.length === 0 &&
+                  d.apresMidi.length === 0 &&
+                  d.repas.length === 0
+                )
+                  return null;
+                return (
+                  <section
+                    key={`eff-${j.id}`}
+                    className="rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm"
+                    style={{ breakInside: "avoid" }}
+                  >
+                    <header className="bg-navy/90 text-white px-4 py-2 font-bold">
+                      {j.label}
+                    </header>
+                    <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+                      <ColonneEnfants
+                        titre="🌅 Matin"
+                        couleur="text-cyan-club"
+                        enfants={d.matin}
+                      />
+                      <ColonneEnfants
+                        titre="🌇 Après-midi"
+                        couleur="text-ocre-dark"
+                        enfants={d.apresMidi}
+                      />
+                      <ColonneEnfants
+                        titre="🍽️ Repas"
+                        couleur="text-emerald-600"
+                        enfants={d.repas}
+                      />
+                    </div>
+                  </section>
+                );
+              })}
+            </>
+          ) : null}
         </>
+      )}
+    </div>
+  );
+}
+
+function ColonneEnfants({
+  titre,
+  couleur,
+  enfants,
+}: {
+  titre: string;
+  couleur: string;
+  enfants: EnfantEffectif[];
+}) {
+  const sorted = [...enfants].sort(
+    (a, b) => a.nom.localeCompare(b.nom) || a.prenom.localeCompare(b.prenom),
+  );
+  return (
+    <div className="p-3">
+      <p className={`text-xs font-bold uppercase tracking-wide mb-2 ${couleur}`}>
+        {titre} <span className="text-gray-400">({enfants.length})</span>
+      </p>
+      {sorted.length === 0 ? (
+        <p className="text-xs text-gray-400 italic">—</p>
+      ) : (
+        <ul className="space-y-0.5">
+          {sorted.map((e, i) => (
+            <li
+              key={i}
+              className="text-sm text-gray-800 flex items-center gap-1.5"
+            >
+              <span className="text-[9px] font-bold text-gray-400 w-5 shrink-0">
+                {FORMULE_SHORT[e.formule] ?? "?"}
+              </span>
+              {e.prenom} {e.nom}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

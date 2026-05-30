@@ -31,7 +31,6 @@ import {
   fetchInscriptionsCountByDay,
   fetchEffectifsByDay,
 } from "@/lib/admin/stages-org-queries";
-import EffectifsJour from "./EffectifsJour";
 import { fetchAnnuaireClients } from "@/lib/admin/annuaire-queries";
 
 export const dynamic = "force-dynamic";
@@ -67,11 +66,9 @@ export default async function AdminDashboardPage({
             ? "planning"
             : sp.tab === "stages-org"
               ? "stages-org"
-              : sp.tab === "effectifs"
-                ? "effectifs"
-                : sp.tab === "annuaire"
-                  ? "annuaire"
-                  : "stages";
+              : sp.tab === "annuaire"
+                ? "annuaire"
+                : "stages";
   const histo = sp.histo === "ecole" ? "ecole" : "stages";
 
   // Pour l'onglet Tarifs : on peut visualiser/éditer une saison STAGES et une
@@ -132,24 +129,20 @@ export default async function AdminDashboardPage({
   const annuaireData =
     tab === "annuaire" ? await fetchAnnuaireClients() : null;
 
-  // Stages organisation : charger seulement si onglet actif + semaine choisie
+  // Stages organisation : charger coachs + compteurs + effectifs (qui est là)
+  // pour la semaine sélectionnée
   const stageOrgData =
     tab === "stages-org" && bundle && sp.semaineId
       ? await (async () => {
           const semaine = bundle.semaines.find((s) => s.id === sp.semaineId);
           if (!semaine) return null;
-          const [org, counts] = await Promise.all([
+          const [org, counts, effectifs] = await Promise.all([
             fetchStageOrganisation(semaine.id),
             fetchInscriptionsCountByDay(semaine.code),
+            fetchEffectifsByDay(semaine.code),
           ]);
-          return { semaine, org, counts };
+          return { semaine, org, counts, effectifs };
         })()
-      : null;
-
-  // Effectifs par jour : charger seulement si onglet actif + semaine choisie
-  const effectifsData =
-    tab === "effectifs" && sp.effSem
-      ? await fetchEffectifsByDay(sp.effSem)
       : null;
 
   const totalArchives = historique.length + historiqueEcole.length;
@@ -192,14 +185,6 @@ export default async function AdminDashboardPage({
           icon="📋"
         >
           Organisation Stages
-        </TabLink>
-        <TabLink
-          active={tab === "effectifs"}
-          href="/admin?tab=effectifs"
-          accent="cyan"
-          icon="👥"
-        >
-          Effectifs / jour
         </TabLink>
         <TabLink
           active={tab === "annuaire"}
@@ -283,18 +268,7 @@ export default async function AdminDashboardPage({
             inscriptionsCount={
               stageOrgData?.counts ?? { total: 0, matin: {}, apresMidi: {} }
             }
-          />
-        ) : (
-          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
-            Aucune saison active.
-          </div>
-        )
-      ) : tab === "effectifs" ? (
-        bundle ? (
-          <EffectifsJour
-            semaines={bundle.semaines}
-            currentSemaineCode={sp.effSem}
-            data={effectifsData}
+            effectifs={stageOrgData?.effectifs ?? null}
           />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
