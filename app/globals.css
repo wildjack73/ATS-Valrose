@@ -511,6 +511,55 @@ body {
   color: var(--d-text-dim) !important;
 }
 
+/* -- Polish dashboard ------------------------------------------------- */
+
+/* Cards Stages + École : remplacer les gradients fluo par des dégradés
+   très sobres qui gardent juste un *hint* de couleur à droite, et
+   rapprocher les bordures du ton de la marque sans saturer. */
+.admin-dark .bg-gradient-to-r.from-navy.to-cyan-club,
+.admin-dark .bg-gradient-to-r.from-navy.via-navy.to-cyan-club {
+  background-image: linear-gradient(
+    to right,
+    #122237 0%,
+    #15293f 55%,
+    #1a3c50 100%
+  ) !important;
+}
+.admin-dark .bg-gradient-to-r.from-clay.to-ocre-light,
+.admin-dark .bg-gradient-to-r.from-clay.via-ocre.to-ocre-light {
+  background-image: linear-gradient(
+    to right,
+    #1f1a22 0%,
+    #2a221e 55%,
+    #3a2a20 100%
+  ) !important;
+}
+
+/* Bordures de cards : moins saturées en dark */
+.admin-dark .border-cyan-club\/30 {
+  border-color: rgba(45, 181, 214, 0.22) !important;
+}
+.admin-dark .border-ocre\/30 {
+  border-color: rgba(196, 115, 58, 0.22) !important;
+}
+
+/* Texte d'éyebrow dans les headers de cards : moins flashy */
+.admin-dark .text-cyan-light {
+  color: #7ac6e3 !important;
+}
+.admin-dark .text-yellow-200 {
+  color: #d6b770 !important;
+}
+
+/* Chiffres financiers : passer des oranges/verts éclatants à des
+   tons un peu désaturés mais toujours lisibles */
+.admin-dark .text-orange-700 {
+  color: #f29a5b !important;
+}
+.admin-dark .text-green-700 {
+  color: #5fd690 !important;
+}
+
 } /* fin @media not print → tout le mode sombre admin ci-dessus */
 
 /* === Impression ============================================================ */
