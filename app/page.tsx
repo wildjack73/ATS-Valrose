@@ -86,7 +86,7 @@ export default function HomePage() {
             style={{ animationDelay: "250ms" }}
           >
             Stages de vacances et école de tennis. Tennis, padel, pickleball,
-            multi-activités. Encadré par des moniteurs diplômés d&apos;État.
+            multi-activités. Encadré par des moniteurs qualifiés.
           </p>
 
           {/* === MOBILE : boutons en flow normal sous le paragraphe === */}
@@ -146,7 +146,7 @@ export default function HomePage() {
             { value: 3, label: "Courts de tennis", suffix: "" },
             { value: 2, label: "Courts de padel", suffix: "" },
             { value: 17, label: "Semaines de stages / an", suffix: "" },
-            { value: 100, label: "Moniteurs D.E.", suffix: "%" },
+            { value: 100, label: "Moniteurs qualifiés", suffix: "%" },
           ].map((stat, i) => (
             <Reveal key={stat.label} delay={i * 100}>
               <div className="flex flex-col items-center">

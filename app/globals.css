@@ -567,6 +567,63 @@ body {
   color: #5fd690 !important;
 }
 
+/* -- Polish onglet Encaissements -------------------------------------- */
+
+/* Montants colorés dans la table encaissements */
+.admin-dark .text-emerald-700 {
+  color: #6ee7b7 !important;
+}
+.admin-dark .text-amber-700,
+.admin-dark .text-amber-800 {
+  color: #fbbf24 !important;
+}
+.admin-dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+/* Badges d'état dans la table : on remonte le contraste */
+.admin-dark .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+}
+.admin-dark .border-emerald-300 {
+  border-color: rgba(16, 185, 129, 0.55) !important;
+}
+.admin-dark .border-amber-300 {
+  border-color: rgba(245, 158, 11, 0.55) !important;
+}
+.admin-dark .border-blue-300 {
+  border-color: rgba(59, 130, 246, 0.55) !important;
+}
+
+/* Tints discrets sur les lignes (a_regler ambre / partiel bleu) */
+.admin-dark .bg-amber-50\/30 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+}
+.admin-dark .bg-blue-50\/30 {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Labels « 🎾 Stage » / « 🏫 École » dans la première colonne :
+   les couleurs de marque sont trop saturées sur fond sombre, on les éclaircit */
+.admin-dark .text-cyan-club {
+  color: #7fd6ee !important;
+}
+.admin-dark .text-ocre-dark {
+  color: #e89c5c !important;
+}
+
+/* PaiementsPanel : les 3 états (soldé/à régler/partiel) ont des bordures
+   et fonds light qu'il faut sombrir mais pas neutraliser */
+.admin-dark .border-emerald-300.bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.10) !important;
+}
+.admin-dark .border-amber-300.bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.10) !important;
+}
+.admin-dark .border-blue-300.bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.10) !important;
+}
+
 } /* fin @media not print → tout le mode sombre admin ci-dessus */
 
 /* === Impression ============================================================ */
