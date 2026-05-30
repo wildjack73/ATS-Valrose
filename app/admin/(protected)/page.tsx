@@ -23,6 +23,7 @@ import StagesOrganisation from "./StagesOrganisation";
 import CoachesEditor from "./CoachesEditor";
 import AVerifier from "./AVerifier";
 import { fetchChecksRapport } from "@/lib/admin/checks-queries";
+import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
 import Annuaire from "./Annuaire";
 import {
   fetchGroupesEcole,
@@ -139,6 +140,12 @@ export default async function AdminDashboardPage({
   // À vérifier : charger seulement si onglet actif
   const aVerifierRapport =
     tab === "a-verifier" ? await fetchChecksRapport() : null;
+
+  // JPO école : pour l'onglet Tarifs, on charge la config liée à la saison école active du bundle
+  const jpoEcole =
+    tab === "tarifs" && bundle
+      ? await fetchJpoEcole(bundle.saisonEcole.id)
+      : null;
 
   // Stages organisation : charger coachs + compteurs + effectifs (qui est là)
   // pour la semaine sélectionnée
@@ -258,6 +265,7 @@ export default async function AdminDashboardPage({
             bundle={bundle}
             saisonsStages={saisonsStages}
             saisonsEcole={saisonsEcole}
+            jpoEcole={jpoEcole}
           />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">

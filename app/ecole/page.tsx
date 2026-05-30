@@ -1,29 +1,9 @@
 import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
 import { fetchSlotsOccupesEcole } from "@/lib/data/ecole-slots";
+import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
 import EcoleForm from "./EcoleForm";
 
 export const dynamic = "force-dynamic";
-
-// ============================================================================
-// 📅 Bandeau Journées Portes Ouvertes — à METTRE À JOUR chaque année.
-// Si on est avant `visibleJusquAu`, le bandeau s'affiche en haut du
-// formulaire. Au-delà de cette date il disparaît automatiquement.
-// Pour la rentrée suivante :
-//   1) Changer visibleJusquAu (= lendemain de la dernière JPO)
-//   2) Mettre à jour anneeScolaire, reprise et la liste jours[]
-// ============================================================================
-const JPO = {
-  visibleJusquAu: "2026-09-06", // YYYY-MM-DD
-  anneeScolaire: "2026/2027",
-  reprise: "mercredi 9 septembre 2026",
-  jours: [
-    { label: "Mardi 1ᵉʳ septembre", creneaux: "17h – 20h" },
-    { label: "Mercredi 2 septembre", creneaux: "9h – 12h et 13h30 – 18h" },
-    { label: "Jeudi 3 septembre", creneaux: "17h – 20h" },
-    { label: "Vendredi 4 septembre", creneaux: "17h – 20h" },
-    { label: "Samedi 5 septembre", creneaux: "9h – 12h et 13h30 – 18h" },
-  ],
-};
 
 export const metadata = {
   title: "Inscription École de Tennis — ATS Valrose",
@@ -33,6 +13,9 @@ export const metadata = {
 
 export default async function EcolePage() {
   const bundle = await getActiveTarifsBundle();
+  const jpo = bundle ? await fetchJpoEcole(bundle.saisonEcole.id) : null;
+  const jpoVisible =
+    !!jpo && Date.now() < new Date(jpo.visible_jusqu_au).getTime();
 
   if (!bundle) {
     return (
@@ -70,7 +53,7 @@ export default async function EcolePage() {
         </div>
       </section>
       <section>
-        {Date.now() < new Date(JPO.visibleJusquAu).getTime() ? (
+        {jpo && jpoVisible ? (
           <div className="mx-auto max-w-3xl px-4 pt-8">
             <div className="rounded-2xl border-2 border-ocre/40 bg-ocre-pale/40 p-5 sm:p-6 shadow-sm">
               <div className="flex items-start gap-3">
@@ -87,25 +70,27 @@ export default async function EcolePage() {
                     une inscription définitive.
                   </p>
 
-                  <div>
-                    <p className="font-bold text-clay mb-2">
-                      📅 Journées portes ouvertes au club
-                    </p>
-                    <ul className="space-y-1 text-sm">
-                      {JPO.jours.map((j) => (
-                        <li key={j.label}>
-                          <strong>{j.label}</strong> · {j.creneaux}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {jpo.jours.length > 0 ? (
+                    <div>
+                      <p className="font-bold text-clay mb-2">
+                        📅 Journées portes ouvertes au club
+                      </p>
+                      <ul className="space-y-1 text-sm">
+                        {jpo.jours.map((j, i) => (
+                          <li key={i}>
+                            <strong>{j.label}</strong> · {j.creneaux}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
 
                   <p className="text-sm">
                     🎾{" "}
                     <strong>
-                      Reprise des cours de tennis {JPO.anneeScolaire}
+                      Reprise des cours de tennis {jpo.annee_scolaire}
                     </strong>{" "}
-                    : {JPO.reprise}.
+                    : {jpo.date_reprise}.
                   </p>
                 </div>
               </div>

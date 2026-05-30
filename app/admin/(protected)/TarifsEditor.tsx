@@ -12,6 +12,8 @@ import type {
   TarifAutre,
   Saison,
 } from "@/lib/data/tarifs-types";
+import type { JpoConfig } from "@/lib/data/jpo-ecole";
+import JpoEditor from "./JpoEditor";
 
 type Resource =
   | "formules"
@@ -61,10 +63,12 @@ export default function TarifsEditor({
   bundle,
   saisonsStages,
   saisonsEcole,
+  jpoEcole,
 }: {
   bundle: TarifsBundle;
   saisonsStages: Saison[];
   saisonsEcole: Saison[];
+  jpoEcole: JpoConfig | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -295,6 +299,8 @@ export default function TarifsEditor({
           </tbody>
         </table>
       </Section>
+
+      <JpoEditor saisonEcole={bundle.saisonEcole} jpo={jpoEcole} />
 
       <Section title="🏫 Cours École Tennis">
         <CoursTable
