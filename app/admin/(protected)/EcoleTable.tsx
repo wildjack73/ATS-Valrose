@@ -5,6 +5,11 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
 import type { CoursEcole } from "@/lib/data/tarifs-types";
 import {
+  CRENEAUX_ECOLE,
+  categorieLabel,
+  type CreneauCategorie,
+} from "@/lib/data/creneaux-ecole";
+import {
   formatDateTime,
   age,
   coursTennisLabels,
@@ -86,18 +91,30 @@ export default function EcoleTable({
     });
   }, [coursTennis, coursPadel]);
 
-  const creneauOptions = useMemo(() => {
-    const creneaux = new Set<string>();
+  // Créneau : la liste COMPLÈTE proposée par le formulaire école
+  // (lib/data/creneaux-ecole.ts), filtrée par le type sélectionné.
+  // Si jamais d'anciens libellés sont en DB et ne sont pas dans la liste
+  // standard, on les ajoute en bas dans une catégorie « Autres ».
+  const creneauOptionsByCategorie = useMemo(() => {
+    const knownLabels = new Set(CRENEAUX_ECOLE.map((c) => c.label));
+    const extras = new Set<string>();
     for (const r of rows) {
       for (const raw of [r.dispo_mercredi, r.dispo_samedi, r.dispo_semaine]) {
         if (!raw) continue;
         for (const piece of raw.split(",")) {
           const v = piece.trim();
-          if (v) creneaux.add(v);
+          if (v && !knownLabels.has(v)) extras.add(v);
         }
       }
     }
-    return Array.from(creneaux).sort((a, b) => a.localeCompare(b));
+    // Regroupement par catégorie en gardant l'ordre du fichier (déjà logique)
+    const byCat: Record<CreneauCategorie, string[]> = {
+      jeunes: [],
+      adultes_tennis: [],
+      padel: [],
+    };
+    for (const c of CRENEAUX_ECOLE) byCat[c.categorie].push(c.label);
+    return { byCat, extras: Array.from(extras).sort() };
   }, [rows]);
 
   // ---- Filtrage client (statut déjà appliqué côté serveur) ----
@@ -197,16 +214,38 @@ export default function EcoleTable({
             ))}
         </select>
         <select
-          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm max-w-[260px]"
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm max-w-[280px]"
           value={currentCreneau ?? ""}
           onChange={(e) => updateParam("creneau", e.target.value)}
         >
           <option value="">Tous créneaux</option>
-          {creneauOptions.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
+          {(["jeunes", "adultes_tennis", "padel"] as const)
+            .filter((cat) => {
+              // Cohérence avec le filtre Type : si Tennis sélectionné, on
+              // cache les créneaux Padel ; si Padel sélectionné, on cache
+              // les créneaux Jeunes/Adultes (qui sont tous tennis).
+              if (currentType === "tennis") return cat !== "padel";
+              if (currentType === "padel") return cat === "padel";
+              return true;
+            })
+            .map((cat) => (
+              <optgroup key={cat} label={categorieLabel(cat)}>
+                {creneauOptionsByCategorie.byCat[cat].map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          {creneauOptionsByCategorie.extras.length > 0 ? (
+            <optgroup label="Autres (anciens libellés)">
+              {creneauOptionsByCategorie.extras.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
         </select>
         <select
           className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
