@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { getTarifsBundle } from "@/lib/data/tarifs-server";
+import { getTarifsBundle, getActiveSaison } from "@/lib/data/tarifs-server";
 
 export const runtime = "nodejs";
 
@@ -58,7 +58,14 @@ export async function PATCH(
         { status: 400 },
       );
     }
-    const bundle = await getTarifsBundle(row.saison_id);
+    // On a besoin du bundle Stages pour valider les options F4 + recalculer
+    // le prix. La saison école n'a pas d'impact ici mais le bundle l'exige,
+    // donc on prend l'école active du moment (peu importe laquelle).
+    const sEcole = await getActiveSaison("ecole");
+    const bundle = await getTarifsBundle({
+      saisonStagesId: row.saison_id,
+      saisonEcoleId: sEcole?.id ?? row.saison_id,
+    });
     if (!bundle) {
       return NextResponse.json({ error: "Saison introuvable." }, { status: 400 });
     }
