@@ -92,30 +92,16 @@ export default function EcoleTable({
   }, [coursTennis, coursPadel]);
 
   // Créneau : la liste COMPLÈTE proposée par le formulaire école
-  // (lib/data/creneaux-ecole.ts), filtrée par le type sélectionné.
-  // Si jamais d'anciens libellés sont en DB et ne sont pas dans la liste
-  // standard, on les ajoute en bas dans une catégorie « Autres ».
+  // (lib/data/creneaux-ecole.ts), groupée par catégorie.
   const creneauOptionsByCategorie = useMemo(() => {
-    const knownLabels = new Set(CRENEAUX_ECOLE.map((c) => c.label));
-    const extras = new Set<string>();
-    for (const r of rows) {
-      for (const raw of [r.dispo_mercredi, r.dispo_samedi, r.dispo_semaine]) {
-        if (!raw) continue;
-        for (const piece of raw.split(",")) {
-          const v = piece.trim();
-          if (v && !knownLabels.has(v)) extras.add(v);
-        }
-      }
-    }
-    // Regroupement par catégorie en gardant l'ordre du fichier (déjà logique)
     const byCat: Record<CreneauCategorie, string[]> = {
       jeunes: [],
       adultes_tennis: [],
       padel: [],
     };
     for (const c of CRENEAUX_ECOLE) byCat[c.categorie].push(c.label);
-    return { byCat, extras: Array.from(extras).sort() };
-  }, [rows]);
+    return byCat;
+  }, []);
 
   // ---- Filtrage client (statut déjà appliqué côté serveur) ----
   const filteredRows = useMemo(() => {
@@ -230,22 +216,13 @@ export default function EcoleTable({
             })
             .map((cat) => (
               <optgroup key={cat} label={categorieLabel(cat)}>
-                {creneauOptionsByCategorie.byCat[cat].map((c) => (
+                {creneauOptionsByCategorie[cat].map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
                 ))}
               </optgroup>
             ))}
-          {creneauOptionsByCategorie.extras.length > 0 ? (
-            <optgroup label="Autres (anciens libellés)">
-              {creneauOptionsByCategorie.extras.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </optgroup>
-          ) : null}
         </select>
         <select
           className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
