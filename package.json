@@ -10,7 +10,9 @@
     "import:historique": "tsx scripts/import-historique-stages.ts",
     "import:historique-ecole": "tsx scripts/import-historique-ecole.ts",
     "migrate": "tsx scripts/migrate.ts",
-    "import:planning": "tsx scripts/import-planning.ts"
+    "import:planning": "tsx scripts/import-planning.ts",
+    "backup": "tsx scripts/backup-db.ts",
+    "restore": "tsx scripts/restore-db.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

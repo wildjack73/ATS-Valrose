@@ -48,3 +48,8 @@ next-env.d.ts
 
 # Données personnelles (CSVs d'import historique avec emails/téléphones)
 data-historique/
+
+# Backups de la base de données — JAMAIS committer (contient toutes les
+# données personnelles : emails, téléphones, paiements). Stocker dans un
+# emplacement chiffré (OneDrive privé, etc.).
+backups/
