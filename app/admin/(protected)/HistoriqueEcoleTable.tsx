@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { InscriptionEcoleHistoriqueRow } from "@/lib/admin/queries";
+import { NiveauBadge, NiveauFilter, matchesNiveau } from "./NiveauUI";
 
 export default function HistoriqueEcoleTable({
   rows,
@@ -9,27 +10,32 @@ export default function HistoriqueEcoleTable({
   rows: InscriptionEcoleHistoriqueRow[];
 }) {
   const [search, setSearch] = useState("");
+  const [filterNiveau, setFilterNiveau] = useState("");
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
     return rows.filter((r) => {
-      const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
-      return hay.includes(q);
+      if (q) {
+        const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (!matchesNiveau(r.niveau, filterNiveau || undefined)) return false;
+      return true;
     });
-  }, [rows, search]);
+  }, [rows, search, filterNiveau]);
 
   const total = filteredRows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
       <div className="p-4 border-b flex flex-wrap items-center gap-3">
+        <NiveauFilter value={filterNiveau} onChange={setFilterNiveau} />
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher nom ou email…"
-          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-52"
         />
         <span className="ml-auto text-sm text-gray-600">
           Total estimé&nbsp;:{" "}
@@ -45,6 +51,7 @@ export default function HistoriqueEcoleTable({
             <tr>
               <th className="text-left p-3">Date</th>
               <th className="text-left p-3">Élève</th>
+              <th className="text-left p-3 w-24">Niveau</th>
               <th className="text-left p-3">Contact</th>
               <th className="text-left p-3">Cours</th>
               <th className="text-left p-3">Disponibilités</th>
@@ -55,7 +62,7 @@ export default function HistoriqueEcoleTable({
           <tbody>
             {filteredRows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-500">
+                <td colSpan={8} className="p-8 text-center text-gray-500">
                   {rows.length === 0 ? (
                     <>
                       Aucune donnée. Lancer{" "}
@@ -97,8 +104,10 @@ export default function HistoriqueEcoleTable({
                       </div>
                       <div className="text-xs text-gray-500">
                         {r.date_naissance ?? ""}
-                        {r.niveau ? ` • ${r.niveau}` : ""}
                       </div>
+                    </td>
+                    <td className="p-3 w-24">
+                      <NiveauBadge value={r.niveau} />
                     </td>
                     <td className="p-3 text-xs">
                       <div>{r.email ?? "—"}</div>

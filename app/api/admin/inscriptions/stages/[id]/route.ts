@@ -15,6 +15,7 @@ interface PatchBody {
   notes_admin?: string | null;
   formule_4_selection?: F4Item[];
   desactive?: boolean;
+  niveau?: string | null;
 }
 
 export async function PATCH(
@@ -42,6 +43,9 @@ export async function PATCH(
   }
   if (body.desactive !== undefined) {
     patch.desactive = Boolean(body.desactive);
+  }
+  if (body.niveau !== undefined) {
+    patch.niveau = body.niveau ? String(body.niveau).trim() : null;
   }
 
   // Édition de la sélection Formule 4 → on recalcule le prix côté serveur

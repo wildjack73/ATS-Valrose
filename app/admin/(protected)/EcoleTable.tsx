@@ -27,6 +27,7 @@ import {
   type PaiementClient,
 } from "./PaiementsPanel";
 import { IconMail, IconPhone, IconTrash, IconPause, IconPlay } from "./Icons";
+import { NiveauSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -56,6 +57,7 @@ export default function EcoleTable({
   const [pending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [filterNiveau, setFilterNiveau] = useState("");
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -137,9 +139,11 @@ export default function EcoleTable({
         const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
+      // Filtre niveau
+      if (!matchesNiveau(r.niveau, filterNiveau || undefined)) return false;
       return true;
     });
-  }, [rows, currentType, currentCours, currentCreneau, search]);
+  }, [rows, currentType, currentCours, currentCreneau, search, filterNiveau]);
 
   async function patchInscription(id: string, patch: object) {
     startTransition(async () => {
@@ -256,12 +260,13 @@ export default function EcoleTable({
             Réinitialiser
           </button>
         ) : null}
+        <NiveauFilter value={filterNiveau} onChange={setFilterNiveau} />
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher nom ou email…"
-          className="ml-auto rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-52"
         />
         <a
           href={`/api/admin/export/ecole?${params.toString()}`}
@@ -277,6 +282,7 @@ export default function EcoleTable({
             <tr>
               <th className="text-left p-3 w-24">Date</th>
               <th className="text-left p-3">Élève</th>
+              <th className="text-left p-3 w-24">Niveau</th>
               <th className="text-left p-3">Email</th>
               <th className="text-left p-3 w-32">Téléphone</th>
               <th className="text-left p-3">Cours & dispo</th>
@@ -288,7 +294,7 @@ export default function EcoleTable({
           <tbody>
             {filteredRows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-gray-500">
+                <td colSpan={9} className="p-8 text-center text-gray-500">
                   {rows.length === 0
                     ? "Aucune inscription pour le moment."
                     : "Aucune inscription ne correspond à ces filtres."}
@@ -369,9 +375,15 @@ function EcoleRowGroup({
           </div>
           <div className="text-xs text-gray-500">
             {age(row.date_naissance)} ans
-            {row.niveau ? ` • ${row.niveau}` : ""}
             {row.code_postal_ville ? ` • ${row.code_postal_ville}` : ""}
           </div>
+        </td>
+        <td className="p-3 align-top">
+          <NiveauSelect
+            value={row.niveau}
+            disabled={pending}
+            onSave={(v) => patch({ niveau: v })}
+          />
         </td>
         <td className="p-3 text-xs align-top max-w-[180px]">
           <a
@@ -491,7 +503,7 @@ function EcoleRowGroup({
           onClick={toggle}
           className={`cursor-pointer ${statutRowClass(row.statut)}`}
         >
-          <td colSpan={8} className="px-3 pb-2 pt-0">
+          <td colSpan={9} className="px-3 pb-2 pt-0">
             <div className="ml-5 text-xs space-y-1">
               {row.notes ? (
                 <div className="text-gray-700">
@@ -519,7 +531,7 @@ function EcoleRowGroup({
       ) : null}
       {open ? (
         <tr className="border-t bg-ocre/5">
-          <td colSpan={8} className="p-4">
+          <td colSpan={9} className="p-4">
             <EcoleEditPanel
               row={row}
               paiements={paiements}

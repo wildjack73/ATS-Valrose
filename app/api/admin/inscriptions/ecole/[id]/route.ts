@@ -11,6 +11,7 @@ interface PatchBody {
   paiement_info?: string | null;
   notes_admin?: string | null;
   desactive?: boolean;
+  niveau?: string | null;
 }
 
 export async function PATCH(
@@ -38,6 +39,9 @@ export async function PATCH(
   }
   if (body.desactive !== undefined) {
     patch.desactive = Boolean(body.desactive);
+  }
+  if (body.niveau !== undefined) {
+    patch.niveau = body.niveau ? String(body.niveau).trim() : null;
   }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Rien à modifier" }, { status: 400 });

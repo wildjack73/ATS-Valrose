@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ClientRow } from "@/lib/admin/annuaire-queries";
+import { NiveauBadge, NiveauFilter, matchesNiveau } from "./NiveauUI";
 
 interface Props {
   clients: ClientRow[];
@@ -9,10 +10,9 @@ interface Props {
 
 export default function Annuaire({ clients }: Props) {
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "stage" | "ecole">(
-    "all",
-  );
+  const [filterType, setFilterType] = useState<"all" | "stage" | "ecole">("all");
   const [filterSaison, setFilterSaison] = useState<string>("all");
+  const [filterNiveau, setFilterNiveau] = useState<string>("");
 
   // Liste de toutes les saisons disponibles (pour le filtre)
   const allSaisons = useMemo(() => {
@@ -48,9 +48,11 @@ export default function Annuaire({ clients }: Props) {
       if (filterSaison !== "all") {
         if (!c.tags.some((t) => t.saison === filterSaison)) return false;
       }
+      // Filtre niveau
+      if (!matchesNiveau(c.niveau, filterNiveau || undefined)) return false;
       return true;
     });
-  }, [clients, search, filterType, filterSaison]);
+  }, [clients, search, filterType, filterSaison, filterNiveau]);
 
   function exportCSV() {
     const rows = filtered.map((c) => ({
@@ -128,6 +130,7 @@ export default function Annuaire({ clients }: Props) {
             </option>
           ))}
         </select>
+        <NiveauFilter value={filterNiveau} onChange={setFilterNiveau} />
         <span className="text-xs text-gray-600 ml-auto">
           <strong>{filtered.length}</strong> client
           {filtered.length > 1 ? "s" : ""}{" "}
@@ -149,6 +152,7 @@ export default function Annuaire({ clients }: Props) {
             <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
               <tr>
                 <th className="text-left p-3">Nom</th>
+                <th className="text-left p-3 w-24">Niveau</th>
                 <th className="text-left p-3">Email</th>
                 <th className="text-left p-3 w-32">Téléphone</th>
                 <th className="text-left p-3">Tags</th>
@@ -182,14 +186,14 @@ function ClientRowComp({ client }: { client: ClientRow }) {
         <div className="font-semibold text-navy">
           {client.prenom} {client.nom}
         </div>
-        {client.niveau ? (
-          <div className="text-xs text-gray-500">{client.niveau}</div>
-        ) : null}
         {client.code_postal_ville ? (
           <div className="text-xs text-gray-500">
             {client.code_postal_ville}
           </div>
         ) : null}
+      </td>
+      <td className="p-3 align-top">
+        <NiveauBadge value={client.niveau} />
       </td>
       <td className="p-3 text-xs align-top max-w-[200px]">
         {client.email ? (

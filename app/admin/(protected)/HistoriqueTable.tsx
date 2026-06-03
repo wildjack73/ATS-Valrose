@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { InscriptionStageHistoriqueRow } from "@/lib/admin/queries";
+import { NiveauBadge, NiveauFilter, matchesNiveau } from "./NiveauUI";
 
 // --- Helpers ---------------------------------------------------------------
 
@@ -86,6 +87,7 @@ export default function HistoriqueTable({
   const router = useRouter();
   const params = useSearchParams();
   const [search, setSearch] = useState("");
+  const [filterNiveau, setFilterNiveau] = useState("");
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -98,12 +100,15 @@ export default function HistoriqueTable({
   // Filtre par nom / prénom / email (avant le grouping par semaine)
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
     return rows.filter((r) => {
-      const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
-      return hay.includes(q);
+      if (q) {
+        const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (!matchesNiveau(r.niveau, filterNiveau || undefined)) return false;
+      return true;
     });
-  }, [rows, search]);
+  }, [rows, search, filterNiveau]);
 
   const grandTotal = filteredRows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
 
@@ -153,12 +158,13 @@ export default function HistoriqueTable({
             </option>
           ))}
         </select>
+        <NiveauFilter value={filterNiveau} onChange={setFilterNiveau} />
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher nom ou email…"
-          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-52"
         />
         <span className="ml-auto text-sm text-gray-600">
           Total estimé&nbsp;:{" "}
@@ -215,8 +221,11 @@ export default function HistoriqueTable({
                           </div>
                           <div className="text-xs text-gray-500">
                             {r.date_naissance ?? ""}
-                            {r.niveau ? ` • ${r.niveau}` : ""}
                           </div>
+                        </td>
+                        {/* Niveau */}
+                        <td className="p-3 w-24">
+                          <NiveauBadge value={r.niveau} />
                         </td>
                         {/* Contact */}
                         <td className="p-3 text-xs w-64">
