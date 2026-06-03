@@ -93,9 +93,18 @@ export function eleveKey(
   nom: string | null | undefined,
   prenom: string | null | undefined,
 ): string {
-  const n = (nom ?? "").trim().toLowerCase().replace(/\s+/g, " ");
-  const p = (prenom ?? "").trim().toLowerCase().replace(/\s+/g, " ");
-  return `np:${n}|${p}`;
+  return `np:${normalizeNamePart(nom)}|${normalizeNamePart(prenom)}`;
+}
+
+/** Normalise un morceau de nom pour la clé élève : minuscules, sans accents,
+ *  espaces compactés. « Clément », « CLEMENT », « clément  » → « clement ». */
+function normalizeNamePart(s: string | null | undefined): string {
+  return (s ?? "")
+    .normalize("NFD") // décompose les accents (é → e + diacritique)
+    .replace(/[̀-ͯ]/g, "") // retire les marques diacritiques
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 /** Âge en années à partir d'une date de naissance (ISO ou texte JJ/MM/AAAA).
