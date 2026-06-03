@@ -139,8 +139,9 @@ export default function EcoleTable({
         const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      // Filtre niveau
-      if (!matchesNiveau(r.niveau, filterNiveau || undefined)) return false;
+      // Filtre niveau (sur le niveau attribué par le prof)
+      if (!matchesNiveau(r.niveau_attribue, filterNiveau || undefined))
+        return false;
       return true;
     });
   }, [rows, currentType, currentCours, currentCreneau, search, filterNiveau]);
@@ -380,10 +381,15 @@ function EcoleRowGroup({
         </td>
         <td className="p-3 align-top">
           <NiveauSelect
-            value={row.niveau}
+            value={row.niveau_attribue}
             disabled={pending}
-            onSave={(v) => patch({ niveau: v })}
+            onSave={(v) => patch({ niveau_attribue: v })}
           />
+          {row.niveau ? (
+            <div className="mt-1 text-[10px] text-gray-400 leading-tight max-w-[120px]">
+              Famille&nbsp;: {row.niveau}
+            </div>
+          ) : null}
         </td>
         <td className="p-3 text-xs align-top max-w-[180px]">
           <a

@@ -76,7 +76,7 @@ export async function fetchAnnuaireClients(): Promise<ClientRow[]> {
   const { data: stagesC } = await supa
     .from("inscriptions_stages")
     .select(
-      "id, saison_id, nom, prenom, email, telephone, adresse, niveau, date_naissance, prix_total, created_at",
+      "id, saison_id, nom, prenom, email, telephone, adresse, niveau, niveau_attribue, date_naissance, prix_total, created_at",
     );
   for (const s of stagesC ?? []) {
     const r = s as Record<string, unknown>;
@@ -93,7 +93,9 @@ export async function fetchAnnuaireClients(): Promise<ClientRow[]> {
       telephone: (r.telephone as string) ?? null,
       adresse: (r.adresse as string) ?? null,
       code_postal_ville: null,
-      niveau: (r.niveau as string) ?? null,
+      // On privilégie le niveau attribué par le prof, sinon le déclaré
+      niveau:
+        (r.niveau_attribue as string) || (r.niveau as string) || null,
       date_naissance: (r.date_naissance as string) ?? null,
       prix_total: (r.prix_total as number) ?? 0,
       activity_at: (r.created_at as string) ?? null,
@@ -104,7 +106,7 @@ export async function fetchAnnuaireClients(): Promise<ClientRow[]> {
   const { data: ecoleC } = await supa
     .from("inscriptions_ecole")
     .select(
-      "id, saison_id, nom, prenom, email, telephone, adresse, code_postal_ville, niveau, date_naissance, prix_total, created_at",
+      "id, saison_id, nom, prenom, email, telephone, adresse, code_postal_ville, niveau, niveau_attribue, date_naissance, prix_total, created_at",
     );
   for (const e of ecoleC ?? []) {
     const r = e as Record<string, unknown>;
@@ -122,7 +124,9 @@ export async function fetchAnnuaireClients(): Promise<ClientRow[]> {
       telephone: (r.telephone as string) ?? null,
       adresse: (r.adresse as string) ?? null,
       code_postal_ville: (r.code_postal_ville as string) ?? null,
-      niveau: (r.niveau as string) ?? null,
+      // On privilégie le niveau attribué par le prof, sinon le déclaré
+      niveau:
+        (r.niveau_attribue as string) || (r.niveau as string) || null,
       date_naissance: (r.date_naissance as string) ?? null,
       prix_total: (r.prix_total as number) ?? 0,
       activity_at: (r.created_at as string) ?? null,

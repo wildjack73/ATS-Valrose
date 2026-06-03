@@ -16,6 +16,7 @@ interface PatchBody {
   formule_4_selection?: F4Item[];
   desactive?: boolean;
   niveau?: string | null;
+  niveau_attribue?: string | null;
 }
 
 export async function PATCH(
@@ -46,6 +47,11 @@ export async function PATCH(
   }
   if (body.niveau !== undefined) {
     patch.niveau = body.niveau ? String(body.niveau).trim() : null;
+  }
+  if (body.niveau_attribue !== undefined) {
+    patch.niveau_attribue = body.niveau_attribue
+      ? String(body.niveau_attribue).trim()
+      : null;
   }
 
   // Édition de la sélection Formule 4 → on recalcule le prix côté serveur

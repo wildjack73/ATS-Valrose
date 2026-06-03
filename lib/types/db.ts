@@ -30,6 +30,9 @@ export interface InscriptionStageRow {
   email: string;
 
   niveau: string | null;
+  /** Niveau attribué par le prof (code Galaxie). Distinct de `niveau` qui
+   *  est ce que la famille a déclaré à l'inscription. */
+  niveau_attribue: string | null;
 
   formule: FormuleId;
   formule_creneau: Creneau | null;
@@ -78,6 +81,9 @@ export interface InscriptionEcoleRow {
   email: string;
 
   niveau: string | null;
+  /** Niveau attribué par le prof (code Galaxie). Distinct de `niveau` qui
+   *  est ce que la famille a déclaré à l'inscription. */
+  niveau_attribue: string | null;
 
   cours_tennis: CoursTennisId[];
   cours_padel: CoursPadelId[];
