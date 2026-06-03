@@ -180,7 +180,15 @@ export function NiveauEleveSelect({
       >
         <option value="">— Niveau —</option>
         {NIVEAUX_TENNIS.map((n) => (
-          <option key={n.code} value={n.code}>
+          <option
+            key={n.code}
+            value={n.code}
+            style={{
+              backgroundColor: n.bg,
+              color: n.text,
+              fontWeight: 600,
+            }}
+          >
             {n.label}
           </option>
         ))}
@@ -211,7 +219,11 @@ export function NiveauFilter({
     >
       <option value="">Tous niveaux</option>
       {NIVEAUX_TENNIS.map((n) => (
-        <option key={n.code} value={n.code}>
+        <option
+          key={n.code}
+          value={n.code}
+          style={{ backgroundColor: n.bg, color: n.text, fontWeight: 600 }}
+        >
           {n.label}
         </option>
       ))}
