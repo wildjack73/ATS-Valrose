@@ -141,12 +141,11 @@ export default function HomePage() {
 
       {/* ============ CHIFFRES CLÉS ============ */}
       <section className="relative bg-white border-y border-gray-100">
-        <div className="mx-auto max-w-6xl px-4 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
+        <div className="mx-auto max-w-6xl px-4 py-14 grid grid-cols-3 gap-8 text-center">
           {[
             { value: 3, label: "Courts de tennis", suffix: "" },
             { value: 2, label: "Courts de padel", suffix: "" },
             { value: 17, label: "Semaines de stages / an", suffix: "" },
-            { value: 100, label: "Moniteurs qualifiés", suffix: "%" },
           ].map((stat, i) => (
             <Reveal key={stat.label} delay={i * 100}>
               <div className="flex flex-col items-center">
