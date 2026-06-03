@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import type { InscriptionEcoleHistoriqueRow } from "@/lib/admin/queries";
 
 export default function HistoriqueEcoleTable({
@@ -7,14 +8,33 @@ export default function HistoriqueEcoleTable({
 }: {
   rows: InscriptionEcoleHistoriqueRow[];
 }) {
-  const total = rows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
+  const [search, setSearch] = useState("");
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [rows, search]);
+
+  const total = filteredRows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
       <div className="p-4 border-b flex flex-wrap items-center gap-3">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher nom ou email…"
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+        />
         <span className="ml-auto text-sm text-gray-600">
           Total estimé&nbsp;:{" "}
-          <strong className="text-navy">{total}€</strong> ({rows.length}{" "}
+          <strong className="text-navy">{total}€</strong> ({filteredRows.length}
+          {filteredRows.length !== rows.length ? `/${rows.length}` : ""}{" "}
           inscriptions)
         </span>
       </div>
@@ -33,18 +53,24 @@ export default function HistoriqueEcoleTable({
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {filteredRows.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center text-gray-500">
-                  Aucune donnée. Lancer{" "}
-                  <code className="px-1 bg-gray-100 rounded">
-                    npm run import:historique-ecole
-                  </code>{" "}
-                  en local.
+                  {rows.length === 0 ? (
+                    <>
+                      Aucune donnée. Lancer{" "}
+                      <code className="px-1 bg-gray-100 rounded">
+                        npm run import:historique-ecole
+                      </code>{" "}
+                      en local.
+                    </>
+                  ) : (
+                    "Aucune inscription ne correspond à la recherche."
+                  )}
                 </td>
               </tr>
             ) : (
-              rows.map((r) => {
+              filteredRows.map((r) => {
                 const cours = [
                   r.cours_tennis_raw,
                   r.cours_padel_raw,

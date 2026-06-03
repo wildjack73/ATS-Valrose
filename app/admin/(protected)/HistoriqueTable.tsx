@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { InscriptionStageHistoriqueRow } from "@/lib/admin/queries";
 
 // --- Helpers ---------------------------------------------------------------
@@ -85,6 +85,7 @@ export default function HistoriqueTable({
 }) {
   const router = useRouter();
   const params = useSearchParams();
+  const [search, setSearch] = useState("");
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -94,11 +95,21 @@ export default function HistoriqueTable({
     router.push(`/admin?${next.toString()}`);
   }
 
-  const grandTotal = rows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
+  // Filtre par nom / prénom / email (avant le grouping par semaine)
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [rows, search]);
+
+  const grandTotal = filteredRows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
 
   const groups = useMemo<Group[]>(() => {
     const map = new Map<string, InscriptionStageHistoriqueRow[]>();
-    for (const r of rows) {
+    for (const r of filteredRows) {
       const key = (r.semaine ?? "Sans période").trim() || "Sans période";
       const arr = map.get(key) ?? [];
       arr.push(r);
@@ -125,7 +136,7 @@ export default function HistoriqueTable({
     // Plus récent en premier
     out.sort((a, b) => b.order - a.order);
     return out;
-  }, [rows]);
+  }, [filteredRows]);
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -142,6 +153,13 @@ export default function HistoriqueTable({
             </option>
           ))}
         </select>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher nom ou email…"
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+        />
         <span className="ml-auto text-sm text-gray-600">
           Total estimé&nbsp;:{" "}
           <strong className="text-navy">{grandTotal}€</strong>

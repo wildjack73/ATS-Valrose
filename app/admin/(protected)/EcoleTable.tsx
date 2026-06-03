@@ -55,6 +55,7 @@ export default function EcoleTable({
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -130,9 +131,15 @@ export default function EcoleTable({
           .toLowerCase();
         if (!hay.includes(currentCreneau.toLowerCase())) return false;
       }
+      // Recherche libre nom / prénom / email
+      const q = search.trim().toLowerCase();
+      if (q) {
+        const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       return true;
     });
-  }, [rows, currentType, currentCours, currentCreneau]);
+  }, [rows, currentType, currentCours, currentCreneau, search]);
 
   async function patchInscription(id: string, patch: object) {
     startTransition(async () => {
@@ -249,9 +256,16 @@ export default function EcoleTable({
             Réinitialiser
           </button>
         ) : null}
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher nom ou email…"
+          className="ml-auto rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+        />
         <a
           href={`/api/admin/export/ecole?${params.toString()}`}
-          className="ml-auto rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
+          className="rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
         >
           Export CSV
         </a>

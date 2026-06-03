@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { InscriptionStageRow } from "@/lib/types/db";
 import type { Semaine, OptionF4 } from "@/lib/data/tarifs-types";
 import {
@@ -52,6 +52,18 @@ export default function StagesTable({
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  // Filtre par nom / prénom / email (les autres filtres sont déjà appliqués
+  // côté serveur via les query params).
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [rows, search]);
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -134,9 +146,16 @@ export default function StagesTable({
             </option>
           ))}
         </select>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher nom ou email…"
+          className="ml-auto rounded-md border border-gray-300 px-2 py-1.5 text-sm w-56"
+        />
         <a
           href={`/api/admin/export/stages?${params.toString()}`}
-          className="ml-auto rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
+          className="rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
         >
           Export CSV
         </a>
@@ -157,14 +176,16 @@ export default function StagesTable({
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {filteredRows.length === 0 ? (
               <tr>
                 <td colSpan={8} className="p-8 text-center text-gray-500">
-                  Aucune inscription pour le moment.
+                  {rows.length === 0
+                    ? "Aucune inscription pour le moment."
+                    : "Aucune inscription ne correspond à la recherche."}
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
+              filteredRows.map((r) => (
                 <RowGroup
                   key={r.id}
                   row={r}
