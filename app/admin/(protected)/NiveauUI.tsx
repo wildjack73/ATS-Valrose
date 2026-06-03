@@ -29,7 +29,7 @@ export function NiveauBadge({ value }: { value: string | null | undefined }) {
 function NiveauPill({ niveau }: { niveau: Niveau }) {
   return (
     <span
-      className="inline-block text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border whitespace-nowrap"
+      className="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border whitespace-nowrap"
       style={{
         backgroundColor: niveau.bg,
         color: niveau.text,
@@ -166,14 +166,14 @@ export function NiveauEleveSelect({
         value={current?.code ?? ""}
         disabled={pending}
         onChange={(e) => save(e.target.value)}
-        className="text-xs px-1.5 py-1 rounded border border-gray-300"
+        className="text-xs px-2.5 py-1 rounded-full border border-gray-300 cursor-pointer"
         style={
           current
             ? {
                 backgroundColor: current.bg,
                 color: current.text,
                 borderColor: current.border,
-                fontWeight: 600,
+                fontWeight: 700,
               }
             : undefined
         }
