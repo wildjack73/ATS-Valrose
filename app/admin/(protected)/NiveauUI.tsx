@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   NIVEAUX_TENNIS,
   parseNiveau,
+  estAdulte,
   type Niveau,
 } from "@/lib/data/niveaux";
 
@@ -100,6 +102,95 @@ export function NiveauSelect({
         </option>
       ))}
     </select>
+  );
+}
+
+/**
+ * Sélecteur de niveau attribué PAR ÉLÈVE. Source de vérité = table
+ * niveaux_eleves. Autonome : enregistre via l'API et rafraîchit la page
+ * (toutes les vues du même élève se synchronisent au refresh).
+ *
+ * - Pour les adultes (≥ 18 ans), aucun sélecteur (le niveau Galaxie ne les
+ *   concerne pas) → on affiche un discret « — ».
+ * - Le niveau déclaré par la famille s'affiche en hint si fourni et que le
+ *   prof n'a pas encore attribué de niveau.
+ */
+export function NiveauEleveSelect({
+  eleveKey,
+  nom,
+  prenom,
+  dateNaissance,
+  value,
+  declared,
+}: {
+  eleveKey: string;
+  nom: string | null | undefined;
+  prenom: string | null | undefined;
+  dateNaissance: string | null | undefined;
+  /** Code niveau actuellement attribué (depuis la table niveaux_eleves) */
+  value: string | null | undefined;
+  /** Niveau déclaré par la famille (affiché en hint) */
+  declared?: string | null;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [localValue, setLocalValue] = useState<string | null>(value ?? null);
+
+  if (estAdulte(dateNaissance)) {
+    return <span className="text-gray-300 text-xs">—</span>;
+  }
+
+  const current = parseNiveau(localValue);
+
+  async function save(newCode: string) {
+    const next = newCode === "" ? null : newCode;
+    setLocalValue(next); // feedback immédiat
+    startTransition(async () => {
+      await fetch("/api/admin/niveaux", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eleve_key: eleveKey,
+          nom: nom ?? null,
+          prenom: prenom ?? null,
+          niveau: next,
+        }),
+      });
+      router.refresh();
+    });
+  }
+
+  return (
+    <div>
+      <select
+        value={current?.code ?? ""}
+        disabled={pending}
+        onChange={(e) => save(e.target.value)}
+        className="text-xs px-1.5 py-1 rounded border border-gray-300"
+        style={
+          current
+            ? {
+                backgroundColor: current.bg,
+                color: current.text,
+                borderColor: current.border,
+                fontWeight: 600,
+              }
+            : undefined
+        }
+      >
+        <option value="">— Niveau —</option>
+        {NIVEAUX_TENNIS.map((n) => (
+          <option key={n.code} value={n.code}>
+            {n.label}
+          </option>
+        ))}
+      </select>
+      {!current && declared ? (
+        <div className="mt-1 text-[10px] text-gray-400 leading-tight max-w-[130px]">
+          Famille&nbsp;: {declared}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

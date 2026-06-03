@@ -54,7 +54,13 @@ const BY_CODE = new Map(NIVEAUX_TENNIS.map((n) => [n.code, n]));
  *  en niveau structuré. Retourne null si valeur vide ou non reconnue. */
 export function parseNiveau(raw: string | null | undefined): Niveau | null {
   if (!raw) return null;
-  const cleaned = raw.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  let s = raw.trim().toLowerCase();
+  // Retire le contenu entre parenthèses : « rouge (6-7 ans) » → « rouge »
+  s = s.replace(/\([^)]*\)/g, " ");
+  // Retire les mentions d'âge résiduelles : « vert 8-9 ans » → « vert »
+  s = s.replace(/\b\d+\s*(?:-|à|et)?\s*\d*\s*ans?\b.*/g, " ");
+  const cleaned = s.trim().replace(/[\s-]+/g, "_").replace(/^_+|_+$/g, "");
+  if (!cleaned) return null;
   if (BY_CODE.has(cleaned as NiveauCode)) {
     return BY_CODE.get(cleaned as NiveauCode)!;
   }
@@ -75,4 +81,54 @@ export function niveauCodeFromInput(raw: string): NiveauCode | null {
 /** Pour le tri par sévérité/progression (utile dans les listes). */
 export function niveauOrder(raw: string | null | undefined): number {
   return parseNiveau(raw)?.order ?? 999;
+}
+
+/**
+ * Identifiant d'élève stable, partagé entre toutes les vues (stages, école,
+ * archives, annuaire) pour synchroniser le niveau attribué par élève.
+ * Basé sur nom + prénom normalisés (les frères/sœurs ont des prénoms
+ * différents → clés distinctes).
+ */
+export function eleveKey(
+  nom: string | null | undefined,
+  prenom: string | null | undefined,
+): string {
+  const n = (nom ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  const p = (prenom ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  return `np:${n}|${p}`;
+}
+
+/** Âge en années à partir d'une date de naissance (ISO ou texte JJ/MM/AAAA).
+ *  Retourne null si non parsable. Sert à exclure les adultes du niveau. */
+export function ageFromDateNaissance(
+  raw: string | null | undefined,
+): number | null {
+  if (!raw) return null;
+  // pg peut renvoyer un objet Date pour une colonne `date` → on le normalise
+  const str = typeof raw === "string" ? raw : String(raw);
+  let d: Date | null = null;
+  const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    d = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+  } else {
+    const fr = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if (fr) {
+      const y = Number(fr[3]) < 100 ? 2000 + Number(fr[3]) : Number(fr[3]);
+      d = new Date(y, Number(fr[2]) - 1, Number(fr[1]));
+    }
+  }
+  if (!d || Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age >= 0 && age < 120 ? age : null;
+}
+
+/** Un élève est considéré « adulte » (donc hors niveau Galaxie) si son âge
+ *  est >= 18. Sans date de naissance → on considère jeune (on affiche le
+ *  sélecteur). */
+export function estAdulte(dateNaissance: string | null | undefined): boolean {
+  const age = ageFromDateNaissance(dateNaissance);
+  return age !== null && age >= 18;
 }

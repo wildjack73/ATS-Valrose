@@ -25,6 +25,7 @@ import AVerifier from "./AVerifier";
 import { fetchChecksRapport } from "@/lib/admin/checks-queries";
 import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
 import { fetchPaiementsListByInscriptions } from "@/lib/data/paiements";
+import { fetchNiveauxEleves } from "@/lib/data/niveaux-eleves";
 import Annuaire from "./Annuaire";
 import Encaissements from "./Encaissements";
 import {
@@ -162,10 +163,15 @@ export default async function AdminDashboardPage({
   const allEcoleIds = Array.from(
     new Set([...ecole.map((r) => r.id), ...ecoleAll.map((r) => r.id)]),
   );
-  const [paiementsStagesMap, paiementsEcoleMap] = await Promise.all([
-    fetchPaiementsListByInscriptions("stages", allStagesIds),
-    fetchPaiementsListByInscriptions("ecole", allEcoleIds),
-  ]);
+  const [paiementsStagesMap, paiementsEcoleMap, niveauxElevesMap] =
+    await Promise.all([
+      fetchPaiementsListByInscriptions("stages", allStagesIds),
+      fetchPaiementsListByInscriptions("ecole", allEcoleIds),
+      fetchNiveauxEleves(),
+    ]);
+  // Map élève → niveau attribué, sérialisable en plain object pour les
+  // composants client.
+  const niveauxEleves = Object.fromEntries(niveauxElevesMap);
 
   // Maps id → total payé (€) pour le dashboard
   const paiementsStagesTotaux = new Map<string, number>();
@@ -318,6 +324,7 @@ export default async function AdminDashboardPage({
           semaines={bundle?.semaines ?? []}
           optionsF4={bundle?.optionsF4 ?? []}
           paiementsByInscription={Object.fromEntries(paiementsStagesMap)}
+          niveauxEleves={niveauxEleves}
           currentSemaine={sp.semaine}
           currentStatut={sp.statut}
           currentFormule={sp.formule}
@@ -328,6 +335,7 @@ export default async function AdminDashboardPage({
           paiementsByInscription={Object.fromEntries(paiementsEcoleMap)}
           coursTennis={bundle?.coursTennis ?? []}
           coursPadel={bundle?.coursPadel ?? []}
+          niveauxEleves={niveauxEleves}
           currentStatut={sp.statut}
           currentType={sp.type}
           currentCours={sp.cours}
@@ -368,7 +376,7 @@ export default async function AdminDashboardPage({
           <AVerifier rapport={aVerifierRapport} />
         ) : null
       ) : tab === "annuaire" ? (
-        <Annuaire clients={annuaireData ?? []} />
+        <Annuaire clients={annuaireData ?? []} niveauxEleves={niveauxEleves} />
       ) : tab === "encaissements" ? (
         <Encaissements
           stages={stagesAll}
@@ -419,10 +427,14 @@ export default async function AdminDashboardPage({
             <HistoriqueTable
               rows={historique}
               semaines={historiqueSemaines}
+              niveauxEleves={niveauxEleves}
               currentSemaine={sp.semaine}
             />
           ) : (
-            <HistoriqueEcoleTable rows={historiqueEcole} />
+            <HistoriqueEcoleTable
+              rows={historiqueEcole}
+              niveauxEleves={niveauxEleves}
+            />
           )}
         </div>
       )}

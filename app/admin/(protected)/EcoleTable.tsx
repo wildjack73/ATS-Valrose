@@ -27,7 +27,8 @@ import {
   type PaiementClient,
 } from "./PaiementsPanel";
 import { IconMail, IconPhone, IconTrash, IconPause, IconPlay } from "./Icons";
-import { NiveauSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { NiveauEleveSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { eleveKey } from "@/lib/data/niveaux";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -36,6 +37,7 @@ export default function EcoleTable({
   paiementsByInscription,
   coursTennis,
   coursPadel,
+  niveauxEleves,
   currentStatut,
   currentType,
   currentCours,
@@ -47,6 +49,7 @@ export default function EcoleTable({
    *  même quand il n'y a pas encore d'inscription). */
   coursTennis: CoursEcole[];
   coursPadel: CoursEcole[];
+  niveauxEleves: Record<string, string>;
   currentStatut?: string;
   currentType?: string;
   currentCours?: string;
@@ -139,12 +142,22 @@ export default function EcoleTable({
         const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      // Filtre niveau (sur le niveau attribué par le prof)
-      if (!matchesNiveau(r.niveau_attribue, filterNiveau || undefined))
-        return false;
+      // Filtre niveau (sur le niveau attribué par le prof, par élève)
+      if (filterNiveau) {
+        const lvl = niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null;
+        if (!matchesNiveau(lvl, filterNiveau)) return false;
+      }
       return true;
     });
-  }, [rows, currentType, currentCours, currentCreneau, search, filterNiveau]);
+  }, [
+    rows,
+    currentType,
+    currentCours,
+    currentCreneau,
+    search,
+    filterNiveau,
+    niveauxEleves,
+  ]);
 
   async function patchInscription(id: string, patch: object) {
     startTransition(async () => {
@@ -307,6 +320,7 @@ export default function EcoleTable({
                   key={r.id}
                   row={r}
                   paiements={paiementsByInscription[r.id] ?? []}
+                  niveauAttribue={niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -327,6 +341,7 @@ export default function EcoleTable({
 function EcoleRowGroup({
   row,
   paiements,
+  niveauAttribue,
   open,
   toggle,
   patch,
@@ -335,6 +350,7 @@ function EcoleRowGroup({
 }: {
   row: InscriptionEcoleRow;
   paiements: PaiementClient[];
+  niveauAttribue: string | null;
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
@@ -380,16 +396,14 @@ function EcoleRowGroup({
           </div>
         </td>
         <td className="p-3 align-top">
-          <NiveauSelect
-            value={row.niveau_attribue}
-            disabled={pending}
-            onSave={(v) => patch({ niveau_attribue: v })}
+          <NiveauEleveSelect
+            eleveKey={eleveKey(row.nom, row.prenom)}
+            nom={row.nom}
+            prenom={row.prenom}
+            dateNaissance={row.date_naissance}
+            value={niveauAttribue}
+            declared={row.niveau}
           />
-          {row.niveau ? (
-            <div className="mt-1 text-[10px] text-gray-400 leading-tight max-w-[120px]">
-              Famille&nbsp;: {row.niveau}
-            </div>
-          ) : null}
         </td>
         <td className="p-3 text-xs align-top max-w-[180px]">
           <a

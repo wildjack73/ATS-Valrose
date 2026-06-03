@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import type { InscriptionEcoleHistoriqueRow } from "@/lib/admin/queries";
-import { NiveauBadge, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { NiveauEleveSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { eleveKey } from "@/lib/data/niveaux";
 
 export default function HistoriqueEcoleTable({
   rows,
+  niveauxEleves,
 }: {
   rows: InscriptionEcoleHistoriqueRow[];
+  niveauxEleves: Record<string, string>;
 }) {
   const [search, setSearch] = useState("");
   const [filterNiveau, setFilterNiveau] = useState("");
@@ -19,10 +22,13 @@ export default function HistoriqueEcoleTable({
         const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (!matchesNiveau(r.niveau, filterNiveau || undefined)) return false;
+      if (filterNiveau) {
+        const lvl = niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null;
+        if (!matchesNiveau(lvl, filterNiveau)) return false;
+      }
       return true;
     });
-  }, [rows, search, filterNiveau]);
+  }, [rows, search, filterNiveau, niveauxEleves]);
 
   const total = filteredRows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
 
@@ -106,8 +112,15 @@ export default function HistoriqueEcoleTable({
                         {r.date_naissance ?? ""}
                       </div>
                     </td>
-                    <td className="p-3 w-24">
-                      <NiveauBadge value={r.niveau} />
+                    <td className="p-3 w-28">
+                      <NiveauEleveSelect
+                        eleveKey={eleveKey(r.nom, r.prenom)}
+                        nom={r.nom}
+                        prenom={r.prenom}
+                        dateNaissance={r.date_naissance}
+                        value={niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null}
+                        declared={r.niveau}
+                      />
                     </td>
                     <td className="p-3 text-xs">
                       <div>{r.email ?? "—"}</div>

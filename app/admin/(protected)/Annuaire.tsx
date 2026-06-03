@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import type { ClientRow } from "@/lib/admin/annuaire-queries";
-import { NiveauBadge, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { NiveauEleveSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { eleveKey } from "@/lib/data/niveaux";
 
 interface Props {
   clients: ClientRow[];
+  niveauxEleves: Record<string, string>;
 }
 
-export default function Annuaire({ clients }: Props) {
+export default function Annuaire({ clients, niveauxEleves }: Props) {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "stage" | "ecole">("all");
   const [filterSaison, setFilterSaison] = useState<string>("all");
@@ -48,11 +50,14 @@ export default function Annuaire({ clients }: Props) {
       if (filterSaison !== "all") {
         if (!c.tags.some((t) => t.saison === filterSaison)) return false;
       }
-      // Filtre niveau
-      if (!matchesNiveau(c.niveau, filterNiveau || undefined)) return false;
+      // Filtre niveau (sur le niveau attribué par élève)
+      if (filterNiveau) {
+        const lvl = niveauxEleves[eleveKey(c.nom, c.prenom)] ?? null;
+        if (!matchesNiveau(lvl, filterNiveau)) return false;
+      }
       return true;
     });
-  }, [clients, search, filterType, filterSaison, filterNiveau]);
+  }, [clients, search, filterType, filterSaison, filterNiveau, niveauxEleves]);
 
   function exportCSV() {
     const rows = filtered.map((c) => ({
@@ -162,13 +167,17 @@ export default function Annuaire({ clients }: Props) {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-gray-500">
+                  <td colSpan={6} className="p-8 text-center text-gray-500">
                     Aucun client ne correspond à la recherche.
                   </td>
                 </tr>
               ) : (
                 filtered.map((c) => (
-                  <ClientRowComp key={c.key} client={c} />
+                  <ClientRowComp
+                    key={c.key}
+                    client={c}
+                    niveauAttribue={niveauxEleves[eleveKey(c.nom, c.prenom)] ?? null}
+                  />
                 ))
               )}
             </tbody>
@@ -179,7 +188,13 @@ export default function Annuaire({ clients }: Props) {
   );
 }
 
-function ClientRowComp({ client }: { client: ClientRow }) {
+function ClientRowComp({
+  client,
+  niveauAttribue,
+}: {
+  client: ClientRow;
+  niveauAttribue: string | null;
+}) {
   return (
     <tr className="border-t hover:bg-gray-50">
       <td className="p-3 align-top">
@@ -193,7 +208,14 @@ function ClientRowComp({ client }: { client: ClientRow }) {
         ) : null}
       </td>
       <td className="p-3 align-top">
-        <NiveauBadge value={client.niveau} />
+        <NiveauEleveSelect
+          eleveKey={eleveKey(client.nom, client.prenom)}
+          nom={client.nom}
+          prenom={client.prenom}
+          dateNaissance={client.date_naissance}
+          value={niveauAttribue}
+          declared={client.niveau}
+        />
       </td>
       <td className="p-3 text-xs align-top max-w-[200px]">
         {client.email ? (

@@ -3,7 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { InscriptionStageHistoriqueRow } from "@/lib/admin/queries";
-import { NiveauBadge, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { NiveauEleveSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { eleveKey } from "@/lib/data/niveaux";
 
 // --- Helpers ---------------------------------------------------------------
 
@@ -78,10 +79,12 @@ type Group = {
 export default function HistoriqueTable({
   rows,
   semaines,
+  niveauxEleves,
   currentSemaine,
 }: {
   rows: InscriptionStageHistoriqueRow[];
   semaines: string[];
+  niveauxEleves: Record<string, string>;
   currentSemaine?: string;
 }) {
   const router = useRouter();
@@ -105,10 +108,13 @@ export default function HistoriqueTable({
         const hay = `${r.prenom ?? ""} ${r.nom ?? ""} ${r.email ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (!matchesNiveau(r.niveau, filterNiveau || undefined)) return false;
+      if (filterNiveau) {
+        const lvl = niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null;
+        if (!matchesNiveau(lvl, filterNiveau)) return false;
+      }
       return true;
     });
-  }, [rows, search, filterNiveau]);
+  }, [rows, search, filterNiveau, niveauxEleves]);
 
   const grandTotal = filteredRows.reduce((s, r) => s + (r.prix_estime ?? 0), 0);
 
@@ -223,9 +229,18 @@ export default function HistoriqueTable({
                             {r.date_naissance ?? ""}
                           </div>
                         </td>
-                        {/* Niveau */}
-                        <td className="p-3 w-24">
-                          <NiveauBadge value={r.niveau} />
+                        {/* Niveau (attribué par élève, éditable) */}
+                        <td className="p-3 w-28">
+                          <NiveauEleveSelect
+                            eleveKey={eleveKey(r.nom, r.prenom)}
+                            nom={r.nom}
+                            prenom={r.prenom}
+                            dateNaissance={r.date_naissance}
+                            value={
+                              niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null
+                            }
+                            declared={r.niveau}
+                          />
                         </td>
                         {/* Contact */}
                         <td className="p-3 text-xs w-64">

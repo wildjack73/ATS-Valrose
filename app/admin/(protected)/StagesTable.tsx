@@ -21,7 +21,8 @@ import {
   type PaiementClient,
 } from "./PaiementsPanel";
 import { IconMail, IconPhone, IconTrash, IconPause, IconPlay } from "./Icons";
-import { NiveauBadge, NiveauSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { NiveauEleveSelect, NiveauFilter, matchesNiveau } from "./NiveauUI";
+import { eleveKey } from "@/lib/data/niveaux";
 
 const STATUTS = ["en_attente", "paye", "annule"] as const;
 
@@ -37,6 +38,7 @@ export default function StagesTable({
   semaines,
   optionsF4,
   paiementsByInscription,
+  niveauxEleves,
   currentSemaine,
   currentStatut,
   currentFormule,
@@ -45,6 +47,7 @@ export default function StagesTable({
   semaines: Semaine[];
   optionsF4: OptionF4[];
   paiementsByInscription: Record<string, PaiementClient[]>;
+  niveauxEleves: Record<string, string>;
   currentSemaine?: string;
   currentStatut?: string;
   currentFormule?: string;
@@ -63,11 +66,13 @@ export default function StagesTable({
         const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (!matchesNiveau(r.niveau_attribue, filterNiveau || undefined))
-        return false;
+      if (filterNiveau) {
+        const lvl = niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null;
+        if (!matchesNiveau(lvl, filterNiveau)) return false;
+      }
       return true;
     });
-  }, [rows, search, filterNiveau]);
+  }, [rows, search, filterNiveau, niveauxEleves]);
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -197,6 +202,7 @@ export default function StagesTable({
                   row={r}
                   optionsF4={optionsF4}
                   paiements={paiementsByInscription[r.id] ?? []}
+                  niveauAttribue={niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -220,6 +226,7 @@ function RowGroup({
   row,
   optionsF4,
   paiements,
+  niveauAttribue,
   open,
   toggle,
   patch,
@@ -229,6 +236,7 @@ function RowGroup({
   row: InscriptionStageRow;
   optionsF4: OptionF4[];
   paiements: PaiementClient[];
+  niveauAttribue: string | null;
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
@@ -267,16 +275,14 @@ function RowGroup({
           </div>
         </td>
         <td className="p-3 align-top">
-          <NiveauSelect
-            value={row.niveau_attribue}
-            disabled={pending}
-            onSave={(v) => patch({ niveau_attribue: v })}
+          <NiveauEleveSelect
+            eleveKey={eleveKey(row.nom, row.prenom)}
+            nom={row.nom}
+            prenom={row.prenom}
+            dateNaissance={row.date_naissance}
+            value={niveauAttribue}
+            declared={row.niveau}
           />
-          {row.niveau ? (
-            <div className="mt-1 text-[10px] text-gray-400 leading-tight max-w-[120px]">
-              Famille&nbsp;: {row.niveau}
-            </div>
-          ) : null}
         </td>
         <td className="p-3 text-xs align-top max-w-[180px]">
           <a
