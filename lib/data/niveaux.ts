@@ -20,7 +20,10 @@ export type NiveauCode =
   | "orange_2"
   | "vert"
   | "vert_1"
-  | "vert_2";
+  | "vert_2"
+  | "multi_raquettes_1"
+  | "multi_raquettes_2"
+  | "multi_raquettes_3";
 
 export interface Niveau {
   code: NiveauCode;
@@ -46,6 +49,9 @@ export const NIVEAUX_TENNIS: Niveau[] = [
   { code: "vert",     label: "Vert",     bg: "#22c55e", text: "#ffffff", border: "#16a34a", order: 9 },
   { code: "vert_1",   label: "Vert 1",   bg: "#16a34a", text: "#ffffff", border: "#15803d", order: 10 },
   { code: "vert_2",   label: "Vert 2",   bg: "#15803d", text: "#ffffff", border: "#166534", order: 11 },
+  { code: "multi_raquettes_1", label: "Multi raquettes 1", bg: "#22d3ee", text: "#083344", border: "#06b6d4", order: 12 },
+  { code: "multi_raquettes_2", label: "Multi raquettes 2", bg: "#0891b2", text: "#ffffff", border: "#0e7490", order: 13 },
+  { code: "multi_raquettes_3", label: "Multi raquettes 3", bg: "#155e75", text: "#ffffff", border: "#164e63", order: 14 },
 ];
 
 const BY_CODE = new Map(NIVEAUX_TENNIS.map((n) => [n.code, n]));
