@@ -551,13 +551,15 @@ function EcoleRowGroup({
       ) : null}
       {open ? (
         <tr className="border-t bg-ocre/5">
-          <td colSpan={9} className="p-4">
-            <EcoleEditPanel
-              row={row}
-              paiements={paiements}
-              patch={patch}
-              pending={pending}
-            />
+          <td colSpan={9} className="p-0 sticky left-0">
+            <div className="p-4 w-[min(100vw,900px)]">
+              <EcoleEditPanel
+                row={row}
+                paiements={paiements}
+                patch={patch}
+                pending={pending}
+              />
+            </div>
           </td>
         </tr>
       ) : null}
