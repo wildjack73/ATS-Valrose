@@ -10,24 +10,6 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-navy via-[#0a3a52] to-cyan-club text-white animate-gradient-x">
         <HeroBackground />
 
-        {/* Balle de tennis décorative qui traverse le hero (desktop). Purement
-            décorative depuis le passage à 3 entrées : elle n'est plus liée à
-            des boutons dans les coins, mais conserve l'animation rally. */}
-        <div
-          aria-hidden="true"
-          className="hidden md:block absolute inset-0 z-0 pointer-events-none"
-        >
-          <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20">
-            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/3 h-0 pointer-events-none">
-              <div className="rally-x pointer-events-none">
-                <div className="rally-y pointer-events-none">
-                  <RallyBall />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* === Bloc texte centré (badge + titre + paragraphe) — max-w-6xl */}
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28 lg:py-32 text-center">
           <p className="animate-fade-in-up mb-6">
@@ -58,52 +40,66 @@ export default function HomePage() {
             multi-activités. Encadré par des moniteurs qualifiés.
           </p>
 
-          {/* === 3 entrées thématisées : raquette / filet / raquette === */}
+          {/* === 3 entrées : raquette (Stages) · filet (École) · raquette
+              (Adultes). Sur desktop, la balle rebondit sur les 2 raquettes
+              gauche/droite (rally). Sur mobile : empilé, sans rally. === */}
           <div
-            className="relative z-10 animate-fade-in-up mt-10 flex flex-col sm:flex-row flex-wrap gap-4 justify-center items-stretch"
+            className="relative z-10 animate-fade-in-up mt-12 max-w-4xl mx-auto"
             style={{ animationDelay: "400ms" }}
           >
-            {/* Gauche — Stages (raquette) */}
-            <Link
-              href="/stages"
-              className="group rounded-xl bg-yellow-club text-navy px-7 py-4 font-bold text-base sm:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-3"
-            >
-              <IconRacketSmall className="w-7 h-7 text-navy -rotate-12 transition-transform group-hover:-rotate-[18deg] group-hover:scale-110" />
-              <span>S&apos;inscrire à un stage</span>
-            </Link>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              {/* Gauche — Stages (raquette, la balle rebondit dessus) */}
+              <Link
+                href="/stages"
+                className="impact-pulse-left group rounded-xl bg-yellow-club text-navy px-6 py-4 font-bold text-base lg:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5"
+              >
+                <IconRacketSmall className="w-7 h-7 text-navy -rotate-12 transition-transform group-hover:-rotate-[18deg] group-hover:scale-110" />
+                <span>S&apos;inscrire à un stage</span>
+              </Link>
 
-            {/* Milieu — École jeunes (filet de tennis) */}
-            <Link
-              href="/ecole?public=jeunes"
-              className="group relative overflow-hidden rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-base sm:text-lg border border-white/30 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
-            >
-              {/* Quadrillage façon filet */}
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(0deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 9px), repeating-linear-gradient(90deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 9px)",
-                }}
-              />
-              {/* Bande haute du filet */}
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-white/70"
-              />
-              <span className="relative z-10">
-                École <span className="text-white/80 font-semibold">(jeunes)</span>
-              </span>
-            </Link>
+              {/* Milieu — École jeunes (filet de tennis) */}
+              <Link
+                href="/ecole?public=jeunes"
+                className="group relative overflow-hidden rounded-xl bg-white/10 hover:bg-white/20 text-white px-6 py-4 font-bold text-base lg:text-lg border border-white/30 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center"
+              >
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(0deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 9px), repeating-linear-gradient(90deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 9px)",
+                  }}
+                />
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-white/70"
+                />
+                <span className="relative z-10">
+                  École{" "}
+                  <span className="text-white/80 font-semibold">(jeunes)</span>
+                </span>
+              </Link>
 
-            {/* Droite — Cours adultes (raquette) */}
-            <Link
-              href="/ecole?public=adultes"
-              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-7 py-4 font-bold text-base sm:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-3"
-            >
-              <span>Cours collectifs adultes</span>
-              <IconRacketSmall className="w-7 h-7 text-white rotate-12 transition-transform group-hover:rotate-[18deg] group-hover:scale-110 scale-x-[-1]" />
-            </Link>
+              {/* Droite — Cours adultes (raquette, la balle rebondit dessus) */}
+              <Link
+                href="/ecole?public=adultes"
+                className="impact-pulse-right group rounded-xl bg-white/10 hover:bg-white/20 text-white px-6 py-4 font-bold text-base lg:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5"
+              >
+                <span>Cours collectifs adultes</span>
+                <IconRacketSmall className="w-7 h-7 text-white rotate-12 transition-transform group-hover:rotate-[18deg] group-hover:scale-110 scale-x-[-1]" />
+              </Link>
+            </div>
+
+            {/* Balle qui rebondit sur les raquettes (desktop uniquement).
+                Overlay aligné sur le haut de la rangée de boutons → la balle
+                atterrit juste au-dessus des raquettes gauche/droite. */}
+            <div className="hidden sm:block absolute inset-x-0 top-0 h-0 z-30 pointer-events-none">
+              <div className="rally-x pointer-events-none">
+                <div className="rally-y pointer-events-none">
+                  <RallyBall />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
