@@ -64,7 +64,10 @@ export default async function TarifsPage() {
         <Block
           color="ocre"
           title="École de Tennis"
-          cta={{ href: "/ecole", label: "S'inscrire à l'école" }}
+          ctas={[
+            { href: "/ecole?public=jeunes", label: "Inscription jeunes & enfants" },
+            { href: "/cours", label: "Inscription adultes" },
+          ]}
         >
           <Table
             rows={bundle.coursTennis.map((c) => ({
@@ -78,7 +81,14 @@ export default async function TarifsPage() {
 
         {/* ÉCOLE PADEL */}
         {bundle.coursPadel.length > 0 ? (
-          <Block color="ocre" title="École de Padel">
+          <Block
+            color="ocre"
+            title="École de Padel"
+            ctas={[
+              { href: "/ecole?public=jeunes", label: "Inscription jeunes & enfants" },
+              { href: "/cours", label: "Inscription adultes" },
+            ]}
+          >
             <Table
               rows={bundle.coursPadel.map((c) => ({
                 label: c.label,
@@ -94,7 +104,7 @@ export default async function TarifsPage() {
         <Block
           color="cyan"
           title="Stages de vacances"
-          cta={{ href: "/stages", label: "S'inscrire à un stage" }}
+          ctas={[{ href: "/stages", label: "S'inscrire à un stage" }]}
         >
           <Table
             rows={[
@@ -200,12 +210,12 @@ function Block({
   color,
   title,
   children,
-  cta,
+  ctas,
 }: {
   color: "navy" | "cyan" | "ocre";
   title: string;
   children: React.ReactNode;
-  cta?: { href: string; label: string };
+  ctas?: { href: string; label: string }[];
 }) {
   const accent =
     color === "cyan"
@@ -226,14 +236,17 @@ function Block({
         <h2 className="text-xl sm:text-2xl font-bold text-navy">{title}</h2>
       </header>
       <div className="px-6 py-5">{children}</div>
-      {cta ? (
-        <footer className="px-6 py-4 bg-gray-50 border-t">
-          <Link
-            href={cta.href}
-            className={`inline-block rounded-lg px-4 py-2 font-semibold text-sm ${ctaCls}`}
-          >
-            {cta.label} →
-          </Link>
+      {ctas && ctas.length > 0 ? (
+        <footer className="px-6 py-4 bg-gray-50 border-t flex flex-wrap gap-3">
+          {ctas.map((c) => (
+            <Link
+              key={c.href + c.label}
+              href={c.href}
+              className={`inline-block rounded-lg px-4 py-2 font-semibold text-sm ${ctaCls}`}
+            >
+              {c.label} →
+            </Link>
+          ))}
         </footer>
       ) : null}
     </section>
