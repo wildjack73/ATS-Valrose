@@ -213,11 +213,13 @@ body {
    rangée de boutons et ne percute pas le titre (nouveau layout). */
 @keyframes rally-y {
   0%, 100% {
-    /* Balle = 40px. -40px → son BAS touche pile le sommet du bouton. */
-    transform: translateY(-40px) rotate(0deg);
+    /* Balle = 40px. -38px → son BAS chevauche de 2px le sommet du bouton
+       (contact net visible). */
+    transform: translateY(-38px) rotate(0deg);
   }
   50% {
-    transform: translateY(-150px) rotate(180deg);
+    /* Arc volontairement bas pour un rebond « claquant » bien lisible. */
+    transform: translateY(-104px) rotate(180deg);
   }
 }
 
