@@ -37,18 +37,31 @@ function toggleInArray<T>(arr: T[], value: T): T[] {
 export default function EcoleForm({
   bundle,
   slotsOccupes,
+  publicCible,
 }: {
   bundle: TarifsBundle;
   /** Compteur : créneau normalisé → nb d'inscriptions l'ayant sélectionné.
    *  Sert à afficher « reste X » / « COMPLET » dynamiquement. */
   slotsOccupes: Record<string, number>;
+  /** Cible : « jeunes » (enfants/ados) ou « adultes » (cours collectifs
+   *  adultes). undefined = tous les cours (entrée générique). */
+  publicCible?: "jeunes" | "adultes";
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const COURS_TENNIS = bundle.coursTennis;
-  const COURS_PADEL = bundle.coursPadel;
+  // Les cours « adultes » ont un code commençant par « cours_adultes ».
+  const isCoursAdulte = (code: string) => code.startsWith("cours_adultes");
+  const filtreCours = (c: CoursEcole) =>
+    publicCible === "adultes"
+      ? isCoursAdulte(c.code)
+      : publicCible === "jeunes"
+        ? !isCoursAdulte(c.code)
+        : true;
+
+  const COURS_TENNIS = bundle.coursTennis.filter(filtreCours);
+  const COURS_PADEL = bundle.coursPadel.filter(filtreCours);
   const LICENCE_FFT = bundle.licenceFft;
 
   const {
@@ -273,6 +286,7 @@ export default function EcoleForm({
         title="Choix des cours"
         description="Sélectionnez tous les cours souhaités. Le total se met à jour automatiquement."
       >
+        {COURS_TENNIS.length > 0 ? (
         <Controller
           control={control}
           name="cours_tennis"
@@ -346,7 +360,9 @@ export default function EcoleForm({
             </Field>
           )}
         />
+        ) : null}
 
+        {COURS_PADEL.length > 0 ? (
         <Controller
           control={control}
           name="cours_padel"
@@ -420,6 +436,7 @@ export default function EcoleForm({
             </Field>
           )}
         />
+        ) : null}
 
       </Section>
 

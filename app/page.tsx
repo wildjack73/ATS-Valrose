@@ -10,46 +10,15 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-navy via-[#0a3a52] to-cyan-club text-white animate-gradient-x">
         <HeroBackground />
 
-        {/* === DESKTOP : boutons absolus dans les coins du hero ============ */}
-        {/* Le wrapper absolu couvre toute la section. À l'intérieur on
-            utilise un flex items-center justify-between pour répartir les
-            2 boutons aux 2 extrémités de manière fiable (pas de right-
-            qui peut foirer si la largeur du parent n'est pas calculée). */}
+        {/* Balle de tennis décorative qui traverse le hero (desktop). Purement
+            décorative depuis le passage à 3 entrées : elle n'est plus liée à
+            des boutons dans les coins, mais conserve l'animation rally. */}
         <div
-          aria-hidden="false"
-          className="hidden md:block absolute inset-0 z-10 pointer-events-none animate-fade-in-up"
-          style={{ animationDelay: "400ms" }}
+          aria-hidden="true"
+          className="hidden md:block absolute inset-0 z-0 pointer-events-none"
         >
-          <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20 flex items-center justify-between">
-            <Link
-              href="/stages"
-              className="impact-pulse-left group pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
-            >
-              <span className="relative z-10 inline-flex items-center gap-2">
-                S&apos;inscrire à un stage
-                <span className="transition-transform group-hover:translate-x-1">
-                  →
-                </span>
-              </span>
-            </Link>
-
-            <Link
-              href="/ecole"
-              className="impact-pulse-right group pointer-events-auto z-20 inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
-            >
-              <span className="inline-flex items-center gap-2">
-                S&apos;inscrire à l&apos;école
-                <span className="transition-transform group-hover:translate-x-1">
-                  →
-                </span>
-              </span>
-            </Link>
-
-            {/* Rally ball entre les 2 boutons, passe DEVANT eux (z-30 > z-20)
-                et rebondit sur leur dessus (translateY décalé dans rally-y).
-                pointer-events-none explicite à tous les niveaux pour que la
-                balle ne bloque JAMAIS les clics sur les boutons en dessous. */}
-            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/2 -translate-y-1/2 h-0 z-30 pointer-events-none">
+          <div className="relative h-full w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-20">
+            <div className="absolute inset-x-6 sm:inset-x-10 lg:inset-x-20 top-1/3 h-0 pointer-events-none">
               <div className="rally-x pointer-events-none">
                 <div className="rally-y pointer-events-none">
                   <RallyBall />
@@ -89,31 +58,36 @@ export default function HomePage() {
             multi-activités. Encadré par des moniteurs qualifiés.
           </p>
 
-          {/* === MOBILE : boutons en flow normal sous le paragraphe === */}
+          {/* === 3 entrées : Stages / École jeunes / Cours adultes === */}
           <div
-            className="md:hidden animate-fade-in-up mt-10 flex flex-wrap gap-4 justify-center"
+            className="relative z-10 animate-fade-in-up mt-10 flex flex-col sm:flex-row flex-wrap gap-4 justify-center items-stretch"
             style={{ animationDelay: "400ms" }}
           >
             <Link
               href="/stages"
-              className="impact-pulse-left group relative overflow-visible rounded-xl bg-yellow-club text-navy px-8 py-4 font-bold text-base shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5"
+              className="group rounded-xl bg-yellow-club text-navy px-7 py-4 font-bold text-base sm:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
             >
-              <span className="relative z-10 inline-flex items-center gap-2">
-                S&apos;inscrire à un stage
-                <span className="transition-transform group-hover:translate-x-1">
-                  →
-                </span>
+              S&apos;inscrire à un stage
+              <span className="transition-transform group-hover:translate-x-1">
+                →
               </span>
             </Link>
             <Link
-              href="/ecole"
-              className="impact-pulse-right group rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-base border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5"
+              href="/ecole?public=jeunes"
+              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-7 py-4 font-bold text-base sm:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
             >
-              <span className="inline-flex items-center gap-2">
-                S&apos;inscrire à l&apos;école
-                <span className="transition-transform group-hover:translate-x-1">
-                  →
-                </span>
+              École <span className="text-white/70 font-semibold">(jeunes)</span>
+              <span className="transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+            <Link
+              href="/ecole?public=adultes"
+              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-7 py-4 font-bold text-base sm:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
+            >
+              Cours collectifs adultes
+              <span className="transition-transform group-hover:translate-x-1">
+                →
               </span>
             </Link>
           </div>
@@ -176,12 +150,12 @@ export default function HomePage() {
                 Choisissez votre parcours
               </h2>
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-                Deux formules pour profiter du club selon votre rythme.
+                Trois parcours pour profiter du club selon votre profil.
               </p>
             </div>
           </Reveal>
 
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             {/* STAGES */}
             <Reveal delay={100}>
               <Link
@@ -237,10 +211,10 @@ export default function HomePage() {
               </Link>
             </Reveal>
 
-            {/* ÉCOLE */}
-            <Reveal delay={250}>
+            {/* ÉCOLE — JEUNES & ENFANTS */}
+            <Reveal delay={200}>
               <Link
-                href="/ecole"
+                href="/ecole?public=jeunes"
                 className="card-3d group relative block rounded-3xl overflow-hidden bg-white border-2 border-ocre/20 shadow-xl"
               >
                 <div className="relative bg-gradient-to-br from-ocre via-ocre to-clay text-white p-8 overflow-hidden">
@@ -248,8 +222,8 @@ export default function HomePage() {
                   <p className="text-[10px] uppercase tracking-[0.3em] text-yellow-club font-bold">
                     Saison annuelle
                   </p>
-                  <h3 className="text-3xl font-extrabold mt-2 tracking-tight">
-                    École de tennis
+                  <h3 className="text-2xl font-extrabold mt-2 tracking-tight">
+                    École — Jeunes &amp; enfants
                   </h3>
                   <p className="text-4xl font-extrabold mt-6">
                     <span className="text-white">250€</span>
@@ -272,15 +246,59 @@ export default function HomePage() {
                     </li>
                     <li className="flex gap-3 items-start">
                       <Check />
-                      <span>Cours adultes (annuel ou trimestre)</span>
-                    </li>
-                    <li className="flex gap-3 items-start">
-                      <Check />
-                      <span>École de padel (perfectionnement + adultes)</span>
+                      <span>Perfectionnement padel (7-17 ans)</span>
                     </li>
                   </ul>
                   <p className="mt-8 inline-flex items-center gap-2 text-ocre font-bold group-hover:text-clay transition-colors">
-                    S&apos;inscrire à l&apos;école
+                    S&apos;inscrire
+                    <span className="transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </p>
+                </div>
+              </Link>
+            </Reveal>
+
+            {/* COURS COLLECTIFS ADULTES */}
+            <Reveal delay={350}>
+              <Link
+                href="/ecole?public=adultes"
+                className="card-3d group relative block rounded-3xl overflow-hidden bg-white border-2 border-violet-300/40 shadow-xl"
+              >
+                <div className="relative bg-gradient-to-br from-violet-600 via-violet-700 to-purple-900 text-white p-8 overflow-hidden">
+                  <IconRacket className="absolute -right-6 -bottom-6 w-44 h-44 text-white/15 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-110" />
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-yellow-club font-bold">
+                    Adultes (18 ans et +)
+                  </p>
+                  <h3 className="text-2xl font-extrabold mt-2 tracking-tight">
+                    Cours collectifs adultes
+                  </h3>
+                  <p className="text-4xl font-extrabold mt-6">
+                    <span className="text-white">180€</span>
+                    <span className="text-base font-normal text-white/70 mx-1">
+                      à
+                    </span>
+                    <span className="text-white">680€</span>
+                  </p>
+                  <p className="text-sm text-white/70">annuel ou au trimestre</p>
+                </div>
+                <div className="p-8">
+                  <ul className="space-y-3 text-sm text-gray-700">
+                    <li className="flex gap-3 items-start">
+                      <Check />
+                      <span>Cours adultes tennis (1h30 / semaine)</span>
+                    </li>
+                    <li className="flex gap-3 items-start">
+                      <Check />
+                      <span>Cours adultes padel (1h30 / semaine)</span>
+                    </li>
+                    <li className="flex gap-3 items-start">
+                      <Check />
+                      <span>Saison complète ou un trimestre</span>
+                    </li>
+                  </ul>
+                  <p className="mt-8 inline-flex items-center gap-2 text-violet-700 font-bold group-hover:text-purple-900 transition-colors">
+                    S&apos;inscrire
                     <span className="transition-transform group-hover:translate-x-1">
                       →
                     </span>

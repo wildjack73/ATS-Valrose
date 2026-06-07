@@ -11,11 +11,27 @@ export const metadata = {
     "Inscription annuelle à l'École de Tennis Valrose : tennis, padel.",
 };
 
-export default async function EcolePage() {
+export default async function EcolePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ public?: string }>;
+}) {
+  const sp = await searchParams;
+  const publicCible: "jeunes" | "adultes" | undefined =
+    sp.public === "adultes"
+      ? "adultes"
+      : sp.public === "jeunes"
+        ? "jeunes"
+        : undefined;
+  const estAdultes = publicCible === "adultes";
+
   const bundle = await getActiveTarifsBundle();
   const jpo = bundle ? await fetchJpoEcole(bundle.saisonEcole.id) : null;
+  // La bandeau JPO concerne les enfants → on le masque sur l'entrée adultes.
   const jpoVisible =
-    !!jpo && Date.now() < new Date(jpo.visible_jusqu_au).getTime();
+    !estAdultes &&
+    !!jpo &&
+    Date.now() < new Date(jpo.visible_jusqu_au).getTime();
 
   if (!bundle) {
     return (
@@ -44,11 +60,19 @@ export default async function EcolePage() {
       <section className="bg-gradient-to-br from-clay via-ocre to-ocre-light text-white">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
           <h1 className="text-3xl sm:text-4xl font-extrabold">
-            École de Tennis — {bundle.saisonEcole.label}
+            {estAdultes
+              ? "Cours collectifs adultes"
+              : publicCible === "jeunes"
+                ? "École de Tennis — Jeunes & enfants"
+                : "École de Tennis"}{" "}
+            <span className="text-white/80 font-bold">
+              — {bundle.saisonEcole.label}
+            </span>
           </h1>
           <p className="mt-3 text-white/90">
-            Inscription annuelle aux cours de tennis et de padel de
-            l&apos;ATS&nbsp;Valrose.
+            {estAdultes
+              ? "Inscription aux cours collectifs adultes (tennis et padel) de l'ATS Valrose."
+              : "Inscription annuelle aux cours de tennis et de padel de l'ATS Valrose."}
           </p>
         </div>
       </section>
@@ -101,6 +125,7 @@ export default async function EcolePage() {
           <EcoleForm
             bundle={bundle}
             slotsOccupes={await fetchSlotsOccupesEcole(bundle.saisonEcole.id)}
+            publicCible={publicCible}
           />
         </div>
       </section>
