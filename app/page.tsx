@@ -44,7 +44,7 @@ export default function HomePage() {
               (Adultes). Sur desktop, la balle rebondit sur les 2 raquettes
               gauche/droite (rally). Sur mobile : empilé, sans rally. === */}
           <div
-            className="relative z-10 animate-fade-in-up mt-12 max-w-4xl mx-auto"
+            className="relative z-10 animate-fade-in-up mt-20 sm:mt-24 max-w-4xl mx-auto"
             style={{ animationDelay: "400ms" }}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
