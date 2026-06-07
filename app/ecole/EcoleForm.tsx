@@ -421,35 +421,6 @@ export default function EcoleForm({
           )}
         />
 
-        <div className="mt-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-            Licence
-          </p>
-          <label
-            className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
-              licencePickleball
-                ? "border-ocre bg-ocre/10"
-                : "border-gray-300 hover:border-ocre/50"
-            }`}
-          >
-            <span className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                className="accent-ocre mt-0.5"
-                {...register("licence_pickleball")}
-              />
-              <span>
-                <span className="font-medium">Licence Pickleball</span>
-                <span className="block text-xs text-gray-500 mt-0.5">
-                  Licence annuelle pour pratiquer le pickleball au club.
-                </span>
-              </span>
-            </span>
-            <span className="font-bold text-navy whitespace-nowrap">
-              {PRIX_LICENCE_PICKLEBALL}€
-            </span>
-          </label>
-        </div>
       </Section>
 
       <Section
@@ -773,6 +744,37 @@ export default function EcoleForm({
             </Field>
           )}
         />
+
+        {/* Licence Pickleball — option facultative */}
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+            Licence Pickleball (facultatif)
+          </p>
+          <label
+            className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
+              licencePickleball
+                ? "border-ocre bg-ocre/10"
+                : "border-gray-300 hover:border-ocre/50"
+            }`}
+          >
+            <span className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                className="accent-ocre mt-0.5"
+                {...register("licence_pickleball")}
+              />
+              <span>
+                <span className="font-medium">Licence Pickleball</span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  Licence annuelle pour pratiquer le pickleball au club.
+                </span>
+              </span>
+            </span>
+            <span className="font-bold text-navy whitespace-nowrap">
+              +{PRIX_LICENCE_PICKLEBALL}€
+            </span>
+          </label>
+        </div>
       </Section>
 
       <Section step={6} title="Règlement">
