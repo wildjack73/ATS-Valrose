@@ -58,37 +58,51 @@ export default function HomePage() {
             multi-activités. Encadré par des moniteurs qualifiés.
           </p>
 
-          {/* === 3 entrées : Stages / École jeunes / Cours adultes === */}
+          {/* === 3 entrées thématisées : raquette / filet / raquette === */}
           <div
             className="relative z-10 animate-fade-in-up mt-10 flex flex-col sm:flex-row flex-wrap gap-4 justify-center items-stretch"
             style={{ animationDelay: "400ms" }}
           >
+            {/* Gauche — Stages (raquette) */}
             <Link
               href="/stages"
-              className="group rounded-xl bg-yellow-club text-navy px-7 py-4 font-bold text-base sm:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
+              className="group rounded-xl bg-yellow-club text-navy px-7 py-4 font-bold text-base sm:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-3"
             >
-              S&apos;inscrire à un stage
-              <span className="transition-transform group-hover:translate-x-1">
-                →
-              </span>
+              <IconRacketSmall className="w-7 h-7 text-navy -rotate-12 transition-transform group-hover:-rotate-[18deg] group-hover:scale-110" />
+              <span>S&apos;inscrire à un stage</span>
             </Link>
+
+            {/* Milieu — École jeunes (filet de tennis) */}
             <Link
               href="/ecole?public=jeunes"
-              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-7 py-4 font-bold text-base sm:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
+              className="group relative overflow-hidden rounded-xl bg-white/10 hover:bg-white/20 text-white px-8 py-4 font-bold text-base sm:text-lg border border-white/30 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
             >
-              École <span className="text-white/70 font-semibold">(jeunes)</span>
-              <span className="transition-transform group-hover:translate-x-1">
-                →
+              {/* Quadrillage façon filet */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(0deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 9px), repeating-linear-gradient(90deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 9px)",
+                }}
+              />
+              {/* Bande haute du filet */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-white/70"
+              />
+              <span className="relative z-10">
+                École <span className="text-white/80 font-semibold">(jeunes)</span>
               </span>
             </Link>
+
+            {/* Droite — Cours adultes (raquette) */}
             <Link
               href="/ecole?public=adultes"
-              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-7 py-4 font-bold text-base sm:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
+              className="group rounded-xl bg-white/10 hover:bg-white/20 text-white px-7 py-4 font-bold text-base sm:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-3"
             >
-              Cours collectifs adultes
-              <span className="transition-transform group-hover:translate-x-1">
-                →
-              </span>
+              <span>Cours collectifs adultes</span>
+              <IconRacketSmall className="w-7 h-7 text-white rotate-12 transition-transform group-hover:rotate-[18deg] group-hover:scale-110 scale-x-[-1]" />
             </Link>
           </div>
         </div>
