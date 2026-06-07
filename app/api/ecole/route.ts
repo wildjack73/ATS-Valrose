@@ -7,6 +7,7 @@ import {
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { sendEcoleEmails } from "@/lib/email/send";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
+import { PRIX_LICENCE_PICKLEBALL } from "@/lib/data/tarifs-types";
 
 export const runtime = "nodejs";
 
@@ -88,11 +89,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const prix_total = calculerPrixEcoleFromTarifs(bundle, {
-    coursTennisCodes: data.cours_tennis ?? [],
-    coursPadelCodes: data.cours_padel ?? [],
-    licenceFftCode: data.licence_fft,
-  });
+  const prix_total =
+    calculerPrixEcoleFromTarifs(bundle, {
+      coursTennisCodes: data.cours_tennis ?? [],
+      coursPadelCodes: data.cours_padel ?? [],
+      licenceFftCode: data.licence_fft,
+    }) + (data.licence_pickleball ? PRIX_LICENCE_PICKLEBALL : 0);
 
   const supabase = getSupabaseAdmin();
   const { data: inserted, error } = await supabase

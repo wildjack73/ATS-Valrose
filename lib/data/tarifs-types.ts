@@ -5,6 +5,9 @@
 
 export type SaisonDomaine = "stages" | "ecole";
 
+/** Prix de la licence Pickleball (option facultative à l'inscription école). */
+export const PRIX_LICENCE_PICKLEBALL = 26;
+
 export interface Saison {
   id: string;
   code: string;

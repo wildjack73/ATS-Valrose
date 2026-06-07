@@ -6,6 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { TarifsBundle, CoursEcole } from "@/lib/data/tarifs-types";
+import { PRIX_LICENCE_PICKLEBALL } from "@/lib/data/tarifs-types";
 import { ecoleFormSchema, type EcoleFormInput } from "@/lib/schemas/ecole";
 import { Field, inputClass } from "@/components/ui/Field";
 import { NiveauSelect } from "@/components/ui/NiveauSelect";
@@ -85,6 +86,7 @@ export default function EcoleForm({
   const coursTennis = (watch("cours_tennis") ?? []) as string[];
   const coursPadel = (watch("cours_padel") ?? []) as string[];
   const licenceFftCode = watch("licence_fft");
+  const licencePickleball = watch("licence_pickleball");
 
   const prixTotal = useMemo(() => {
     let total = 0;
@@ -97,8 +99,19 @@ export default function EcoleForm({
     if (licenceFftCode) {
       total += LICENCE_FFT.find((l) => l.code === licenceFftCode)?.prix ?? 0;
     }
+    if (licencePickleball) {
+      total += PRIX_LICENCE_PICKLEBALL;
+    }
     return total;
-  }, [coursTennis, coursPadel, licenceFftCode, COURS_TENNIS, COURS_PADEL, LICENCE_FFT]);
+  }, [
+    coursTennis,
+    coursPadel,
+    licenceFftCode,
+    licencePickleball,
+    COURS_TENNIS,
+    COURS_PADEL,
+    LICENCE_FFT,
+  ]);
 
   async function onSubmit(values: EcoleFormInput) {
     setServerError(null);
@@ -408,14 +421,35 @@ export default function EcoleForm({
           )}
         />
 
-        <label className="flex items-center gap-2 cursor-pointer text-sm">
-          <input
-            type="checkbox"
-            className="accent-ocre"
-            {...register("licence_pickleball")}
-          />
-          <span>J&apos;ajoute la licence Pickleball</span>
-        </label>
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+            Licence
+          </p>
+          <label
+            className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
+              licencePickleball
+                ? "border-ocre bg-ocre/10"
+                : "border-gray-300 hover:border-ocre/50"
+            }`}
+          >
+            <span className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                className="accent-ocre mt-0.5"
+                {...register("licence_pickleball")}
+              />
+              <span>
+                <span className="font-medium">Licence Pickleball</span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  Licence annuelle pour pratiquer le pickleball au club.
+                </span>
+              </span>
+            </span>
+            <span className="font-bold text-navy whitespace-nowrap">
+              {PRIX_LICENCE_PICKLEBALL}€
+            </span>
+          </label>
+        </div>
       </Section>
 
       <Section
