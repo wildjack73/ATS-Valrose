@@ -51,6 +51,8 @@ export default function EcoleForm({
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const estAdultes = publicCible === "adultes";
+
   // Les cours « adultes » ont un code commençant par « cours_adultes ».
   const isCoursAdulte = (code: string) => code.startsWith("cours_adultes");
   const filtreCours = (c: CoursEcole) =>
@@ -89,7 +91,9 @@ export default function EcoleForm({
       dispo_semaine: "",
       mode_reglement: undefined,
       nb_paiements: undefined,
-      licence_fft: "",
+      // Adultes : pas de licence FFT jeune → on pré-règle sur « non_adulte »
+      // (0€) et on masque le bloc dans le formulaire.
+      licence_fft: estAdultes ? "non_adulte" : "",
       notes: "",
       website: "",
     },
@@ -716,54 +720,61 @@ export default function EcoleForm({
 
       <Section
         step={5}
-        title="Licence FFT (obligatoire)"
-        description="La licence FFT est obligatoire pour les cours."
+        title={estAdultes ? "Licence (facultatif)" : "Licence FFT (obligatoire)"}
+        description={
+          estAdultes
+            ? "Pas de licence FFT requise pour les cours adultes."
+            : "La licence FFT est obligatoire pour les cours."
+        }
       >
-        <Controller
-          control={control}
-          name="licence_fft"
-          render={({ field }) => (
-            <Field
-              label="Tarif licence"
-              required
-              error={errors.licence_fft?.message as string | undefined}
-            >
-              <div className="grid gap-2">
-                {LICENCE_FFT.map((l) => {
-                  const checked = field.value === l.code;
-                  return (
-                    <label
-                      key={l.id}
-                      className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 cursor-pointer text-sm ${
-                        checked
-                          ? "border-ocre bg-ocre/10"
-                          : "border-gray-300 hover:border-ocre/50"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          className="accent-ocre"
-                          checked={checked}
-                          onChange={() => field.onChange(l.code)}
-                        />
-                        <span>{l.label}</span>
-                      </span>
-                      {l.prix > 0 ? (
-                        <span className="font-bold text-navy whitespace-nowrap">
-                          +{l.prix}€
+        {/* Licence FFT (jeunes uniquement — les adultes n'en ont pas besoin) */}
+        {!estAdultes ? (
+          <Controller
+            control={control}
+            name="licence_fft"
+            render={({ field }) => (
+              <Field
+                label="Tarif licence"
+                required
+                error={errors.licence_fft?.message as string | undefined}
+              >
+                <div className="grid gap-2">
+                  {LICENCE_FFT.map((l) => {
+                    const checked = field.value === l.code;
+                    return (
+                      <label
+                        key={l.id}
+                        className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 cursor-pointer text-sm ${
+                          checked
+                            ? "border-ocre bg-ocre/10"
+                            : "border-gray-300 hover:border-ocre/50"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            className="accent-ocre"
+                            checked={checked}
+                            onChange={() => field.onChange(l.code)}
+                          />
+                          <span>{l.label}</span>
                         </span>
-                      ) : null}
-                    </label>
-                  );
-                })}
-              </div>
-            </Field>
-          )}
-        />
+                        {l.prix > 0 ? (
+                          <span className="font-bold text-navy whitespace-nowrap">
+                            +{l.prix}€
+                          </span>
+                        ) : null}
+                      </label>
+                    );
+                  })}
+                </div>
+              </Field>
+            )}
+          />
+        ) : null}
 
         {/* Licence Pickleball — option facultative */}
-        <div className="mt-4">
+        <div className={estAdultes ? "" : "mt-4"}>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
             Licence Pickleball (facultatif)
           </p>
