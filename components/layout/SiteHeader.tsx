@@ -84,14 +84,26 @@ export function SiteHeader() {
             </div>
           </Link>
 
-          <nav className="flex items-center gap-1 text-sm">
+          <nav className="flex items-center gap-0.5 sm:gap-1 text-sm">
             <NavLink href="/stages" active={isActive(pathname, "/stages")} accent="cyan">
               <IconStage className="w-4 h-4" />
               Stages
             </NavLink>
-            <NavLink href="/ecole" active={isActive(pathname, "/ecole")} accent="ocre">
+            <NavLink
+              href="/ecole?public=jeunes"
+              active={isActive(pathname, "/ecole")}
+              accent="ocre"
+            >
               <IconSchool className="w-4 h-4" />
               École
+            </NavLink>
+            <NavLink
+              href="/cours"
+              active={isActive(pathname, "/cours")}
+              accent="ocre"
+            >
+              <IconUsers className="w-4 h-4" />
+              Cours
             </NavLink>
             <NavLink href="/tarifs" active={isActive(pathname, "/tarifs")}>
               <IconTag className="w-4 h-4" />
@@ -217,6 +229,16 @@ function IconSchool({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
       <ellipse cx="10" cy="9" rx="6" ry="7" transform="rotate(-30 10 9)" />
       <path strokeLinecap="round" d="m15 14 5 5" />
+    </svg>
+  );
+}
+
+function IconUsers({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
 }

@@ -74,7 +74,7 @@ export default function HomePage() {
 
               {/* Droite — Cours adultes (la balle rebondit dessus) */}
               <Link
-                href="/ecole?public=adultes"
+                href="/cours"
                 className="impact-pulse-right group rounded-2xl bg-gradient-to-b from-[#ffd94d] to-[#f0c200] text-navy px-8 py-4 font-bold text-base lg:text-lg shadow-xl shadow-black/25 ring-1 ring-black/10 transition-all hover:-translate-y-0.5 hover:shadow-2xl inline-flex items-center justify-center gap-2 sm:min-w-[220px]"
               >
                 <span>Cours adultes</span>
@@ -266,7 +266,7 @@ export default function HomePage() {
             {/* COURS COLLECTIFS ADULTES */}
             <Reveal delay={350}>
               <Link
-                href="/ecole?public=adultes"
+                href="/cours"
                 className="card-3d group relative block rounded-3xl overflow-hidden bg-white border-2 border-violet-300/40 shadow-xl"
               >
                 <div className="relative bg-gradient-to-br from-violet-600 via-violet-700 to-purple-900 text-white p-8 overflow-hidden">
