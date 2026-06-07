@@ -48,51 +48,39 @@ export default function HomePage() {
             style={{ animationDelay: "400ms" }}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              {/* Gauche — Stages (raquette, la balle rebondit dessus) */}
+              {/* Gauche — Stages (la balle rebondit dessus) */}
               <Link
                 href="/stages"
-                className="impact-pulse-left group rounded-xl bg-yellow-club text-navy px-6 py-4 font-bold text-base lg:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5 sm:min-w-[230px]"
+                className="impact-pulse-left group rounded-2xl bg-gradient-to-b from-[#ffd94d] to-[#f0c200] text-navy px-8 py-4 font-bold text-base lg:text-lg shadow-xl shadow-black/25 ring-1 ring-black/10 transition-all hover:-translate-y-0.5 hover:shadow-2xl inline-flex items-center justify-center gap-2 sm:min-w-[220px]"
               >
-                <IconRacketSmall className="w-9 h-9 shrink-0 text-navy -rotate-12 transition-transform group-hover:-rotate-[18deg] group-hover:scale-110" />
                 <span>Stages</span>
-                <span className="transition-transform group-hover:translate-x-1">
+                <span className="text-navy/70 transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </Link>
 
-              {/* Milieu — École jeunes (filet de tennis) */}
+              {/* Milieu — École jeunes */}
               <Link
                 href="/ecole?public=jeunes"
-                className="group relative overflow-hidden rounded-xl bg-yellow-club text-navy px-6 py-4 font-bold text-base lg:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2 sm:min-w-[230px]"
+                className="group rounded-2xl bg-gradient-to-b from-[#ffd94d] to-[#f0c200] text-navy px-8 py-4 font-bold text-base lg:text-lg shadow-xl shadow-black/25 ring-1 ring-black/10 transition-all hover:-translate-y-0.5 hover:shadow-2xl inline-flex items-center justify-center gap-2 sm:min-w-[220px]"
               >
-                {/* Filet (lignes marine sur le jaune) */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-25 group-hover:opacity-40 transition-opacity"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(0deg, rgba(13,46,63,0.6) 0 1px, transparent 1px 9px), repeating-linear-gradient(90deg, rgba(13,46,63,0.6) 0 1px, transparent 1px 9px)",
-                  }}
-                />
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-navy/50"
-                />
-                <span className="relative z-10">
-                  École <span className="font-semibold">(jeunes)</span>
+                <span>
+                  École <span className="font-semibold">— jeunes</span>
                 </span>
-                <span className="relative z-10 transition-transform group-hover:translate-x-1">
+                <span className="text-navy/70 transition-transform group-hover:translate-x-1">
                   →
                 </span>
               </Link>
 
-              {/* Droite — Cours adultes (raquette, la balle rebondit dessus) */}
+              {/* Droite — Cours adultes (la balle rebondit dessus) */}
               <Link
                 href="/ecole?public=adultes"
-                className="impact-pulse-right group rounded-xl bg-yellow-club text-navy px-6 py-4 font-bold text-base lg:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5 sm:min-w-[230px]"
+                className="impact-pulse-right group rounded-2xl bg-gradient-to-b from-[#ffd94d] to-[#f0c200] text-navy px-8 py-4 font-bold text-base lg:text-lg shadow-xl shadow-black/25 ring-1 ring-black/10 transition-all hover:-translate-y-0.5 hover:shadow-2xl inline-flex items-center justify-center gap-2 sm:min-w-[220px]"
               >
                 <span>Cours adultes</span>
-                <IconRacketSmall className="w-9 h-9 shrink-0 text-navy rotate-12 transition-transform group-hover:rotate-[18deg] group-hover:scale-110 scale-x-[-1]" />
+                <span className="text-navy/70 transition-transform group-hover:translate-x-1">
+                  →
+                </span>
               </Link>
             </div>
 
