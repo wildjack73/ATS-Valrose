@@ -208,13 +208,15 @@ body {
 
 /* Le point bas (0% / 100%) est décalé vers le haut de 50px : la balle
    atterrit juste au-dessus du bouton (sa base touche le haut du bouton),
-   pas au milieu. Effet « rebondit sur le bouton ». */
+   pas au milieu. Effet « rebondit sur le bouton ».
+   Apex limité à -120px pour que la balle reste entre le paragraphe et la
+   rangée de boutons et ne percute pas le titre (nouveau layout). */
 @keyframes rally-y {
   0%, 100% {
     transform: translateY(-50px) rotate(0deg);
   }
   50% {
-    transform: translateY(-220px) rotate(180deg);
+    transform: translateY(-120px) rotate(180deg);
   }
 }
 

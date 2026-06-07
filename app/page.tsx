@@ -51,16 +51,16 @@ export default function HomePage() {
               {/* Gauche — Stages (raquette, la balle rebondit dessus) */}
               <Link
                 href="/stages"
-                className="impact-pulse-left group rounded-xl bg-yellow-club text-navy px-6 py-4 font-bold text-base lg:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5"
+                className="impact-pulse-left group rounded-xl bg-yellow-club text-navy px-6 py-4 font-bold text-base lg:text-lg shadow-2xl shadow-yellow-club/40 hover:shadow-yellow-club/60 transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5 sm:min-w-[230px]"
               >
-                <IconRacketSmall className="w-7 h-7 text-navy -rotate-12 transition-transform group-hover:-rotate-[18deg] group-hover:scale-110" />
+                <IconRacketSmall className="w-9 h-9 shrink-0 text-navy -rotate-12 transition-transform group-hover:-rotate-[18deg] group-hover:scale-110" />
                 <span>S&apos;inscrire à un stage</span>
               </Link>
 
               {/* Milieu — École jeunes (filet de tennis) */}
               <Link
                 href="/ecole?public=jeunes"
-                className="group relative overflow-hidden rounded-xl bg-white/10 hover:bg-white/20 text-white px-6 py-4 font-bold text-base lg:text-lg border border-white/30 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center"
+                className="group relative overflow-hidden rounded-xl bg-white/10 hover:bg-white/20 text-white px-6 py-4 font-bold text-base lg:text-lg border border-white/30 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center sm:min-w-[230px]"
               >
                 <span
                   aria-hidden
@@ -83,10 +83,10 @@ export default function HomePage() {
               {/* Droite — Cours adultes (raquette, la balle rebondit dessus) */}
               <Link
                 href="/ecole?public=adultes"
-                className="impact-pulse-right group rounded-xl bg-white/10 hover:bg-white/20 text-white px-6 py-4 font-bold text-base lg:text-lg border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5"
+                className="impact-pulse-right group rounded-xl bg-white/15 hover:bg-white/25 text-white px-6 py-4 font-bold text-base lg:text-lg border border-white/30 backdrop-blur-sm transition-all hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5 sm:min-w-[230px]"
               >
                 <span>Cours collectifs adultes</span>
-                <IconRacketSmall className="w-7 h-7 text-white rotate-12 transition-transform group-hover:rotate-[18deg] group-hover:scale-110 scale-x-[-1]" />
+                <IconRacketSmall className="w-9 h-9 shrink-0 text-yellow-club rotate-12 transition-transform group-hover:rotate-[18deg] group-hover:scale-110 scale-x-[-1]" />
               </Link>
             </div>
 
