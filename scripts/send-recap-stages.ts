@@ -94,7 +94,7 @@ function buildEmail(famille: Insc[]) {
         <p style="margin:10px 0 0;border-top:1px solid #d9e6ec;padding-top:8px"><strong>Total à régler : ${total}€</strong></p>
       </div>
       <p>Le règlement (espèces ou chèque) se fait le jour du stage à l'accueil du club.</p>
-      <p>Pour toute question ou modification : <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · Jérôme : 06 51 79 71 54</p>
+      <p>Pour toute question ou modification : <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · <a href="mailto:padelnice@gmail.com">padelnice@gmail.com</a></p>
       <p style="color:#6b7280;font-size:12px;margin-top:18px">Astuce : pour bien recevoir nos prochains messages, ajoutez <strong>contact@ats-valrose.fr</strong> à vos contacts (et vérifiez vos courriers indésirables).</p>
       <p style="color:#6b7280;font-size:13px;margin-top:14px">Sportivement,<br/>L'équipe ATS Valrose</p>
     </div>
@@ -109,7 +109,7 @@ ${lignesTexte.join("\n")}
 Total à régler : ${total}€
 
 Le règlement (espèces ou chèque) se fait le jour du stage à l'accueil du club.
-Pour toute question ou modification : contact@ats-valrose.fr · Jérôme : 06 51 79 71 54
+Pour toute question ou modification : contact@ats-valrose.fr · padelnice@gmail.com
 
 Astuce : pour bien recevoir nos messages, ajoutez contact@ats-valrose.fr à vos contacts (et vérifiez vos spams).
 

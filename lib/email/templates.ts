@@ -44,7 +44,7 @@ export function emailFamilleStage(d: StageEmailData) {
         ${detailsHtml}
       </div>
       <p>Le règlement (espèces ou chèque) se fait le jour du stage à l'accueil du club.</p>
-      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · Jérôme&nbsp;: 06 51 79 71 54</p>
+      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · <a href="mailto:padelnice@gmail.com">padelnice@gmail.com</a></p>
       <p style="color:#666;font-size:13px">Sportivement,<br/>L'équipe ATS Valrose</p>
     `,
   );
@@ -62,7 +62,7 @@ Votre inscription au stage est confirmée et acceptée :
 
 Le règlement se fait le jour du stage à l'accueil du club.
 
-Pour toute question : contact@ats-valrose.fr · Jérôme : 06 51 79 71 54
+Pour toute question : contact@ats-valrose.fr · padelnice@gmail.com
 
 Sportivement,
 L'équipe ATS Valrose`;
@@ -123,7 +123,7 @@ export function emailFamilleEcole(d: EcoleEmailData) {
       ${d.cours_resume ? `<p><strong>Cours demandés :</strong> ${escape(d.cours_resume)}</p>` : ""}
       ${d.prix_total > 0 ? `<p><strong>Total annuel :</strong> ${d.prix_total}€</p>` : ""}
       <p>Il s'agit d'une pré-inscription. La <strong>confirmation définitive</strong> se fera lors de votre passage aux <strong>Journées Portes Ouvertes</strong> — toutes les infos&nbsp;: <a href="https://www.ats-valrose.fr/ecole?public=jeunes">ats-valrose.fr/ecole</a></p>
-      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · Jérôme&nbsp;: 06 51 79 71 54</p>
+      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · <a href="mailto:padelnice@gmail.com">padelnice@gmail.com</a></p>
       <p style="color:#666;font-size:13px">Sportivement,<br/>L'équipe ATS Valrose</p>
     `,
   );
@@ -134,7 +134,7 @@ ${d.cours_resume ? `\nCours demandés : ${d.cours_resume}` : ""}${d.prix_total >
 
 Il s'agit d'une pré-inscription. La confirmation définitive se fera lors de votre passage aux Journées Portes Ouvertes — toutes les infos : https://www.ats-valrose.fr/ecole?public=jeunes
 
-Pour toute question : contact@ats-valrose.fr · Jérôme : 06 51 79 71 54
+Pour toute question : contact@ats-valrose.fr · padelnice@gmail.com
 
 Sportivement,
 L'équipe ATS Valrose`;
