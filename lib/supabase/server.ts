@@ -16,12 +16,25 @@ async function fetchWithRetry(
 ): Promise<Response> {
   const method = (init?.method ?? "GET").toUpperCase();
   const idempotent = method === "GET" || method === "HEAD";
-  const maxAttempts = idempotent ? 3 : 1;
+  const maxAttempts = idempotent ? 4 : 1;
+  // Coupe-circuit : une requête qui « pend » est avortée puis réessayée,
+  // plutôt que de bloquer le rendu jusqu'au timeout de la fonction Vercel.
+  const perAttemptTimeoutMs = 6000;
 
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // N'ajoute notre timeout que si l'appelant n'a pas déjà fourni un signal.
+    const hasOwnSignal = !!init?.signal;
+    const controller = hasOwnSignal ? null : new AbortController();
+    const timer = controller
+      ? setTimeout(() => controller.abort(), perAttemptTimeoutMs)
+      : null;
     try {
-      const res = await fetch(input, init);
+      const res = await fetch(input, {
+        ...init,
+        signal: init?.signal ?? controller?.signal,
+      });
+      if (timer) clearTimeout(timer);
       // Réessaie sur 5xx (erreur serveur transitoire), uniquement en lecture
       if (
         idempotent &&
@@ -29,15 +42,16 @@ async function fetchWithRetry(
         res.status < 600 &&
         attempt < maxAttempts
       ) {
-        await sleep(150 * attempt);
+        await sleep(200 * attempt);
         continue;
       }
       return res;
     } catch (err) {
-      // Erreur réseau (connexion coupée, DNS, etc.)
+      // Erreur réseau / timeout (connexion coupée, DNS, requête avortée…)
+      if (timer) clearTimeout(timer);
       lastError = err;
       if (idempotent && attempt < maxAttempts) {
-        await sleep(150 * attempt);
+        await sleep(200 * attempt);
         continue;
       }
       throw err;
