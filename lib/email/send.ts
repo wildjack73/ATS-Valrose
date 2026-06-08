@@ -1,5 +1,7 @@
 import "server-only";
+import MailComposer from "nodemailer/lib/mail-composer";
 import { getMailer, getEmailFrom, getEmailAdmin } from "./client";
+import { appendToSent } from "./imap-sent";
 import {
   emailFamilleStage,
   emailAdminStage,
@@ -26,10 +28,23 @@ async function safeSend(
     console.warn("[email] SMTP non configuré (SMTP_PASS absent), email skip:", subject);
     return;
   }
+  const mailOptions = { from: getEmailFrom(), to, subject, html, text };
   try {
-    await mailer.sendMail({ from: getEmailFrom(), to, subject, html, text });
+    await mailer.sendMail(mailOptions);
   } catch (e) {
     console.error("[email] exception envoi:", e);
+    return;
+  }
+  // Copie dans le dossier « Envoyés » (best-effort, n'impacte pas l'envoi)
+  try {
+    const raw = await new Promise<Buffer>((resolve, reject) => {
+      new MailComposer(mailOptions).compile().build((err, msg) =>
+        err ? reject(err) : resolve(msg),
+      );
+    });
+    await appendToSent(raw);
+  } catch (e) {
+    console.error("[email] copie Envoyés échouée:", e);
   }
 }
 
