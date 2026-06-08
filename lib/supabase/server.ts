@@ -17,25 +17,15 @@ async function fetchWithRetry(
   const method = (init?.method ?? "GET").toUpperCase();
   const idempotent = method === "GET" || method === "HEAD";
   const maxAttempts = idempotent ? 4 : 1;
-  // Coupe-circuit : une requête qui « pend » est avortée puis réessayée,
-  // plutôt que de bloquer le rendu jusqu'au timeout de la fonction Vercel.
-  const perAttemptTimeoutMs = 6000;
 
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    // N'ajoute notre timeout que si l'appelant n'a pas déjà fourni un signal.
-    const hasOwnSignal = !!init?.signal;
-    const controller = hasOwnSignal ? null : new AbortController();
-    const timer = controller
-      ? setTimeout(() => controller.abort(), perAttemptTimeoutMs)
-      : null;
     try {
-      const res = await fetch(input, {
-        ...init,
-        signal: init?.signal ?? controller?.signal,
-      });
-      if (timer) clearTimeout(timer);
-      // Réessaie sur 5xx (erreur serveur transitoire), uniquement en lecture
+      const res = await fetch(input, init);
+      // Réessaie sur 5xx (erreur serveur transitoire), uniquement en lecture.
+      // Pas de timeout côté client : sur Supabase gratuit, un « cold start »
+      // peut prendre quelques secondes — on laisse la requête finir plutôt
+      // que de l'avorter (un vrai blocage est géré par le timeout Vercel).
       if (
         idempotent &&
         res.status >= 500 &&
@@ -47,8 +37,7 @@ async function fetchWithRetry(
       }
       return res;
     } catch (err) {
-      // Erreur réseau / timeout (connexion coupée, DNS, requête avortée…)
-      if (timer) clearTimeout(timer);
+      // Erreur réseau (connexion coupée, DNS, etc.)
       lastError = err;
       if (idempotent && attempt < maxAttempts) {
         await sleep(200 * attempt);
