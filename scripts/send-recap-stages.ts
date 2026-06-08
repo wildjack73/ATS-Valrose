@@ -79,7 +79,7 @@ function buildEmail(famille: Insc[]) {
     })
     .join("");
 
-  const subject = "Récapitulatif de votre inscription — Stages ATS Valrose";
+  const subject = "Confirmation de votre inscription — Stages ATS Valrose";
 
   const html = `<!doctype html><html><body style="margin:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
   <div style="max-width:560px;margin:0 auto;padding:24px">
@@ -88,13 +88,13 @@ function buildEmail(famille: Insc[]) {
     </div>
     <div style="background:#fff;padding:20px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 10px 10px">
       <p>Bonjour,</p>
-      <p>Voici le récapitulatif de votre/vos inscription(s) à nos stages&nbsp;:</p>
+      <p>Votre/vos inscription(s) à nos stages sont <strong>confirmées</strong>&nbsp;:</p>
       <div style="background:#f0f7fa;border-left:4px solid #2db5d6;padding:12px 16px;margin:16px 0">
         ${lignesHtml}
         <p style="margin:10px 0 0;border-top:1px solid #d9e6ec;padding-top:8px"><strong>Total à régler : ${total}€</strong></p>
       </div>
       <p>Le règlement (espèces ou chèque) se fait le jour du stage à l'accueil du club.</p>
-      <p>Pour toute question ou modification : <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · 06 46 23 09 43</p>
+      <p>Pour toute question ou modification : <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · Jérôme : 06 51 79 71 54</p>
       <p style="color:#6b7280;font-size:12px;margin-top:18px">Astuce : pour bien recevoir nos prochains messages, ajoutez <strong>contact@ats-valrose.fr</strong> à vos contacts (et vérifiez vos courriers indésirables).</p>
       <p style="color:#6b7280;font-size:13px;margin-top:14px">Sportivement,<br/>L'équipe ATS Valrose</p>
     </div>
@@ -102,14 +102,14 @@ function buildEmail(famille: Insc[]) {
 
   const text = `Bonjour,
 
-Voici le récapitulatif de votre/vos inscription(s) à nos stages :
+Votre/vos inscription(s) à nos stages sont confirmées :
 
 ${lignesTexte.join("\n")}
 
 Total à régler : ${total}€
 
 Le règlement (espèces ou chèque) se fait le jour du stage à l'accueil du club.
-Pour toute question ou modification : contact@ats-valrose.fr · 06 46 23 09 43
+Pour toute question ou modification : contact@ats-valrose.fr · Jérôme : 06 51 79 71 54
 
 Astuce : pour bien recevoir nos messages, ajoutez contact@ats-valrose.fr à vos contacts (et vérifiez vos spams).
 

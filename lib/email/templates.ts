@@ -36,22 +36,22 @@ export function emailFamilleStage(d: StageEmailData) {
     .join("");
 
   const html = wrap(
-    `Inscription enregistrée — ATS Valrose`,
+    `Inscription au stage confirmée — ATS Valrose`,
     `
       <p>Bonjour,</p>
-      <p>Nous avons bien enregistré votre inscription au stage&nbsp;:</p>
+      <p>Votre inscription au stage est <strong>confirmée et acceptée</strong>&nbsp;:</p>
       <div style="background:#f0f7fa;border-left:4px solid #2db5d6;padding:12px 16px;margin:16px 0">
         ${detailsHtml}
       </div>
       <p>Le règlement (espèces ou chèque) se fait le jour du stage à l'accueil du club.</p>
-      <p>Pour toute question : <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a></p>
+      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · Jérôme&nbsp;: 06 51 79 71 54</p>
       <p style="color:#666;font-size:13px">Sportivement,<br/>L'équipe ATS Valrose</p>
     `,
   );
 
   const text = `Bonjour,
 
-Nous avons bien enregistré votre inscription au stage :
+Votre inscription au stage est confirmée et acceptée :
 
 - Élève : ${d.prenom} ${d.nom}
 - Semaine : ${d.semaine_label}
@@ -62,7 +62,7 @@ Nous avons bien enregistré votre inscription au stage :
 
 Le règlement se fait le jour du stage à l'accueil du club.
 
-Pour toute question : contact@ats-valrose.fr
+Pour toute question : contact@ats-valrose.fr · Jérôme : 06 51 79 71 54
 
 Sportivement,
 L'équipe ATS Valrose`;
@@ -112,29 +112,29 @@ type EcoleEmailData = {
 };
 
 export function emailFamilleEcole(d: EcoleEmailData) {
-  const subject = `Confirmation inscription École de Tennis — ${d.prenom} ${d.nom}`;
+  const subject = `Confirmation de pré-inscription — École de Tennis — ${d.prenom} ${d.nom}`;
   const html = wrap(
-    `Inscription École de Tennis enregistrée`,
+    `Pré-inscription École de Tennis enregistrée`,
     `
       <p>Bonjour,</p>
-      <p>Nous avons bien reçu l'inscription de <strong>${escape(d.prenom)} ${escape(
+      <p>Nous avons bien reçu la <strong>pré-inscription</strong> de <strong>${escape(d.prenom)} ${escape(
         d.nom,
       )}</strong> à l'École de Tennis 2026-2027.</p>
       ${d.cours_resume ? `<p><strong>Cours demandés :</strong> ${escape(d.cours_resume)}</p>` : ""}
-      ${d.prix_total > 0 ? `<p><strong>Total annuel estimé :</strong> ${d.prix_total}€</p>` : ""}
-      <p>Le club vous recontactera pour confirmer le créneau retenu et organiser le règlement.</p>
-      <p>Pour toute question : <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a></p>
+      ${d.prix_total > 0 ? `<p><strong>Total annuel :</strong> ${d.prix_total}€</p>` : ""}
+      <p>Il s'agit d'une pré-inscription. La <strong>confirmation définitive</strong> se fera lors de votre passage aux <strong>Journées Portes Ouvertes</strong> — toutes les infos&nbsp;: <a href="https://www.ats-valrose.fr/ecole?public=jeunes">ats-valrose.fr/ecole</a></p>
+      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · Jérôme&nbsp;: 06 51 79 71 54</p>
       <p style="color:#666;font-size:13px">Sportivement,<br/>L'équipe ATS Valrose</p>
     `,
   );
   const text = `Bonjour,
 
-Nous avons bien reçu l'inscription de ${d.prenom} ${d.nom} à l'École de Tennis 2026-2027.
-${d.cours_resume ? `\nCours demandés : ${d.cours_resume}` : ""}${d.prix_total > 0 ? `\nTotal annuel estimé : ${d.prix_total}€` : ""}
+Nous avons bien reçu la pré-inscription de ${d.prenom} ${d.nom} à l'École de Tennis 2026-2027.
+${d.cours_resume ? `\nCours demandés : ${d.cours_resume}` : ""}${d.prix_total > 0 ? `\nTotal annuel : ${d.prix_total}€` : ""}
 
-Le club vous recontactera pour confirmer le créneau retenu et organiser le règlement.
+Il s'agit d'une pré-inscription. La confirmation définitive se fera lors de votre passage aux Journées Portes Ouvertes — toutes les infos : https://www.ats-valrose.fr/ecole?public=jeunes
 
-Pour toute question : contact@ats-valrose.fr
+Pour toute question : contact@ats-valrose.fr · Jérôme : 06 51 79 71 54
 
 Sportivement,
 L'équipe ATS Valrose`;
@@ -149,7 +149,7 @@ export function emailAdminEcole(d: EcoleEmailData) {
       <p><strong>${escape(d.prenom)} ${escape(d.nom)}</strong> s'est inscrit à l'École de Tennis.</p>
       <ul>
         ${d.cours_resume ? `<li>Cours : ${escape(d.cours_resume)}</li>` : ""}
-        ${d.prix_total > 0 ? `<li>Total estimé : <strong>${d.prix_total}€</strong></li>` : ""}
+        ${d.prix_total > 0 ? `<li>Total : <strong>${d.prix_total}€</strong></li>` : ""}
         <li>Email : ${escape(d.email)}</li>
         <li>Téléphone : ${escape(d.telephone)}</li>
       </ul>
@@ -159,7 +159,7 @@ export function emailAdminEcole(d: EcoleEmailData) {
   const text = `Nouvelle inscription École
 
 ${d.prenom} ${d.nom}
-${d.cours_resume ? `Cours : ${d.cours_resume}\n` : ""}${d.prix_total > 0 ? `Total estimé : ${d.prix_total}€\n` : ""}Email : ${d.email}
+${d.cours_resume ? `Cours : ${d.cours_resume}\n` : ""}${d.prix_total > 0 ? `Total : ${d.prix_total}€\n` : ""}Email : ${d.email}
 Téléphone : ${d.telephone}
 
 Voir : https://ats-valrose.fr/admin?tab=ecole`;
