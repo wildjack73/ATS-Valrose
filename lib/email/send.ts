@@ -1,5 +1,5 @@
 import "server-only";
-import { getResend, getEmailFrom, getEmailAdmin } from "./client";
+import { getMailer, getEmailFrom, getEmailAdmin } from "./client";
 import {
   emailFamilleStage,
   emailAdminStage,
@@ -21,20 +21,13 @@ async function safeSend(
   html: string,
   text: string,
 ) {
-  const resend = getResend();
-  if (!resend) {
-    console.warn("[email] RESEND_API_KEY absent, email skip:", subject);
+  const mailer = getMailer();
+  if (!mailer) {
+    console.warn("[email] SMTP non configuré (SMTP_PASS absent), email skip:", subject);
     return;
   }
   try {
-    const { error } = await resend.emails.send({
-      from: getEmailFrom(),
-      to,
-      subject,
-      html,
-      text,
-    });
-    if (error) console.error("[email] envoi échoué:", error);
+    await mailer.sendMail({ from: getEmailFrom(), to, subject, html, text });
   } catch (e) {
     console.error("[email] exception envoi:", e);
   }
