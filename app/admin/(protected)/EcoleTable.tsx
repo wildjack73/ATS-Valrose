@@ -22,6 +22,7 @@ import {
 } from "@/lib/admin/format";
 import InlineStatusBadge from "./InlineStatusBadge";
 import CoordonneesEditor from "./CoordonneesEditor";
+import CreneauxEcoleEditor from "./CreneauxEcoleEditor";
 import {
   PaiementsPanel,
   PaiementBadge,
@@ -632,6 +633,9 @@ function EcoleEditPanel({
         pending={pending}
         withCodePostal
       />
+
+      {/* Créneaux / disponibilités éditables */}
+      <CreneauxEcoleEditor row={row} patch={patch} pending={pending} />
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">

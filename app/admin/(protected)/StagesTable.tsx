@@ -16,6 +16,7 @@ import {
 } from "@/lib/admin/format";
 import InlineStatusBadge from "./InlineStatusBadge";
 import CoordonneesEditor from "./CoordonneesEditor";
+import CreneauStageEditor from "./CreneauStageEditor";
 import {
   PaiementsPanel,
   PaiementBadge,
@@ -201,6 +202,7 @@ export default function StagesTable({
                 <RowGroup
                   key={r.id}
                   row={r}
+                  semaines={semaines}
                   optionsF4={optionsF4}
                   paiements={paiementsByInscription[r.id] ?? []}
                   niveauAttribue={niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null}
@@ -225,6 +227,7 @@ export default function StagesTable({
 
 function RowGroup({
   row,
+  semaines,
   optionsF4,
   paiements,
   niveauAttribue,
@@ -235,6 +238,7 @@ function RowGroup({
   pending,
 }: {
   row: InscriptionStageRow;
+  semaines: Semaine[];
   optionsF4: OptionF4[];
   paiements: PaiementClient[];
   niveauAttribue: string | null;
@@ -418,6 +422,7 @@ function RowGroup({
             <div className="p-4 w-[min(100vw,900px)]">
               <EditPanel
                 row={row}
+                semaines={semaines}
                 optionsF4={optionsF4}
                 paiements={paiements}
                 patch={patch}
@@ -452,12 +457,14 @@ const JOURS_F4 = ["lundi", "mardi", "mercredi", "jeudi", "vendredi"] as const;
 
 function EditPanel({
   row,
+  semaines,
   optionsF4,
   paiements,
   patch,
   pending,
 }: {
   row: InscriptionStageRow;
+  semaines: Semaine[];
   optionsF4: OptionF4[];
   paiements: PaiementClient[];
   patch: (p: object) => void;
@@ -584,6 +591,14 @@ function EditPanel({
 
       {/* Coordonnées éditables (corrections admin) */}
       <CoordonneesEditor row={row} patch={patch} pending={pending} />
+
+      {/* Semaine & créneau (matin/après-midi) éditables */}
+      <CreneauStageEditor
+        row={row}
+        semaines={semaines}
+        patch={patch}
+        pending={pending}
+      />
 
       {/* Éditeur Formule 4 : option par jour */}
       {row.formule === "formule_4" ? (
