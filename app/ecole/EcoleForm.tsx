@@ -563,6 +563,17 @@ export default function EcoleForm({
                       },
                     ],
                   },
+                  {
+                    titre: "Compétition — 20h-21h30",
+                    options: [
+                      {
+                        label: "Lundi 20h-21h30",
+                        display: "Lundi",
+                        max: 4,
+                        note: "niveau Compétition uniquement",
+                      },
+                    ],
+                  },
                 ],
               });
             }

@@ -37,6 +37,7 @@ export const CRENEAUX_ECOLE: CreneauEcole[] = [
   { label: "Mardi 18h30-20h", categorie: "adultes_tennis" },
   { label: "Jeudi 18h30-20h", categorie: "adultes_tennis" },
   { label: "Vendredi 18h30-20h", categorie: "adultes_tennis" },
+  { label: "Lundi 20h-21h30", categorie: "adultes_tennis" },
   { label: "Samedi 9h-10h30", categorie: "adultes_tennis" },
   // « Samedi Après-midi » existe aussi pour les jeunes — même valeur stockée
   // donc pas besoin de la dupliquer (on filtre par label).
