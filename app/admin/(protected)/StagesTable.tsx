@@ -15,6 +15,7 @@ import {
   statutRowClass,
 } from "@/lib/admin/format";
 import InlineStatusBadge from "./InlineStatusBadge";
+import CoordonneesEditor from "./CoordonneesEditor";
 import {
   PaiementsPanel,
   PaiementBadge,
@@ -580,6 +581,9 @@ function EditPanel({
         prixTotal={row.prix_total}
         initial={paiements}
       />
+
+      {/* Coordonnées éditables (corrections admin) */}
+      <CoordonneesEditor row={row} patch={patch} pending={pending} />
 
       {/* Éditeur Formule 4 : option par jour */}
       {row.formule === "formule_4" ? (

@@ -21,6 +21,7 @@ import {
   statutRowClass,
 } from "@/lib/admin/format";
 import InlineStatusBadge from "./InlineStatusBadge";
+import CoordonneesEditor from "./CoordonneesEditor";
 import {
   PaiementsPanel,
   PaiementBadge,
@@ -622,6 +623,14 @@ function EcoleEditPanel({
         inscriptionId={row.id}
         prixTotal={row.prix_total}
         initial={paiements}
+      />
+
+      {/* Coordonnées éditables (corrections admin) */}
+      <CoordonneesEditor
+        row={row}
+        patch={patch}
+        pending={pending}
+        withCodePostal
       />
 
       <div className="flex flex-wrap items-center gap-2">

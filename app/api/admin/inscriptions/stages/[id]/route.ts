@@ -17,6 +17,13 @@ interface PatchBody {
   desactive?: boolean;
   niveau?: string | null;
   niveau_attribue?: string | null;
+  // Coordonnées de la fiche (corrections admin)
+  nom?: string;
+  prenom?: string;
+  email?: string;
+  telephone?: string;
+  date_naissance?: string;
+  adresse?: string;
 }
 
 export async function PATCH(
@@ -52,6 +59,28 @@ export async function PATCH(
     patch.niveau_attribue = body.niveau_attribue
       ? String(body.niveau_attribue).trim()
       : null;
+  }
+
+  // Coordonnées de la fiche (corrections admin). nom/prénom requis non vides ;
+  // date_naissance seulement si fournie ; les autres acceptent une valeur vide.
+  for (const f of ["nom", "prenom"] as const) {
+    if (body[f] !== undefined) {
+      const v = String(body[f] ?? "").trim();
+      if (!v) {
+        return NextResponse.json(
+          { error: "Le nom et le prénom ne peuvent pas être vides." },
+          { status: 400 },
+        );
+      }
+      patch[f] = v;
+    }
+  }
+  for (const f of ["email", "telephone", "adresse"] as const) {
+    if (body[f] !== undefined) patch[f] = String(body[f] ?? "").trim();
+  }
+  if (body.date_naissance !== undefined) {
+    const d = String(body.date_naissance ?? "").trim();
+    if (d) patch.date_naissance = d;
   }
 
   // Édition de la sélection Formule 4 → on recalcule le prix côté serveur

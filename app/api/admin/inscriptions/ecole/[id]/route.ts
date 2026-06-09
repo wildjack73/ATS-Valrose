@@ -13,6 +13,14 @@ interface PatchBody {
   desactive?: boolean;
   niveau?: string | null;
   niveau_attribue?: string | null;
+  // Coordonnées de la fiche (corrections admin)
+  nom?: string;
+  prenom?: string;
+  email?: string;
+  telephone?: string;
+  date_naissance?: string;
+  adresse?: string;
+  code_postal_ville?: string;
 }
 
 export async function PATCH(
@@ -49,6 +57,28 @@ export async function PATCH(
       ? String(body.niveau_attribue).trim()
       : null;
   }
+
+  // Coordonnées de la fiche (corrections admin).
+  for (const f of ["nom", "prenom"] as const) {
+    if (body[f] !== undefined) {
+      const v = String(body[f] ?? "").trim();
+      if (!v) {
+        return NextResponse.json(
+          { error: "Le nom et le prénom ne peuvent pas être vides." },
+          { status: 400 },
+        );
+      }
+      patch[f] = v;
+    }
+  }
+  for (const f of ["email", "telephone", "adresse", "code_postal_ville"] as const) {
+    if (body[f] !== undefined) patch[f] = String(body[f] ?? "").trim();
+  }
+  if (body.date_naissance !== undefined) {
+    const d = String(body.date_naissance ?? "").trim();
+    if (d) patch.date_naissance = d;
+  }
+
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Rien à modifier" }, { status: 400 });
   }
