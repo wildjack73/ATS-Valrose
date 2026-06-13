@@ -1,7 +1,10 @@
 import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
 import StageForm from "./StageForm";
 
-export const dynamic = "force-dynamic";
+// Revalidate every 5 minutes — données (formules/semaines) changent rarement.
+// Les requêtes entre deux revalidations utilisent le HTML en cache sans toucher
+// Supabase → les cold starts ne touchent plus les visiteurs.
+export const revalidate = 300;
 
 export const metadata = {
   title: "Inscription Stages — ATS Valrose",

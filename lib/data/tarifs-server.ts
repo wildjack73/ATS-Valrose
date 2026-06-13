@@ -175,17 +175,24 @@ export async function getTarifsBundle(
   };
 }
 
-/** Bundle des saisons actuellement actives (une par domaine). */
+/** Bundle des saisons actuellement actives (une par domaine).
+ *  Retourne null en cas d'erreur Supabase (cold start, blip réseau) plutôt
+ *  que de laisser l'exception remonter jusqu'au boundary d'erreur. */
 export async function getActiveTarifsBundle(): Promise<TarifsBundle | null> {
-  const [sStages, sEcole] = await Promise.all([
-    getActiveSaison("stages"),
-    getActiveSaison("ecole"),
-  ]);
-  if (!sStages || !sEcole) return null;
-  return getTarifsBundle({
-    saisonStagesId: sStages.id,
-    saisonEcoleId: sEcole.id,
-  });
+  try {
+    const [sStages, sEcole] = await Promise.all([
+      getActiveSaison("stages"),
+      getActiveSaison("ecole"),
+    ]);
+    if (!sStages || !sEcole) return null;
+    return getTarifsBundle({
+      saisonStagesId: sStages.id,
+      saisonEcoleId: sEcole.id,
+    });
+  } catch (err) {
+    console.error("[tarifs] getActiveTarifsBundle:", err);
+    return null;
+  }
 }
 
 // ============================================================================

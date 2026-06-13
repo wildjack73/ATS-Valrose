@@ -1,6 +1,7 @@
 import EcoleInscription from "../ecole/EcoleInscription";
 
-export const dynamic = "force-dynamic";
+// 60 s : mêmes raisons que /ecole (places restantes).
+export const revalidate = 60;
 
 export const metadata = {
   title: "Cours collectifs adultes — ATS Valrose",

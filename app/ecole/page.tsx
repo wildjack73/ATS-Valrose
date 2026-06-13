@@ -1,6 +1,7 @@
 import EcoleInscription from "./EcoleInscription";
 
-export const dynamic = "force-dynamic";
+// 60 s : les compteurs de places restantes doivent rester assez frais.
+export const revalidate = 60;
 
 export const metadata = {
   title: "Inscription École de Tennis — ATS Valrose",
