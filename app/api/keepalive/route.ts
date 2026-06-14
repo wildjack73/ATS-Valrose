@@ -13,14 +13,13 @@ export async function GET() {
       .select("id")
       .limit(1)
       .maybeSingle();
-    if (error) {
-      console.error("[keepalive] Supabase error:", error.message);
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ ok: true });
+    // Toujours 200 : le but est de réveiller Vercel + Supabase,
+    // pas de faire une alerte santé. UptimeRobot ne doit alarmer que
+    // si Vercel lui-même est hors service.
+    if (error) console.error("[keepalive] Supabase error:", error.message);
+    return NextResponse.json({ ok: !error });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[keepalive] Exception:", msg);
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+    console.error("[keepalive] Exception:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ ok: false });
   }
 }
