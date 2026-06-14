@@ -17,42 +17,57 @@ import type {
 // ============================================================================
 
 export async function listSaisons(domaine?: SaisonDomaine): Promise<Saison[]> {
-  let q = getSupabaseAdmin()
-    .from("saisons")
-    .select("*")
-    .order("order_idx", { ascending: false });
-  if (domaine) q = q.eq("domaine", domaine);
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data ?? []) as Saison[];
+  try {
+    let q = getSupabaseAdmin()
+      .from("saisons")
+      .select("*")
+      .order("order_idx", { ascending: false });
+    if (domaine) q = q.eq("domaine", domaine);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []) as Saison[];
+  } catch (err) {
+    console.error("[tarifs] listSaisons:", err);
+    return [];
+  }
 }
 
 /** Saison active pour un domaine donné (stages ou école). */
 export async function getActiveSaison(
   domaine: SaisonDomaine,
 ): Promise<Saison | null> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("saisons")
-    .select("*")
-    .eq("active", true)
-    .eq("domaine", domaine)
-    .maybeSingle();
-  if (error) throw error;
-  return (data as Saison) ?? null;
+  try {
+    const { data, error } = await getSupabaseAdmin()
+      .from("saisons")
+      .select("*")
+      .eq("active", true)
+      .eq("domaine", domaine)
+      .maybeSingle();
+    if (error) throw error;
+    return (data as Saison) ?? null;
+  } catch (err) {
+    console.error("[tarifs] getActiveSaison:", err);
+    return null;
+  }
 }
 
 export async function getSaisonByCode(
   code: string,
   domaine: SaisonDomaine,
 ): Promise<Saison | null> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("saisons")
-    .select("*")
-    .eq("code", code)
-    .eq("domaine", domaine)
-    .maybeSingle();
-  if (error) throw error;
-  return (data as Saison) ?? null;
+  try {
+    const { data, error } = await getSupabaseAdmin()
+      .from("saisons")
+      .select("*")
+      .eq("code", code)
+      .eq("domaine", domaine)
+      .maybeSingle();
+    if (error) throw error;
+    return (data as Saison) ?? null;
+  } catch (err) {
+    console.error("[tarifs] getSaisonByCode:", err);
+    return null;
+  }
 }
 
 /**
