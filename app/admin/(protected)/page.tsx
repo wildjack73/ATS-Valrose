@@ -79,6 +79,7 @@ export default async function AdminDashboardPage({
 }: {
   searchParams: SearchParams;
 }) {
+  try {
   const sp = await searchParams;
   const tab =
     sp.tab === "ecole"
@@ -440,6 +441,27 @@ export default async function AdminDashboardPage({
       )}
     </>
   );
+  } catch (err) {
+    console.error("[admin] Erreur critique:", err);
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-navy mb-2">
+            Données temporairement indisponibles
+          </h1>
+          <p className="text-sm text-gray-600 mb-4">
+            Réessayez dans quelques secondes.
+          </p>
+          <a
+            href="/admin"
+            className="rounded-lg bg-navy text-white px-4 py-2 text-sm font-semibold hover:bg-navy-dark"
+          >
+            Réessayer
+          </a>
+        </div>
+      </div>
+    );
+  }
 }
 
 /** Onglet sobre, style « tab underline » (Linear / Stripe Dashboard) :
