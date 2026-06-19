@@ -16,6 +16,7 @@ export default async function EcoleInscription({
 }: {
   publicCible?: "jeunes" | "adultes";
 }) {
+  try {
   const estAdultes = publicCible === "adultes";
 
   const bundle = await getActiveTarifsBundle();
@@ -124,4 +125,26 @@ export default async function EcoleInscription({
       </section>
     </div>
   );
+  } catch (err) {
+    console.error("[EcoleInscription] Erreur critique:", err);
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-navy">
+          Formulaire temporairement indisponible
+        </h1>
+        <p className="mt-3 text-gray-600">
+          Réessayez dans quelques secondes.{" "}
+          <a
+            className="text-navy underline font-semibold"
+            href="https://padel-tennis-nice.fr/contact-padel-tennis-nice/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Contactez le club
+          </a>{" "}
+          si le problème persiste.
+        </p>
+      </div>
+    );
+  }
 }

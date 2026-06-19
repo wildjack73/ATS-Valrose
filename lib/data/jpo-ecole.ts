@@ -19,22 +19,27 @@ export interface JpoConfig {
 export async function fetchJpoEcole(
   saisonEcoleId: string,
 ): Promise<JpoConfig | null> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("jpo_ecole")
-    .select("*")
-    .eq("saison_id", saisonEcoleId)
-    .maybeSingle();
-  if (error) {
-    console.error("fetchJpoEcole:", error);
+  try {
+    const { data, error } = await getSupabaseAdmin()
+      .from("jpo_ecole")
+      .select("*")
+      .eq("saison_id", saisonEcoleId)
+      .maybeSingle();
+    if (error) {
+      console.error("fetchJpoEcole:", error);
+      return null;
+    }
+    if (!data) return null;
+    return {
+      id: data.id,
+      saison_id: data.saison_id,
+      visible_jusqu_au: data.visible_jusqu_au,
+      annee_scolaire: data.annee_scolaire,
+      date_reprise: data.date_reprise,
+      jours: Array.isArray(data.jours) ? (data.jours as JpoJour[]) : [],
+    };
+  } catch (err) {
+    console.error("fetchJpoEcole:", err);
     return null;
   }
-  if (!data) return null;
-  return {
-    id: data.id,
-    saison_id: data.saison_id,
-    visible_jusqu_au: data.visible_jusqu_au,
-    annee_scolaire: data.annee_scolaire,
-    date_reprise: data.date_reprise,
-    jours: Array.isArray(data.jours) ? (data.jours as JpoJour[]) : [],
-  };
 }
