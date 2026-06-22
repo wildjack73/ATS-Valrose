@@ -156,6 +156,9 @@ export default async function TarifsPage() {
             <Table
               rows={locations.map((l) => ({ label: l.label, prix: l.prix }))}
             />
+            <p className="mt-4 text-sm text-gray-600">
+              Pour le pickle ball, réserver le terrain de tennis 3.
+            </p>
           </Block>
         ) : null}
 

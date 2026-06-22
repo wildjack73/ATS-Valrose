@@ -787,7 +787,7 @@ export default function EcoleForm({
         {/* Licence Pickleball — option facultative */}
         <div className={estAdultes ? "" : "mt-4"}>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-            Licence Pickleball (facultatif)
+            Licence Pickle Ball — Multi raquettes (facultatif)
           </p>
           <label
             className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
@@ -803,7 +803,7 @@ export default function EcoleForm({
                 {...register("licence_pickleball")}
               />
               <span>
-                <span className="font-medium">Licence Pickleball</span>
+                <span className="font-medium">Licence Pickle Ball (Multi raquettes)</span>
                 <span className="block text-xs text-gray-500 mt-0.5">
                   Licence annuelle pour pratiquer le pickleball au club.
                 </span>

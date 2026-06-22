@@ -119,10 +119,11 @@ export default function HomePage() {
 
       {/* ============ CHIFFRES CLÉS ============ */}
       <section className="relative bg-white border-y border-gray-100">
-        <div className="mx-auto max-w-6xl px-4 py-14 grid grid-cols-3 gap-8 text-center">
+        <div className="mx-auto max-w-6xl px-4 py-14 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
           {[
             { value: 3, label: "Courts de tennis", suffix: "" },
             { value: 2, label: "Courts de padel", suffix: "" },
+            { value: 4, label: "Terrains de Pickle-ball", suffix: "" },
             { value: 17, label: "Semaines de stages / an", suffix: "" },
           ].map((stat, i) => (
             <Reveal key={stat.label} delay={i * 100}>
