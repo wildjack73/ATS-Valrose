@@ -12,18 +12,11 @@ import { Field, inputClass } from "@/components/ui/Field";
 import { NiveauSelect } from "@/components/ui/NiveauSelect";
 import { DateNaissanceInput } from "@/components/ui/DateNaissanceInput";
 import { Section } from "@/components/ui/Section";
-
-/** Identique à lib/data/ecole-slots.ts mais utilisable côté client (sans
- *  l'import server-only). On matche les libellés indépendamment de la
- *  casse et des parenthèses pour rester compatible avec d'anciennes
- *  valeurs stockées ("Lundi 18h30-20h (5 places max)" → "lundi 18h30-20h"). */
-function normalizeSlot(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\s*\([^)]*\)/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import {
+  SECTIONS_CRENEAUX,
+  capaciteEffective,
+  normalizeSlot,
+} from "@/lib/data/creneaux-ecole";
 
 const MODES_REGLEMENT = [
   { id: "especes", label: "Espèces" },
@@ -37,12 +30,16 @@ function toggleInArray<T>(arr: T[], value: T): T[] {
 export default function EcoleForm({
   bundle,
   slotsOccupes,
+  capacites,
   publicCible,
 }: {
   bundle: TarifsBundle;
   /** Compteur : créneau normalisé → nb d'inscriptions l'ayant sélectionné.
    *  Sert à afficher « reste X » / « COMPLET » dynamiquement. */
   slotsOccupes: Record<string, number>;
+  /** Capacités éditées en admin : label complet du créneau → nb places
+   *  (null = illimité). Un créneau absent utilise sa valeur par défaut. */
+  capacites: Record<string, number | null>;
   /** Cible : « jeunes » (enfants/ados) ou « adultes » (cours collectifs
    *  adultes). undefined = tous les cours (entrée générique). */
   publicCible?: "jeunes" | "adultes";
@@ -488,143 +485,15 @@ export default function EcoleForm({
             const hasPadel = coursPadelSel.length > 0;
             const rienChoisi = !hasJeune && !hasAdulteTennis && !hasPadel;
 
-            type Opt = {
-              label: string;     // valeur stockée en DB (avec marqueur de catégorie si besoin)
-              display: string;   // ce qui s'affiche sur la pill
-              max?: number;
-              note?: string;
-            };
-            const sections: {
-              titre: string;
-              groupes: { titre: string; options: Opt[] }[];
-            }[] = [];
-
-            if (hasJeune) {
-              sections.push({
-                titre: "🎾 Cours jeunes",
-                groupes: [
-                  {
-                    titre: "Mercredi",
-                    options: [
-                      { label: "Mercredi matin", display: "matin" },
-                      { label: "Mercredi Après-midi", display: "Après-midi" },
-                    ],
-                  },
-                  {
-                    titre: "Samedi",
-                    options: [
-                      { label: "Samedi matin", display: "matin" },
-                      { label: "Samedi Après-midi", display: "Après-midi" },
-                    ],
-                  },
-                  {
-                    titre: "Soir en semaine",
-                    options: [
-                      { label: "Lundi soir", display: "Lundi" },
-                      { label: "Mardi soir", display: "Mardi" },
-                      { label: "Jeudi soir", display: "Jeudi" },
-                      { label: "Vendredi soir", display: "Vendredi" },
-                    ],
-                  },
-                ],
-              });
-            }
-
-            if (hasAdulteTennis) {
-              sections.push({
-                titre: "🎾 Cours Adultes Tennis",
-                groupes: [
-                  {
-                    titre: "Soir en semaine — 18h30-20h",
-                    options: [
-                      { label: "Lundi 18h30-20h", display: "Lundi", max: 5 },
-                      { label: "Mardi 18h30-20h", display: "Mardi", max: 5 },
-                      { label: "Jeudi 18h30-20h", display: "Jeudi", max: 5 },
-                      {
-                        label: "Vendredi 18h30-20h",
-                        display: "Vendredi",
-                        max: 5,
-                      },
-                    ],
-                  },
-                  {
-                    titre: "Samedi",
-                    options: [
-                      {
-                        label: "Samedi 9h-10h30",
-                        display: "9h-10h30",
-                        max: 15,
-                      },
-                      {
-                        label: "Samedi Après-midi",
-                        display: "Après-midi",
-                        max: 5,
-                        note: "non débutant",
-                      },
-                    ],
-                  },
-                  {
-                    titre: "Compétition — 20h-21h30",
-                    options: [
-                      {
-                        label: "Lundi 20h-21h30",
-                        display: "Lundi",
-                        max: 4,
-                        note: "niveau Compétition uniquement",
-                      },
-                    ],
-                  },
-                ],
-              });
-            }
-
-            if (hasPadel) {
-              sections.push({
-                titre: "🏓 Cours Padel",
-                groupes: [
-                  {
-                    titre: "Après-midi",
-                    options: [
-                      {
-                        label: "Mercredi Après-midi (padel)",
-                        display: "Mercredi",
-                        max: 4,
-                      },
-                      {
-                        label: "Samedi Après-midi (padel)",
-                        display: "Samedi",
-                        max: 4,
-                      },
-                    ],
-                  },
-                  {
-                    titre: "Soir en semaine — 17h-18h30",
-                    options: [
-                      {
-                        label: "Lundi 17h-18h30 (padel)",
-                        display: "Lundi",
-                        max: 4,
-                      },
-                      {
-                        label: "Mardi 17h-18h30 (padel)",
-                        display: "Mardi",
-                        max: 4,
-                      },
-                      {
-                        label: "Jeudi 17h-18h30 (padel)",
-                        display: "Jeudi",
-                        max: 4,
-                      },
-                      {
-                        label: "Vendredi 17h-18h30 (padel)",
-                        display: "Vendredi",
-                        max: 4,
-                      },
-                    ],
-                  },
-                ],
-              });
-            }
+            // Les créneaux et leur structure viennent de la source unique
+            // lib/data/creneaux-ecole.ts. On affiche les sections selon les
+            // cours cochés. Le NOMBRE de places vient des capacités (admin).
+            const sections = SECTIONS_CRENEAUX.filter(
+              (s) =>
+                (s.categorie === "jeunes" && hasJeune) ||
+                (s.categorie === "adultes_tennis" && hasAdulteTennis) ||
+                (s.categorie === "padel" && hasPadel),
+            );
 
             if (rienChoisi) {
               return (
@@ -650,12 +519,14 @@ export default function EcoleForm({
                             const isChecked = checked.includes(opt.label);
                             const key = normalizeSlot(opt.label);
                             const occupes = slotsOccupes[key] ?? 0;
+                            // Capacité effective = override admin sinon défaut.
+                            const max = capaciteEffective(opt, capacites);
                             const reste =
-                              opt.max !== undefined
-                                ? Math.max(0, opt.max - occupes)
+                              max !== undefined
+                                ? Math.max(0, max - occupes)
                                 : undefined;
                             const complet =
-                              opt.max !== undefined && reste === 0 && !isChecked;
+                              max !== undefined && reste === 0 && !isChecked;
                             return (
                               <label
                                 key={opt.label}
@@ -682,7 +553,7 @@ export default function EcoleForm({
                                       ({opt.note})
                                     </span>
                                   ) : null}
-                                  {opt.max !== undefined ? (
+                                  {max !== undefined ? (
                                     <span
                                       className={`ml-2 text-[11px] font-bold ${
                                         complet
@@ -700,7 +571,7 @@ export default function EcoleForm({
                                         ? "COMPLET"
                                         : reste === 1
                                           ? "reste 1 place"
-                                          : `reste ${reste}/${opt.max}`}
+                                          : `reste ${reste}/${max}`}
                                     </span>
                                   ) : null}
                                 </span>

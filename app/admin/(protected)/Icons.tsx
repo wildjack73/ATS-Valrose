@@ -126,6 +126,17 @@ export function IconEncaissements(props: IconProps) {
   );
 }
 
+export function IconPlaces(props: IconProps) {
+  // Sièges / places disponibles
+  return (
+    <S {...props}>
+      <circle cx="9" cy="7" r="3" />
+      <path d="M3 21v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" />
+      <path d="M17 11h4M19 9v4" />
+    </S>
+  );
+}
+
 export function IconChart(props: IconProps) {
   // Graphe pour le titre dashboard
   return (

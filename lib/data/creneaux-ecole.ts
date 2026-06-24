@@ -1,19 +1,25 @@
 /**
- * Liste centralisée des créneaux école proposés sur le formulaire public.
+ * Source UNIQUE des créneaux école proposés sur le formulaire public.
  * Utilisée par :
- *  - EcoleForm.tsx (rendu des pills de disponibilité)
- *  - EcoleTable.tsx (filtre Créneau dans l'admin)
+ *  - EcoleForm.tsx          (rendu des pills de disponibilité + places restantes)
+ *  - EcoleTable.tsx         (filtre Créneau dans l'admin)
+ *  - CreneauxEcoleEditor.tsx (édition des dispos d'une inscription)
+ *  - CapacitesEditor.tsx    (édition du nombre de places par créneau)
  *
- * Garder la liste alignée avec ce qui est rendu dans le formulaire — toute
- * nouvelle pill ajoutée doit aussi figurer ici, pour que le filtre admin
- * puisse la proposer même sans inscription existante.
+ * La STRUCTURE (libellés, regroupements) est définie ici, en code. Seul le
+ * NOMBRE de places par créneau est éditable depuis l'admin (stocké en base,
+ * cf. lib/data/ecole-capacites.ts).
  *
- * NB : la VALEUR stockée en DB sur les inscriptions est le `label` (texte
- * exact tel qu'il apparaît sur la pill), pas un code.
+ * NB : la VALEUR stockée en DB sur les inscriptions est le `label` (texte exact
+ * tel qu'il apparaît sur la pill), pas un code. Ce `label` sert aussi de clé
+ * pour les capacités → il doit être unique.
+ *
+ * Ce fichier ne dépend d'aucun module server-only : importable client + serveur.
  */
 
 export type CreneauCategorie = "jeunes" | "adultes_tennis" | "padel";
 
+/** Entrée à plat (label + catégorie) — pour les filtres admin. */
 export interface CreneauEcole {
   /** Texte exact stocké en DB (dispo_mercredi / samedi / semaine) */
   label: string;
@@ -21,35 +27,154 @@ export interface CreneauEcole {
   categorie: CreneauCategorie;
 }
 
-export const CRENEAUX_ECOLE: CreneauEcole[] = [
-  // ----- Jeunes (Tennis) -----
-  { label: "Mercredi matin", categorie: "jeunes" },
-  { label: "Mercredi Après-midi", categorie: "jeunes" },
-  { label: "Samedi matin", categorie: "jeunes" },
-  { label: "Samedi Après-midi", categorie: "jeunes" },
-  { label: "Lundi soir", categorie: "jeunes" },
-  { label: "Mardi soir", categorie: "jeunes" },
-  { label: "Jeudi soir", categorie: "jeunes" },
-  { label: "Vendredi soir", categorie: "jeunes" },
+export type CreneauOption = {
+  /** Valeur stockée en DB + clé des capacités. Doit être unique. */
+  label: string;
+  /** Texte affiché sur la pastille. */
+  display: string;
+  /** Capacité par défaut (code). undefined = illimité (cas des cours jeunes).
+   *  Seuls les créneaux ayant un defaultMax sont gérables depuis l'admin. */
+  defaultMax?: number;
+  /** Petite mention entre parenthèses (« non débutant », etc.). */
+  note?: string;
+};
 
-  // ----- Adultes Tennis -----
-  { label: "Lundi 18h30-20h", categorie: "adultes_tennis" },
-  { label: "Mardi 18h30-20h", categorie: "adultes_tennis" },
-  { label: "Jeudi 18h30-20h", categorie: "adultes_tennis" },
-  { label: "Vendredi 18h30-20h", categorie: "adultes_tennis" },
-  { label: "Lundi 20h-21h30", categorie: "adultes_tennis" },
-  { label: "Samedi 9h-10h30", categorie: "adultes_tennis" },
-  // « Samedi Après-midi » existe aussi pour les jeunes — même valeur stockée
-  // donc pas besoin de la dupliquer (on filtre par label).
+export type CreneauGroupe = { titre: string; options: CreneauOption[] };
 
-  // ----- Padel -----
-  { label: "Mercredi Après-midi (padel)", categorie: "padel" },
-  { label: "Samedi Après-midi (padel)", categorie: "padel" },
-  { label: "Lundi 17h-18h30 (padel)", categorie: "padel" },
-  { label: "Mardi 17h-18h30 (padel)", categorie: "padel" },
-  { label: "Jeudi 17h-18h30 (padel)", categorie: "padel" },
-  { label: "Vendredi 17h-18h30 (padel)", categorie: "padel" },
+export type CreneauSection = {
+  categorie: CreneauCategorie;
+  titre: string;
+  groupes: CreneauGroupe[];
+};
+
+/**
+ * Définition complète et structurée des créneaux École, dans l'ordre
+ * d'affichage du formulaire (Jeunes, Adultes Tennis, Padel).
+ */
+export const SECTIONS_CRENEAUX: CreneauSection[] = [
+  {
+    categorie: "jeunes",
+    titre: "🎾 Cours jeunes",
+    groupes: [
+      {
+        titre: "Mercredi",
+        options: [
+          { label: "Mercredi matin", display: "matin" },
+          { label: "Mercredi Après-midi", display: "Après-midi" },
+        ],
+      },
+      {
+        titre: "Samedi",
+        options: [
+          { label: "Samedi matin", display: "matin" },
+          { label: "Samedi Après-midi", display: "Après-midi" },
+        ],
+      },
+      {
+        titre: "Soir en semaine",
+        options: [
+          { label: "Lundi soir", display: "Lundi" },
+          { label: "Mardi soir", display: "Mardi" },
+          { label: "Jeudi soir", display: "Jeudi" },
+          { label: "Vendredi soir", display: "Vendredi" },
+        ],
+      },
+    ],
+  },
+  {
+    categorie: "adultes_tennis",
+    titre: "🎾 Cours Adultes Tennis",
+    groupes: [
+      {
+        titre: "Soir en semaine — 18h30-20h",
+        options: [
+          { label: "Lundi 18h30-20h", display: "Lundi", defaultMax: 5 },
+          { label: "Mardi 18h30-20h", display: "Mardi", defaultMax: 5 },
+          { label: "Jeudi 18h30-20h", display: "Jeudi", defaultMax: 5 },
+          { label: "Vendredi 18h30-20h", display: "Vendredi", defaultMax: 5 },
+        ],
+      },
+      {
+        titre: "Samedi",
+        options: [
+          { label: "Samedi 9h-10h30", display: "9h-10h30", defaultMax: 15 },
+          {
+            label: "Samedi Après-midi",
+            display: "Après-midi",
+            defaultMax: 5,
+            note: "non débutant",
+          },
+        ],
+      },
+      {
+        titre: "Compétition — 20h-21h30",
+        options: [
+          {
+            label: "Lundi 20h-21h30",
+            display: "Lundi",
+            defaultMax: 4,
+            note: "niveau Compétition uniquement",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    categorie: "padel",
+    titre: "🏓 Cours Padel",
+    groupes: [
+      {
+        titre: "Après-midi",
+        options: [
+          {
+            label: "Mercredi Après-midi (padel)",
+            display: "Mercredi",
+            defaultMax: 4,
+          },
+          {
+            label: "Samedi Après-midi (padel)",
+            display: "Samedi",
+            defaultMax: 4,
+          },
+        ],
+      },
+      {
+        titre: "Soir en semaine — 17h-18h30",
+        options: [
+          { label: "Lundi 17h-18h30 (padel)", display: "Lundi", defaultMax: 4 },
+          { label: "Mardi 17h-18h30 (padel)", display: "Mardi", defaultMax: 4 },
+          { label: "Jeudi 17h-18h30 (padel)", display: "Jeudi", defaultMax: 4 },
+          {
+            label: "Vendredi 17h-18h30 (padel)",
+            display: "Vendredi",
+            defaultMax: 4,
+          },
+        ],
+      },
+    ],
+  },
 ];
+
+/**
+ * Liste À PLAT des créneaux (label + catégorie), dérivée de SECTIONS_CRENEAUX.
+ * Dédupliquée par `label` (« Samedi Après-midi » est partagé jeunes/adultes →
+ * conservé une seule fois, sous sa 1re catégorie). Utilisée par les filtres
+ * admin.
+ */
+export const CRENEAUX_ECOLE: CreneauEcole[] = (() => {
+  const seen = new Set<string>();
+  const out: CreneauEcole[] = [];
+  for (const section of SECTIONS_CRENEAUX) {
+    for (const groupe of section.groupes) {
+      for (const option of groupe.options) {
+        if (seen.has(option.label)) continue;
+        seen.add(option.label);
+        out.push({ label: option.label, categorie: section.categorie });
+      }
+    }
+  }
+  return out;
+})();
 
 export function categorieLabel(c: CreneauCategorie): string {
   switch (c) {
@@ -60,4 +185,70 @@ export function categorieLabel(c: CreneauCategorie): string {
     case "padel":
       return "Padel";
   }
+}
+
+/**
+ * Normalise un libellé de créneau pour la comparaison d'occupation (insensible
+ * casse, parenthèses retirées). Sert UNIQUEMENT au comptage des places occupées
+ * (slotsOccupes). La clé des capacités, elle, est le `label` COMPLET pour
+ * éviter que des créneaux distincts (« Samedi Après-midi » tennis vs padel) ne
+ * se confondent.
+ */
+export function normalizeSlot(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Capacité effective d'un créneau : override admin (si une ligne existe en DB
+ * pour ce `label`) sinon valeur par défaut du code. Renvoie `undefined` =
+ * illimité.
+ *
+ * L'override ne s'applique QU'AUX créneaux ayant déjà un `defaultMax`. Les cours
+ * jeunes (sans defaultMax) restent illimités, pour ne pas changer leur
+ * comportement.
+ */
+export function capaciteEffective(
+  option: CreneauOption,
+  capacites: Record<string, number | null>,
+): number | undefined {
+  if (option.defaultMax === undefined) return undefined; // jeunes → illimité
+  if (option.label in capacites) {
+    return capacites[option.label] ?? undefined; // null = illimité explicite
+  }
+  return option.defaultMax;
+}
+
+/** Liste à plat des créneaux GÉRABLES depuis l'admin (ceux ayant un defaultMax),
+ *  en conservant l'info de section/groupe pour l'affichage. */
+export function listCreneauxGerables(): {
+  categorie: CreneauCategorie;
+  sectionTitre: string;
+  groupeTitre: string;
+  option: CreneauOption;
+}[] {
+  const out: {
+    categorie: CreneauCategorie;
+    sectionTitre: string;
+    groupeTitre: string;
+    option: CreneauOption;
+  }[] = [];
+  for (const section of SECTIONS_CRENEAUX) {
+    for (const groupe of section.groupes) {
+      for (const option of groupe.options) {
+        if (option.defaultMax !== undefined) {
+          out.push({
+            categorie: section.categorie,
+            sectionTitre: section.titre,
+            groupeTitre: groupe.titre,
+            option,
+          });
+        }
+      }
+    }
+  }
+  return out;
 }

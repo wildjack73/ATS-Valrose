@@ -1,5 +1,6 @@
 import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
 import { fetchSlotsOccupesEcole } from "@/lib/data/ecole-slots";
+import { fetchCapacitesEcole } from "@/lib/data/ecole-capacites";
 import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
 import EcoleForm from "./EcoleForm";
 
@@ -119,6 +120,7 @@ export default async function EcoleInscription({
           <EcoleForm
             bundle={bundle}
             slotsOccupes={await fetchSlotsOccupesEcole(bundle.saisonEcole.id)}
+            capacites={await fetchCapacitesEcole(bundle.saisonEcole.id)}
             publicCible={publicCible}
           />
         </div>

@@ -425,3 +425,25 @@ create table if not exists public.stage_organisations (
 create index if not exists idx_stage_org_semaine on public.stage_organisations(semaine_id, jour);
 
 alter table public.stage_organisations enable row level security;
+
+-- ============================================================================
+-- CAPACITÉS ÉCOLE : nombre de places par créneau, éditable depuis l'admin
+-- ----------------------------------------------------------------------------
+-- Avant, les capacités étaient en dur dans app/ecole/EcoleForm.tsx. Cette table
+-- ne stocke que les overrides ; un créneau sans ligne utilise la valeur par
+-- défaut du code (lib/data/creneaux-ecole.ts).
+-- creneau_key = libellé COMPLET du créneau ; capacite NULL = illimité.
+-- ============================================================================
+create table if not exists public.capacites_creneaux_ecole (
+  id uuid primary key default gen_random_uuid(),
+  saison_id uuid not null references public.saisons(id) on delete cascade,
+  creneau_key text not null,
+  capacite int,
+  updated_at timestamptz not null default now(),
+  unique (saison_id, creneau_key)
+);
+
+create index if not exists idx_capacites_creneaux_saison
+  on public.capacites_creneaux_ecole(saison_id);
+
+alter table public.capacites_creneaux_ecole enable row level security;

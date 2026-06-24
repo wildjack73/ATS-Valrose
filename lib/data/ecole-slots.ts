@@ -1,17 +1,8 @@
 import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-
-/** Normalise un libellé de créneau pour la comparaison (insensible casse,
- *  parenthèses retirées). Utilisé pour matcher entre le libellé affiché
- *  côté formulaire (« Lundi 18h30-20h ») et la valeur stockée en DB qui
- *  peut contenir des suffixes type « (5 places max) » selon l'époque. */
-export function normalizeSlot(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/\s*\([^)]*\)/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+// Source unique de la normalisation (partagée formulaire + serveur).
+import { normalizeSlot } from "@/lib/data/creneaux-ecole";
+export { normalizeSlot };
 
 /**
  * Compte combien de fois chaque créneau apparaît dans le champ

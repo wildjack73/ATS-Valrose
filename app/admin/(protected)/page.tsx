@@ -17,6 +17,7 @@ import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
 import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 import TarifsEditor from "./TarifsEditor";
+import CapacitesEditor from "./CapacitesEditor";
 import PlanningEcole from "./PlanningEcole";
 import DashboardHeader from "./DashboardHeader";
 import StagesOrganisation from "./StagesOrganisation";
@@ -38,7 +39,9 @@ import {
   IconAnnuaire,
   IconArchive,
   IconEncaissements,
+  IconPlaces,
 } from "./Icons";
+import { fetchCapacitesEcole } from "@/lib/data/ecole-capacites";
 import {
   fetchGroupesEcole,
   fetchCoaches,
@@ -88,6 +91,8 @@ export default async function AdminDashboardPage({
         ? "historique"
         : sp.tab === "tarifs"
           ? "tarifs"
+          : sp.tab === "capacites"
+          ? "capacites"
           : sp.tab === "planning"
             ? "planning"
             : sp.tab === "stages-org"
@@ -213,6 +218,12 @@ export default async function AdminDashboardPage({
       ? await fetchJpoEcole(bundle.saisonEcole.id)
       : null;
 
+  // Capacités créneaux école : charger seulement si l'onglet est actif
+  const capacitesEcole =
+    tab === "capacites" && bundle
+      ? await fetchCapacitesEcole(bundle.saisonEcole.id)
+      : null;
+
   // Stages organisation : charger coachs + compteurs + effectifs (qui est là)
   // pour la semaine sélectionnée
   const stageOrgData =
@@ -271,6 +282,13 @@ export default async function AdminDashboardPage({
           icon={<IconTarifs />}
         >
           Tarifs
+        </TabLink>
+        <TabLink
+          active={tab === "capacites"}
+          href="/admin?tab=capacites"
+          icon={<IconPlaces />}
+        >
+          Places
         </TabLink>
         <TabLink
           active={tab === "stages-org"}
@@ -355,6 +373,18 @@ export default async function AdminDashboardPage({
             Aucune saison configurée. Exécute{" "}
             <code className="bg-white px-1 rounded">supabase/seed-2026-2027.sql</code>{" "}
             dans Supabase.
+          </div>
+        )
+      ) : tab === "capacites" ? (
+        bundle ? (
+          <CapacitesEditor
+            saisonId={bundle.saisonEcole.id}
+            saisonLabel={bundle.saisonEcole.label}
+            capacites={capacitesEcole ?? {}}
+          />
+        ) : (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
+            Aucune saison active pour gérer les places.
           </div>
         )
       ) : tab === "planning" ? (
