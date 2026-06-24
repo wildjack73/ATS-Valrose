@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   listCreneauxGerables,
   defaultMaxForLabel,
+  normalizeSlot,
   type CreneauCategorie,
 } from "@/lib/data/creneaux-ecole";
 
@@ -19,11 +20,14 @@ export default function CapacitesEditor({
   saisonId,
   saisonLabel,
   capacites,
+  slotsOccupes,
 }: {
   saisonId: string;
   saisonLabel: string;
   /** Overrides actuels : label complet du créneau → nb places (null = illimité). */
   capacites: Record<string, number | null>;
+  /** Occupation actuelle : créneau normalisé → nb d'inscrits l'ayant choisi. */
+  slotsOccupes: Record<string, number>;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -130,9 +134,11 @@ export default function CapacitesEditor({
         </h2>
         <p className="text-xs text-gray-500 mt-1">
           Saison <strong>{saisonLabel}</strong>. Définissez le nombre de places
-          de chaque créneau. Laissez vide pour « illimité ». Le formulaire
-          affiche « reste X » et bloque l&apos;inscription quand le créneau est
-          complet.
+          de chaque créneau. Laissez vide pour « illimité ». Le chiffre «{" "}
+          <strong>X pris</strong> » indique le nombre d&apos;inscrits ayant déjà
+          choisi ce créneau (passe en rouge si la limite est atteinte). Le
+          formulaire affiche « reste X » et bloque l&apos;inscription quand le
+          créneau est complet.
         </p>
         <p className="text-xs text-gray-400 mt-1">
           Par défaut les cours jeunes sont illimités (champ vide). « Samedi
@@ -164,6 +170,11 @@ export default function CapacitesEditor({
                 <div className="space-y-2">
                   {opts.map((c) => {
                     const label = c.option.label;
+                    const occupes = slotsOccupes[normalizeSlot(label)] ?? 0;
+                    const raw = valeurs[label] ?? "";
+                    const maxNum = raw === "" ? null : Number(raw);
+                    // Alerte si le nombre d'inscrits atteint ou dépasse le max.
+                    const complet = maxNum != null && occupes >= maxNum;
                     return (
                       <div
                         key={label}
@@ -180,19 +191,33 @@ export default function CapacitesEditor({
                           ) : null}
                         </span>
                         <div className="flex items-center gap-2">
+                          {/* Déjà pris */}
+                          <span
+                            className={`text-xs font-semibold w-20 text-right ${
+                              complet ? "text-red-600" : "text-gray-500"
+                            }`}
+                            title="Inscrits ayant déjà choisi ce créneau"
+                          >
+                            {occupes} pris
+                          </span>
+                          <span className="text-gray-300" aria-hidden>
+                            /
+                          </span>
                           <input
                             type="text"
                             inputMode="numeric"
-                            value={valeurs[label] ?? ""}
+                            value={raw}
                             onChange={(e) => setVal(label, e.target.value)}
                             disabled={pending}
                             placeholder="illimité"
-                            className="w-24 rounded border border-gray-300 px-2 py-1 text-sm text-center"
+                            className={`w-24 rounded border px-2 py-1 text-sm text-center ${
+                              complet
+                                ? "border-red-400 bg-red-50"
+                                : "border-gray-300"
+                            }`}
                           />
                           <span className="text-xs text-gray-500 w-16">
-                            {(valeurs[label] ?? "") === ""
-                              ? "illimité"
-                              : "places"}
+                            {raw === "" ? "illimité" : "places"}
                           </span>
                         </div>
                       </div>

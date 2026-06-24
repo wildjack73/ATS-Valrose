@@ -42,6 +42,7 @@ import {
   IconPlaces,
 } from "./Icons";
 import { fetchCapacitesEcole } from "@/lib/data/ecole-capacites";
+import { fetchSlotsOccupesEcole } from "@/lib/data/ecole-slots";
 import {
   fetchGroupesEcole,
   fetchCoaches,
@@ -219,10 +220,14 @@ export default async function AdminDashboardPage({
       : null;
 
   // Capacités créneaux école : charger seulement si l'onglet est actif
-  const capacitesEcole =
+  // (capacités éditées + occupation actuelle de chaque créneau).
+  const [capacitesEcole, slotsOccupesEcole] =
     tab === "capacites" && bundle
-      ? await fetchCapacitesEcole(bundle.saisonEcole.id)
-      : null;
+      ? await Promise.all([
+          fetchCapacitesEcole(bundle.saisonEcole.id),
+          fetchSlotsOccupesEcole(bundle.saisonEcole.id),
+        ])
+      : [null, null];
 
   // Stages organisation : charger coachs + compteurs + effectifs (qui est là)
   // pour la semaine sélectionnée
@@ -381,6 +386,7 @@ export default async function AdminDashboardPage({
             saisonId={bundle.saisonEcole.id}
             saisonLabel={bundle.saisonEcole.label}
             capacites={capacitesEcole ?? {}}
+            slotsOccupes={slotsOccupesEcole ?? {}}
           />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
