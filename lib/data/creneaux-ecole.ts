@@ -207,48 +207,79 @@ export function normalizeSlot(s: string): string {
  * pour ce `label`) sinon valeur par défaut du code. Renvoie `undefined` =
  * illimité.
  *
- * L'override ne s'applique QU'AUX créneaux ayant déjà un `defaultMax`. Les cours
- * jeunes (sans defaultMax) restent illimités, pour ne pas changer leur
- * comportement.
+ * Tant qu'aucun override n'existe, le comportement par défaut est préservé :
+ * les créneaux Tennis/Padel utilisent leur `defaultMax`, les cours jeunes
+ * (sans `defaultMax`) restent illimités.
  */
 export function capaciteEffective(
   option: CreneauOption,
   capacites: Record<string, number | null>,
 ): number | undefined {
-  if (option.defaultMax === undefined) return undefined; // jeunes → illimité
   if (option.label in capacites) {
     return capacites[option.label] ?? undefined; // null = illimité explicite
   }
-  return option.defaultMax;
+  return option.defaultMax; // undefined pour les jeunes = illimité
 }
 
-/** Liste à plat des créneaux GÉRABLES depuis l'admin (ceux ayant un defaultMax),
- *  en conservant l'info de section/groupe pour l'affichage. */
+/**
+ * Capacité par défaut (code) associée à un `label`, tous cours confondus.
+ * Un label partagé (ex. « Samedi Après-midi » jeunes + adultes) prend la
+ * valeur définie sur la variante qui en a une (l'adulte, 5). undefined =
+ * illimité par défaut (cas des créneaux jeunes purs).
+ */
+export function defaultMaxForLabel(label: string): number | undefined {
+  let def: number | undefined = undefined;
+  for (const section of SECTIONS_CRENEAUX) {
+    for (const groupe of section.groupes) {
+      for (const option of groupe.options) {
+        if (option.label === label && option.defaultMax !== undefined) {
+          def = option.defaultMax;
+        }
+      }
+    }
+  }
+  return def;
+}
+
+/**
+ * Liste des créneaux gérables depuis l'admin, dédupliquée par `label`.
+ * Un label partagé entre catégories (ex. « Samedi Après-midi ») n'apparaît
+ * qu'une fois — sur la variante qui porte une capacité par défaut (adultes),
+ * car le réglage est commun (même valeur stockée en DB).
+ */
 export function listCreneauxGerables(): {
   categorie: CreneauCategorie;
   sectionTitre: string;
   groupeTitre: string;
   option: CreneauOption;
 }[] {
-  const out: {
+  type Entry = {
     categorie: CreneauCategorie;
     sectionTitre: string;
     groupeTitre: string;
     option: CreneauOption;
-  }[] = [];
+  };
+  const byLabel = new Map<string, Entry>();
   for (const section of SECTIONS_CRENEAUX) {
     for (const groupe of section.groupes) {
       for (const option of groupe.options) {
-        if (option.defaultMax !== undefined) {
-          out.push({
-            categorie: section.categorie,
-            sectionTitre: section.titre,
-            groupeTitre: groupe.titre,
-            option,
-          });
+        const entry: Entry = {
+          categorie: section.categorie,
+          sectionTitre: section.titre,
+          groupeTitre: groupe.titre,
+          option,
+        };
+        const existing = byLabel.get(option.label);
+        // On garde la variante qui porte un defaultMax (réglage de référence).
+        if (
+          !existing ||
+          (existing.option.defaultMax === undefined &&
+            option.defaultMax !== undefined)
+        ) {
+          byLabel.set(option.label, entry);
         }
       }
     }
   }
-  return out;
+  return [...byLabel.values()];
 }

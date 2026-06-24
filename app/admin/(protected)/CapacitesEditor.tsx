@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   listCreneauxGerables,
+  defaultMaxForLabel,
   type CreneauCategorie,
 } from "@/lib/data/creneaux-ecole";
 
@@ -32,22 +33,20 @@ export default function CapacitesEditor({
   const creneaux = useMemo(() => listCreneauxGerables(), []);
 
   /** Valeur initiale (string) de chaque champ : override si présent, sinon
-   *  défaut du code. null (illimité) → champ vide. */
-  function valeurInitiale(label: string, defaultMax: number): string {
+   *  défaut du code (vide = illimité, cas des créneaux jeunes). */
+  function valeurInitiale(label: string): string {
     if (label in capacites) {
       const v = capacites[label];
       return v == null ? "" : String(v);
     }
-    return String(defaultMax);
+    const def = defaultMaxForLabel(label);
+    return def == null ? "" : String(def);
   }
 
   const [valeurs, setValeurs] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     for (const c of creneaux) {
-      init[c.option.label] = valeurInitiale(
-        c.option.label,
-        c.option.defaultMax!,
-      );
+      init[c.option.label] = valeurInitiale(c.option.label);
     }
     return init;
   });
@@ -55,8 +54,8 @@ export default function CapacitesEditor({
   // Y a-t-il au moins un champ modifié par rapport à l'état initial ?
   const dirty = useMemo(() => {
     for (const c of creneaux) {
-      const initiale = valeurInitiale(c.option.label, c.option.defaultMax!);
-      if ((valeurs[c.option.label] ?? "") !== initiale) return true;
+      if ((valeurs[c.option.label] ?? "") !== valeurInitiale(c.option.label))
+        return true;
     }
     return false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,13 +71,20 @@ export default function CapacitesEditor({
   async function save() {
     setError(null);
     setSaved(false);
-    const items = creneaux.map((c) => {
-      const raw = valeurs[c.option.label] ?? "";
-      return {
-        creneauKey: c.option.label,
-        capacite: raw === "" ? null : Number(raw),
-      };
-    });
+    // On n'envoie QUE les écarts par rapport au défaut du code : ainsi un
+    // créneau laissé à sa valeur d'origine ne crée pas de ligne, et le
+    // comportement par défaut (ex. samedi après-midi jeunes illimité) est
+    // préservé. L'API remplace l'ensemble des overrides de la saison.
+    const items = creneaux
+      .map((c) => {
+        const label = c.option.label;
+        const raw = valeurs[label] ?? "";
+        const current = raw === "" ? null : Number(raw);
+        const def = defaultMaxForLabel(label) ?? null;
+        return { creneauKey: label, capacite: current, isDefault: current === def };
+      })
+      .filter((x) => !x.isDefault)
+      .map((x) => ({ creneauKey: x.creneauKey, capacite: x.capacite }));
     try {
       const res = await fetch("/api/admin/capacites-ecole", {
         method: "POST",
@@ -129,7 +135,9 @@ export default function CapacitesEditor({
           complet.
         </p>
         <p className="text-xs text-gray-400 mt-1">
-          Les cours jeunes ne sont pas limités par cet écran (places illimitées).
+          Par défaut les cours jeunes sont illimités (champ vide). « Samedi
+          Après-midi » est commun aux jeunes et aux adultes : le réglage est
+          partagé.
         </p>
       </div>
 

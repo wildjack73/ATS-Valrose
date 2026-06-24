@@ -8,9 +8,14 @@ export const runtime = "nodejs";
 type Item = { creneauKey: string; capacite: number | null };
 
 /**
- * Enregistre (upsert) les capacités des créneaux École pour une saison.
+ * Remplace l'ensemble des capacités (overrides) des créneaux École d'une saison.
  * Body attendu : { saisonId, items: [{ creneauKey, capacite }] }
+ *   - items = UNIQUEMENT les écarts au défaut du code (un créneau resté à sa
+ *     valeur par défaut n'a pas de ligne).
  *   - capacite = nombre de places, ou null = illimité.
+ *
+ * Stratégie : on supprime toutes les lignes de la saison puis on insère les
+ * overrides fournis. Ainsi, retirer un override supprime bien sa ligne.
  */
 export async function POST(request: Request) {
   if (!(await isAdminAuthenticated())) {
@@ -33,11 +38,15 @@ export async function POST(request: Request) {
   }
 
   const now = new Date().toISOString();
+  const seen = new Set<string>();
   const rows = [];
   for (const it of items) {
     if (!it || typeof it.creneauKey !== "string" || !it.creneauKey.trim()) {
       continue;
     }
+    const key = it.creneauKey.trim();
+    if (seen.has(key)) continue; // dédoublonnage défensif
+    seen.add(key);
     // Capacité : entier positif, ou null (illimité). Toute autre valeur → null.
     let capacite: number | null = null;
     if (typeof it.capacite === "number" && Number.isFinite(it.capacite)) {
@@ -45,23 +54,33 @@ export async function POST(request: Request) {
     }
     rows.push({
       saison_id: saisonId,
-      creneau_key: it.creneauKey.trim(),
+      creneau_key: key,
       capacite,
       updated_at: now,
     });
   }
 
-  if (rows.length === 0) {
-    return NextResponse.json({ error: "Aucun créneau valide" }, { status: 400 });
+  const supa = getSupabaseAdmin();
+
+  // 1) Purge des overrides existants de la saison.
+  const { error: delError } = await supa
+    .from("capacites_creneaux_ecole")
+    .delete()
+    .eq("saison_id", saisonId);
+  if (delError) {
+    console.error("[capacites-ecole POST] delete", delError);
+    return NextResponse.json({ error: delError.message }, { status: 500 });
   }
 
-  const { error } = await getSupabaseAdmin()
-    .from("capacites_creneaux_ecole")
-    .upsert(rows, { onConflict: "saison_id,creneau_key" });
-
-  if (error) {
-    console.error("[capacites-ecole POST]", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  // 2) Insertion des overrides fournis (le cas « tout par défaut » est valide).
+  if (rows.length > 0) {
+    const { error: insError } = await supa
+      .from("capacites_creneaux_ecole")
+      .insert(rows);
+    if (insError) {
+      console.error("[capacites-ecole POST] insert", insError);
+      return NextResponse.json({ error: insError.message }, { status: 500 });
+    }
   }
 
   // Les pages publiques (ISR 60 s) reflètent les nouvelles places immédiatement.
