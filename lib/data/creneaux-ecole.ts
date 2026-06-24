@@ -189,15 +189,18 @@ export function categorieLabel(c: CreneauCategorie): string {
 
 /**
  * Normalise un libellé de créneau pour la comparaison d'occupation (insensible
- * casse, parenthèses retirées). Sert UNIQUEMENT au comptage des places occupées
- * (slotsOccupes). La clé des capacités, elle, est le `label` COMPLET pour
- * éviter que des créneaux distincts (« Samedi Après-midi » tennis vs padel) ne
- * se confondent.
+ * casse / espaces). Sert au comptage des places occupées (slotsOccupes).
+ *
+ * IMPORTANT : on retire UNIQUEMENT les vieux suffixes parasites du type
+ * « (5 places max) » présents dans d'anciennes données. On CONSERVE les
+ * marqueurs significatifs comme « (padel) », sinon un créneau padel
+ * (« Mercredi Après-midi (padel) ») serait confondu avec le créneau jeunes
+ * homonyme (« Mercredi Après-midi ») et compterait ses inscrits.
  */
 export function normalizeSlot(s: string): string {
   return s
     .toLowerCase()
-    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/\s*\([^)]*places?\s*max[^)]*\)/g, "") // « (5 places max) » → bruit
     .replace(/\s+/g, " ")
     .trim();
 }
