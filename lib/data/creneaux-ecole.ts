@@ -99,8 +99,10 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
         options: [
           { label: "Samedi 9h-10h30", display: "9h-10h30", defaultMax: 15 },
           {
+            // `display` seul change : le `label` reste « Samedi Après-midi »
+            // (valeur stockée sur les inscriptions + clé des capacités).
             label: "Samedi Après-midi",
-            display: "Après-midi",
+            display: "15h-16h30",
             defaultMax: 5,
             note: "non débutant",
           },
