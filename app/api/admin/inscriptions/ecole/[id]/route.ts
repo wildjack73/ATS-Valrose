@@ -13,6 +13,8 @@ interface PatchBody {
   desactive?: boolean;
   niveau?: string | null;
   niveau_attribue?: string | null;
+  // Créneaux / disponibilités (édition admin) — CSV de libellés
+  dispo_semaine?: string | null;
   // Coordonnées de la fiche (corrections admin)
   nom?: string;
   prenom?: string;
@@ -55,6 +57,11 @@ export async function PATCH(
   if (body.niveau_attribue !== undefined) {
     patch.niveau_attribue = body.niveau_attribue
       ? String(body.niveau_attribue).trim()
+      : null;
+  }
+  if (body.dispo_semaine !== undefined) {
+    patch.dispo_semaine = body.dispo_semaine
+      ? String(body.dispo_semaine).trim()
       : null;
   }
 
