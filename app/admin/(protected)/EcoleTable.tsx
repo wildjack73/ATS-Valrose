@@ -79,21 +79,36 @@ export default function EcoleTable({
   // Créneau : valeurs uniques de dispo_mercredi + samedi + semaine (dérivé des
   //          inscriptions existantes, suffisant en pratique)
   const coursOptions = useMemo(() => {
-    const all = [
-      ...coursTennis.map((c) => ({
-        key: `tennis:${c.code}`,
-        label: c.label,
-        type: "tennis" as const,
-        order: c.order_idx,
-      })),
-      ...coursPadel.map((c) => ({
-        key: `padel:${c.code}`,
-        label: c.label,
-        type: "padel" as const,
-        order: c.order_idx,
-      })),
-    ];
-    return all.sort((a, b) => {
+    // Regroupe par (type, libellé) : deux cours homonymes (même nom, codes
+    // différents en base — ex. deux « Cours Adultes ») apparaissent comme UNE
+    // seule entrée. Le filtre matche alors n'importe lequel de leurs codes.
+    type Opt = {
+      key: string;
+      label: string;
+      type: "tennis" | "padel";
+      order: number;
+      codes: string[];
+    };
+    const byKey = new Map<string, Opt>();
+    const add = (type: "tennis" | "padel", c: CoursEcole) => {
+      const k = `${type}:${c.label.trim().toLowerCase()}`;
+      const existing = byKey.get(k);
+      if (existing) {
+        existing.codes.push(c.code);
+        existing.order = Math.min(existing.order, c.order_idx);
+      } else {
+        byKey.set(k, {
+          key: k,
+          label: c.label,
+          type,
+          order: c.order_idx,
+          codes: [c.code],
+        });
+      }
+    };
+    for (const c of coursTennis) add("tennis", c);
+    for (const c of coursPadel) add("padel", c);
+    return Array.from(byKey.values()).sort((a, b) => {
       if (a.type !== b.type) return a.type === "tennis" ? -1 : 1;
       return a.order - b.order;
     });
@@ -122,13 +137,15 @@ export default function EcoleTable({
           return false;
         if (currentType === "pickleball" && !r.licence_pickleball) return false;
       }
-      // Cours précis (format "tennis:CODE" ou "padel:CODE")
+      // Cours précis : la clé regroupe tous les codes de même libellé.
+      // On matche si l'inscription contient AU MOINS un de ces codes.
       if (currentCours) {
-        const [t, code] = currentCours.split(":");
-        if (t === "tennis" && !(r.cours_tennis ?? []).includes(code))
-          return false;
-        if (t === "padel" && !(r.cours_padel ?? []).includes(code))
-          return false;
+        const opt = coursOptions.find((o) => o.key === currentCours);
+        if (opt) {
+          const arr =
+            opt.type === "tennis" ? r.cours_tennis ?? [] : r.cours_padel ?? [];
+          if (!opt.codes.some((code) => arr.includes(code))) return false;
+        }
       }
       // Créneau : doit apparaître dans une des 3 dispos
       if (currentCreneau) {
@@ -159,6 +176,7 @@ export default function EcoleTable({
     search,
     filterNiveau,
     niveauxEleves,
+    coursOptions,
   ]);
 
   async function patchInscription(id: string, patch: object) {
