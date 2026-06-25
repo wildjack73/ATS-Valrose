@@ -151,6 +151,24 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
           },
         ],
       },
+      {
+        titre: "Soir en semaine — 18h30-20h",
+        options: [
+          { label: "Lundi 18h30-20h (padel)", display: "Lundi", defaultMax: 4 },
+          { label: "Mardi 18h30-20h (padel)", display: "Mardi", defaultMax: 4 },
+          {
+            label: "Mercredi 18h30-20h (padel)",
+            display: "Mercredi",
+            defaultMax: 4,
+          },
+          { label: "Jeudi 18h30-20h (padel)", display: "Jeudi", defaultMax: 4 },
+          {
+            label: "Vendredi 18h30-20h (padel)",
+            display: "Vendredi",
+            defaultMax: 4,
+          },
+        ],
+      },
     ],
   },
 ];
