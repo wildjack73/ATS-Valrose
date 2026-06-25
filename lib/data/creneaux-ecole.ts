@@ -129,13 +129,15 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
         titre: "Après-midi",
         options: [
           {
+            // `display` seul porte l'horaire ; le `label` reste la valeur
+            // stockée en base + clé des capacités.
             label: "Mercredi Après-midi (padel)",
-            display: "Mercredi",
+            display: "Mercredi 17h-18h30",
             defaultMax: 4,
           },
           {
             label: "Samedi Après-midi (padel)",
-            display: "Samedi",
+            display: "Samedi 15h-16h30",
             defaultMax: 4,
           },
         ],
