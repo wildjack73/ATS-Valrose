@@ -61,6 +61,7 @@ export default function EcoleForm({
 
   const COURS_TENNIS = bundle.coursTennis.filter(filtreCours);
   const COURS_PADEL = bundle.coursPadel.filter(filtreCours);
+  const COURS_PICKLEBALL = (bundle.coursPickleball ?? []).filter(filtreCours);
   const LICENCE_FFT = bundle.licenceFft;
 
   const {
@@ -82,6 +83,7 @@ export default function EcoleForm({
       niveau: "",
       cours_tennis: [],
       cours_padel: [],
+      cours_pickleball: [],
       licence_pickleball: false,
       dispo_mercredi: "",
       dispo_samedi: "",
@@ -99,8 +101,10 @@ export default function EcoleForm({
 
   const coursTennis = (watch("cours_tennis") ?? []) as string[];
   const coursPadel = (watch("cours_padel") ?? []) as string[];
+  const coursPickleball = (watch("cours_pickleball") ?? []) as string[];
   const licenceFftCode = watch("licence_fft");
   const licencePickleball = watch("licence_pickleball");
+  const hasPickleball = coursPickleball.length > 0;
 
   const prixTotal = useMemo(() => {
     let total = 0;
@@ -110,31 +114,45 @@ export default function EcoleForm({
     for (const code of coursPadel) {
       total += COURS_PADEL.find((c) => c.code === code)?.prix ?? 0;
     }
+    for (const code of coursPickleball) {
+      total += COURS_PICKLEBALL.find((c) => c.code === code)?.prix ?? 0;
+    }
     if (licenceFftCode) {
       total += LICENCE_FFT.find((l) => l.code === licenceFftCode)?.prix ?? 0;
     }
-    if (licencePickleball) {
+    if (licencePickleball && coursPickleball.length > 0) {
       total += PRIX_LICENCE_PICKLEBALL;
     }
     return total;
   }, [
     coursTennis,
     coursPadel,
+    coursPickleball,
     licenceFftCode,
     licencePickleball,
     COURS_TENNIS,
     COURS_PADEL,
+    COURS_PICKLEBALL,
     LICENCE_FFT,
   ]);
 
   async function onSubmit(values: EcoleFormInput) {
     setServerError(null);
     setSubmitting(true);
+    // La licence pickleball n'a de sens qu'avec un cours pickleball : si le
+    // cours a été décoché après coup, on ne facture pas la licence.
+    const payload: EcoleFormInput = {
+      ...values,
+      licence_pickleball:
+        (values.cours_pickleball?.length ?? 0) > 0
+          ? values.licence_pickleball
+          : false,
+    };
     try {
       const res = await fetch("/api/ecole", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "Erreur serveur");
@@ -439,6 +457,82 @@ export default function EcoleForm({
         />
         ) : null}
 
+        {COURS_PICKLEBALL.length > 0 ? (
+        <Controller
+          control={control}
+          name="cours_pickleball"
+          render={({ field }) => (
+            <Field
+              label="Cours PICKLEBALL"
+              error={errors.cours_pickleball?.message as string | undefined}
+            >
+              <div className="grid gap-2">
+                {COURS_PICKLEBALL.map((c: CoursEcole) => {
+                  const checked = (field.value ?? []).includes(c.code);
+                  const ferme = c.ferme;
+                  return (
+                    <label
+                      key={c.id}
+                      aria-disabled={ferme}
+                      className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 text-sm ${
+                        ferme
+                          ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-70"
+                          : checked
+                            ? "border-ocre bg-ocre/10 cursor-pointer"
+                            : "border-gray-300 hover:border-ocre/50 cursor-pointer"
+                      }`}
+                    >
+                      <span className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          className="accent-ocre mt-0.5"
+                          checked={checked && !ferme}
+                          disabled={ferme}
+                          onChange={() =>
+                            field.onChange(
+                              toggleInArray<string>(
+                                (field.value as string[]) ?? [],
+                                c.code,
+                              ),
+                            )
+                          }
+                        />
+                        <span>
+                          <span
+                            className={`font-medium ${
+                              ferme ? "line-through text-gray-500" : ""
+                            }`}
+                          >
+                            {c.label}
+                          </span>
+                          {ferme ? (
+                            <span className="ml-2 inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-700 align-middle">
+                              Complet
+                            </span>
+                          ) : null}
+                          {c.description ? (
+                            <span className="block text-xs text-gray-500 mt-0.5">
+                              {c.description}
+                            </span>
+                          ) : null}
+                        </span>
+                      </span>
+                      <span
+                        className={`font-bold whitespace-nowrap ${
+                          ferme ? "text-gray-400 line-through" : "text-navy"
+                        }`}
+                      >
+                        {c.prix}€
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </Field>
+          )}
+        />
+        ) : null}
+
       </Section>
 
       <Section
@@ -464,6 +558,8 @@ export default function EcoleForm({
 
             const coursTennisSel = (watch("cours_tennis") ?? []) as string[];
             const coursPadelSel = (watch("cours_padel") ?? []) as string[];
+            const coursPickleballSel = (watch("cours_pickleball") ??
+              []) as string[];
 
             const YOUTH_CODES = new Set([
               "baby_tennis",
@@ -483,7 +579,9 @@ export default function EcoleForm({
               ADULTE_TENNIS_CODES.has(c),
             );
             const hasPadel = coursPadelSel.length > 0;
-            const rienChoisi = !hasJeune && !hasAdulteTennis && !hasPadel;
+            const hasPickleballCours = coursPickleballSel.length > 0;
+            const rienChoisi =
+              !hasJeune && !hasAdulteTennis && !hasPadel && !hasPickleballCours;
 
             // Les créneaux et leur structure viennent de la source unique
             // lib/data/creneaux-ecole.ts. On affiche les sections selon les
@@ -492,7 +590,8 @@ export default function EcoleForm({
               (s) =>
                 (s.categorie === "jeunes" && hasJeune) ||
                 (s.categorie === "adultes_tennis" && hasAdulteTennis) ||
-                (s.categorie === "padel" && hasPadel),
+                (s.categorie === "padel" && hasPadel) ||
+                (s.categorie === "pickleball" && hasPickleballCours),
             );
 
             if (rienChoisi) {
@@ -655,36 +754,39 @@ export default function EcoleForm({
           />
         ) : null}
 
-        {/* Licence Pickleball — option facultative */}
-        <div className={estAdultes ? "" : "mt-4"}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-            Licence Pickle Ball — Multi raquettes (facultatif)
-          </p>
-          <label
-            className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
-              licencePickleball
-                ? "border-ocre bg-ocre/10"
-                : "border-gray-300 hover:border-ocre/50"
-            }`}
-          >
-            <span className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                className="accent-ocre mt-0.5"
-                {...register("licence_pickleball")}
-              />
-              <span>
-                <span className="font-medium">Licence Pickle Ball (Multi raquettes)</span>
-                <span className="block text-xs text-gray-500 mt-0.5">
-                  Licence annuelle pour pratiquer le pickleball au club.
+        {/* Licence Pickleball — visible uniquement si un cours Pickleball
+            est sélectionné (sinon inutile de la proposer). */}
+        {hasPickleball ? (
+          <div className={estAdultes ? "" : "mt-4"}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+              Licence Pickle Ball — Multi raquettes (facultatif)
+            </p>
+            <label
+              className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
+                licencePickleball
+                  ? "border-ocre bg-ocre/10"
+                  : "border-gray-300 hover:border-ocre/50"
+              }`}
+            >
+              <span className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  className="accent-ocre mt-0.5"
+                  {...register("licence_pickleball")}
+                />
+                <span>
+                  <span className="font-medium">Licence Pickle Ball (Multi raquettes)</span>
+                  <span className="block text-xs text-gray-500 mt-0.5">
+                    Licence annuelle pour pratiquer le pickleball au club.
+                  </span>
                 </span>
               </span>
-            </span>
-            <span className="font-bold text-navy whitespace-nowrap">
-              +{PRIX_LICENCE_PICKLEBALL}€
-            </span>
-          </label>
-        </div>
+              <span className="font-bold text-navy whitespace-nowrap">
+                +{PRIX_LICENCE_PICKLEBALL}€
+              </span>
+            </label>
+          </div>
+        ) : null}
       </Section>
 
       <Section step={6} title="Règlement">

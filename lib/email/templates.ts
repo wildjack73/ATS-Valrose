@@ -166,6 +166,36 @@ Voir : https://ats-valrose.fr/admin?tab=ecole`;
   return { subject, html, text };
 }
 
+export function emailCoachPickleball(d: {
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  cours_resume: string;
+}) {
+  const subject = `Nouvelle inscription Pickleball — ${d.prenom} ${d.nom}`;
+  const html = wrap(
+    `Nouvelle inscription Pickleball`,
+    `
+      <p><strong>${escape(d.prenom)} ${escape(d.nom)}</strong> vient de s'inscrire au cours de <strong>Pickleball</strong>.</p>
+      <ul>
+        ${d.cours_resume ? `<li>Cours : ${escape(d.cours_resume)}</li>` : ""}
+        <li>Email : <a href="mailto:${escape(d.email)}">${escape(d.email)}</a></li>
+        <li>Téléphone : ${escape(d.telephone)}</li>
+      </ul>
+      <p style="color:#666;font-size:13px">Vous recevez cet email automatiquement en tant que responsable du cours Pickleball de l'ATS Valrose.</p>
+    `,
+  );
+  const text = `Nouvelle inscription Pickleball
+
+${d.prenom} ${d.nom}
+${d.cours_resume ? `Cours : ${d.cours_resume}\n` : ""}Email : ${d.email}
+Téléphone : ${d.telephone}
+
+Vous recevez cet email automatiquement en tant que responsable du cours Pickleball de l'ATS Valrose.`;
+  return { subject, html, text };
+}
+
 function wrap(title: string, body: string): string {
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>${escape(title)}</title></head>

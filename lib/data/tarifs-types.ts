@@ -64,7 +64,7 @@ export interface Semaine {
 export interface CoursEcole {
   id: string;
   saison_id: string;
-  type: "tennis" | "padel";
+  type: "tennis" | "padel" | "pickleball";
   code: string;
   label: string;
   description: string | null;
@@ -108,6 +108,7 @@ export interface TarifsBundle {
   semaines: Semaine[];
   coursTennis: CoursEcole[];
   coursPadel: CoursEcole[];
+  coursPickleball: CoursEcole[];
   licenceFft: LicenceFftRow[];
   autres: TarifAutre[];
 }

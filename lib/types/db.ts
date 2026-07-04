@@ -11,6 +11,7 @@ import type {
 import type {
   CoursTennisId,
   CoursPadelId,
+  CoursPickleballId,
   ModeReglementId,
   LicenceFftId,
 } from "@/lib/data/ecole";
@@ -87,6 +88,7 @@ export interface InscriptionEcoleRow {
 
   cours_tennis: CoursTennisId[];
   cours_padel: CoursPadelId[];
+  cours_pickleball: CoursPickleballId[];
   licence_pickleball: boolean;
 
   prix_total: number;

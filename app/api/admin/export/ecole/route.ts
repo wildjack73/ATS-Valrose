@@ -5,6 +5,7 @@ import { toXlsx } from "@/lib/admin/xlsx";
 import {
   coursTennisLabels,
   coursPadelLabels,
+  coursPickleballLabels,
   modeReglementLabel,
   licenceFftLabel,
   statutLabel,
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
       niveau: r.niveau ?? "",
       cours_tennis: coursTennisLabels(r.cours_tennis),
       cours_padel: coursPadelLabels(r.cours_padel),
+      cours_pickleball: coursPickleballLabels(r.cours_pickleball),
       pickleball: r.licence_pickleball ? "Oui" : "Non",
       prix_total: r.prix_total,
       dispo_mercredi: r.dispo_mercredi ?? "",
@@ -59,6 +61,7 @@ export async function GET(request: Request) {
       { key: "niveau", label: "Niveau" },
       { key: "cours_tennis", label: "Cours tennis", width: 24 },
       { key: "cours_padel", label: "Cours padel", width: 22 },
+      { key: "cours_pickleball", label: "Cours pickleball", width: 24 },
       { key: "pickleball", label: "Licence pickleball", width: 15 },
       { key: "prix_total", label: "Prix total (€)", numFmt: "0", width: 13 },
       { key: "dispo_mercredi", label: "Dispo mercredi", width: 16 },

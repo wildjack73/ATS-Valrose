@@ -14,6 +14,7 @@ import {
   age,
   coursTennisLabels,
   coursPadelLabels,
+  coursPickleballLabels,
   modeReglementLabel,
   licenceFftLabel,
   statutLabel,
@@ -39,6 +40,7 @@ export default function EcoleTable({
   paiementsByInscription,
   coursTennis,
   coursPadel,
+  coursPickleball,
   niveauxEleves,
   currentStatut,
   currentType,
@@ -51,6 +53,7 @@ export default function EcoleTable({
    *  même quand il n'y a pas encore d'inscription). */
   coursTennis: CoursEcole[];
   coursPadel: CoursEcole[];
+  coursPickleball: CoursEcole[];
   niveauxEleves: Record<string, string>;
   currentStatut?: string;
   currentType?: string;
@@ -82,15 +85,16 @@ export default function EcoleTable({
     // Regroupe par (type, libellé) : deux cours homonymes (même nom, codes
     // différents en base — ex. deux « Cours Adultes ») apparaissent comme UNE
     // seule entrée. Le filtre matche alors n'importe lequel de leurs codes.
+    type CoursType = "tennis" | "padel" | "pickleball";
     type Opt = {
       key: string;
       label: string;
-      type: "tennis" | "padel";
+      type: CoursType;
       order: number;
       codes: string[];
     };
     const byKey = new Map<string, Opt>();
-    const add = (type: "tennis" | "padel", c: CoursEcole) => {
+    const add = (type: CoursType, c: CoursEcole) => {
       const k = `${type}:${c.label.trim().toLowerCase()}`;
       const existing = byKey.get(k);
       if (existing) {
@@ -108,11 +112,17 @@ export default function EcoleTable({
     };
     for (const c of coursTennis) add("tennis", c);
     for (const c of coursPadel) add("padel", c);
+    for (const c of coursPickleball) add("pickleball", c);
+    const rank: Record<CoursType, number> = {
+      tennis: 0,
+      padel: 1,
+      pickleball: 2,
+    };
     return Array.from(byKey.values()).sort((a, b) => {
-      if (a.type !== b.type) return a.type === "tennis" ? -1 : 1;
+      if (a.type !== b.type) return rank[a.type] - rank[b.type];
       return a.order - b.order;
     });
-  }, [coursTennis, coursPadel]);
+  }, [coursTennis, coursPadel, coursPickleball]);
 
   // Créneau : la liste COMPLÈTE proposée par le formulaire école
   // (lib/data/creneaux-ecole.ts), groupée par catégorie.
@@ -121,6 +131,7 @@ export default function EcoleTable({
       jeunes: [],
       adultes_tennis: [],
       padel: [],
+      pickleball: [],
     };
     for (const c of CRENEAUX_ECOLE) byCat[c.categorie].push(c.label);
     return byCat;
@@ -135,7 +146,12 @@ export default function EcoleTable({
           return false;
         if (currentType === "padel" && !(r.cours_padel ?? []).length)
           return false;
-        if (currentType === "pickleball" && !r.licence_pickleball) return false;
+        if (
+          currentType === "pickleball" &&
+          !(r.cours_pickleball ?? []).length &&
+          !r.licence_pickleball
+        )
+          return false;
       }
       // Cours précis : la clé regroupe tous les codes de même libellé.
       // On matche si l'inscription contient AU MOINS un de ces codes.
@@ -143,7 +159,11 @@ export default function EcoleTable({
         const opt = coursOptions.find((o) => o.key === currentCours);
         if (opt) {
           const arr =
-            opt.type === "tennis" ? r.cours_tennis ?? [] : r.cours_padel ?? [];
+            opt.type === "tennis"
+              ? r.cours_tennis ?? []
+              : opt.type === "padel"
+                ? r.cours_padel ?? []
+                : r.cours_pickleball ?? [];
           if (!opt.codes.some((code) => arr.includes(code))) return false;
         }
       }
@@ -231,15 +251,14 @@ export default function EcoleTable({
         >
           <option value="">Tous les cours</option>
           {coursOptions
-            .filter(
-              (o) =>
-                !currentType ||
-                currentType === "pickleball" ||
-                o.type === currentType,
-            )
+            .filter((o) => !currentType || o.type === currentType)
             .map((o) => (
               <option key={o.key} value={o.key}>
-                {o.type === "tennis" ? "Tennis — " : "Padel — "}
+                {o.type === "tennis"
+                  ? "Tennis — "
+                  : o.type === "padel"
+                    ? "Padel — "
+                    : "Pickleball — "}
                 {o.label}
               </option>
             ))}
@@ -250,13 +269,15 @@ export default function EcoleTable({
           onChange={(e) => updateParam("creneau", e.target.value)}
         >
           <option value="">Tous créneaux</option>
-          {(["jeunes", "adultes_tennis", "padel"] as const)
+          {(["jeunes", "adultes_tennis", "padel", "pickleball"] as const)
             .filter((cat) => {
               // Cohérence avec le filtre Type : si Tennis sélectionné, on
-              // cache les créneaux Padel ; si Padel sélectionné, on cache
-              // les créneaux Jeunes/Adultes (qui sont tous tennis).
-              if (currentType === "tennis") return cat !== "padel";
+              // n'affiche que les créneaux tennis ; Padel → padel ;
+              // Pickleball → pickleball.
+              if (currentType === "tennis")
+                return cat === "jeunes" || cat === "adultes_tennis";
               if (currentType === "padel") return cat === "padel";
+              if (currentType === "pickleball") return cat === "pickleball";
               return true;
             })
             .map((cat) => (
@@ -459,8 +480,16 @@ function EcoleRowGroup({
               {coursPadelLabels(row.cours_padel)}
             </div>
           ) : null}
+          {coursPickleballLabels(row.cours_pickleball) ? (
+            <div>
+              <span className="text-[10px] uppercase tracking-wide text-gray-400 font-medium mr-1">
+                Pickleball
+              </span>
+              {coursPickleballLabels(row.cours_pickleball)}
+            </div>
+          ) : null}
           {row.licence_pickleball ? (
-            <div className="text-gray-500">+ Pickleball</div>
+            <div className="text-gray-500">+ Licence Pickleball</div>
           ) : null}
           {dispo ? (
             <div className="text-gray-500 italic mt-1">{dispo}</div>

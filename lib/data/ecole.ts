@@ -29,6 +29,10 @@ export const COURS_PADEL: CoursItem[] = [
   { id: "cours_adultes_trimestre",label: "Cours Adultes Padel (1 trimestre)", prix: 240 },
 ];
 
+export const COURS_PICKLEBALL: CoursItem[] = [
+  { id: "cours_adultes_pickleball", label: "Cours Adultes Pickleball (1 trimestre)", prix: 180 },
+];
+
 export const MODES_REGLEMENT = [
   { id: "especes", label: "Espèces" },
   { id: "cheque",  label: "Chèque" },
@@ -42,6 +46,7 @@ export const LICENCE_FFT = [
 
 export type CoursTennisId = (typeof COURS_TENNIS)[number]["id"];
 export type CoursPadelId = (typeof COURS_PADEL)[number]["id"];
+export type CoursPickleballId = (typeof COURS_PICKLEBALL)[number]["id"];
 export type ModeReglementId = (typeof MODES_REGLEMENT)[number]["id"];
 export type LicenceFftId = (typeof LICENCE_FFT)[number]["id"];
 

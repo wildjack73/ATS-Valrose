@@ -27,6 +27,7 @@ export const ecoleFormSchema = z
 
     cours_tennis: z.array(z.string()).default([]),
     cours_padel: z.array(z.string()).default([]),
+    cours_pickleball: z.array(z.string()).default([]),
     licence_pickleball: z.boolean().optional().default(false),
 
     dispo_mercredi: z.string().max(200).optional().or(z.literal("")),
@@ -50,12 +51,14 @@ export const ecoleFormSchema = z
   })
   .superRefine((data, ctx) => {
     const totalCours =
-      (data.cours_tennis?.length ?? 0) + (data.cours_padel?.length ?? 0);
+      (data.cours_tennis?.length ?? 0) +
+      (data.cours_padel?.length ?? 0) +
+      (data.cours_pickleball?.length ?? 0);
     if (totalCours === 0) {
       ctx.addIssue({
         code: "custom",
         path: ["cours_tennis"],
-        message: "Sélectionnez au moins un cours (tennis ou padel).",
+        message: "Sélectionnez au moins un cours (tennis, padel ou pickleball).",
       });
     }
     // Conflit "annuel" + "trimestre" (même cours adultes choisi 2 fois)

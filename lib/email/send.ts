@@ -1,12 +1,18 @@
 import "server-only";
 import MailComposer from "nodemailer/lib/mail-composer";
-import { getMailer, getEmailFrom, getEmailAdmin } from "./client";
+import {
+  getMailer,
+  getEmailFrom,
+  getEmailAdmin,
+  getEmailCoachPickleball,
+} from "./client";
 import { appendToSent } from "./imap-sent";
 import {
   emailFamilleStage,
   emailAdminStage,
   emailFamilleEcole,
   emailAdminEcole,
+  emailCoachPickleball,
 } from "./templates";
 import { FORMULES, OPTIONS_F4 } from "@/lib/data/stages";
 import { creneauLabel, f4SelectionLabel } from "@/lib/admin/format";
@@ -14,7 +20,7 @@ import type {
   InscriptionStageRow,
   InscriptionEcoleRow,
 } from "@/lib/types/db";
-import { COURS_TENNIS, COURS_PADEL } from "@/lib/data/ecole";
+import { COURS_TENNIS, COURS_PADEL, COURS_PICKLEBALL } from "@/lib/data/ecole";
 
 /** Envoi best-effort : log les erreurs mais ne fait pas échouer la requête. */
 async function safeSend(
@@ -83,6 +89,13 @@ export async function sendEcoleEmails(row: InscriptionEcoleRow) {
   for (const id of row.cours_padel ?? []) {
     cours.push("Padel " + (COURS_PADEL.find((c) => c.id === id)?.label ?? id));
   }
+  const pickleballCours: string[] = [];
+  for (const id of row.cours_pickleball ?? []) {
+    pickleballCours.push(
+      COURS_PICKLEBALL.find((c) => c.id === id)?.label ?? id,
+    );
+  }
+  cours.push(...pickleballCours);
 
   const data = {
     prenom: row.prenom,
@@ -96,8 +109,29 @@ export async function sendEcoleEmails(row: InscriptionEcoleRow) {
   const famille = emailFamilleEcole(data);
   const admin = emailAdminEcole(data);
 
-  await Promise.all([
+  const sends = [
     safeSend(row.email, famille.subject, famille.html, famille.text),
     safeSend(getEmailAdmin(), admin.subject, admin.html, admin.text),
-  ]);
+  ];
+
+  // Notifie le prof de Pickleball uniquement si un cours pickleball est pris.
+  if (pickleballCours.length > 0) {
+    const coach = emailCoachPickleball({
+      prenom: row.prenom,
+      nom: row.nom,
+      email: row.email,
+      telephone: row.telephone,
+      cours_resume: pickleballCours.join(", "),
+    });
+    sends.push(
+      safeSend(
+        getEmailCoachPickleball(),
+        coach.subject,
+        coach.html,
+        coach.text,
+      ),
+    );
+  }
+
+  await Promise.all(sends);
 }

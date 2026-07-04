@@ -25,7 +25,12 @@ function parseStored(v: string | null | undefined): string[] {
     .filter(Boolean);
 }
 
-const CATS: CreneauCategorie[] = ["jeunes", "adultes_tennis", "padel"];
+const CATS: CreneauCategorie[] = [
+  "jeunes",
+  "adultes_tennis",
+  "padel",
+  "pickleball",
+];
 
 export default function CreneauxEcoleEditor({
   row,

@@ -2,10 +2,12 @@ import { FORMULES, OPTIONS_F4, type FormuleId } from "@/lib/data/stages";
 import {
   COURS_TENNIS,
   COURS_PADEL,
+  COURS_PICKLEBALL,
   MODES_REGLEMENT,
   LICENCE_FFT,
   type CoursTennisId,
   type CoursPadelId,
+  type CoursPickleballId,
   type ModeReglementId,
   type LicenceFftId,
 } from "@/lib/data/ecole";
@@ -111,6 +113,15 @@ export function coursPadelLabels(ids: CoursPadelId[] | null | undefined) {
   if (!ids?.length) return "";
   return ids
     .map((id) => COURS_PADEL.find((c) => c.id === id)?.label ?? id)
+    .join(", ");
+}
+
+export function coursPickleballLabels(
+  ids: CoursPickleballId[] | null | undefined,
+) {
+  if (!ids?.length) return "";
+  return ids
+    .map((id) => COURS_PICKLEBALL.find((c) => c.id === id)?.label ?? id)
     .join(", ");
 }
 

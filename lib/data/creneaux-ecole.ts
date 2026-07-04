@@ -17,7 +17,11 @@
  * Ce fichier ne dépend d'aucun module server-only : importable client + serveur.
  */
 
-export type CreneauCategorie = "jeunes" | "adultes_tennis" | "padel";
+export type CreneauCategorie =
+  | "jeunes"
+  | "adultes_tennis"
+  | "padel"
+  | "pickleball";
 
 /** Entrée à plat (label + catégorie) — pour les filtres admin. */
 export interface CreneauEcole {
@@ -175,6 +179,22 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
       },
     ],
   },
+  {
+    categorie: "pickleball",
+    titre: "🥒 Cours Pickleball",
+    groupes: [
+      {
+        titre: "Après-midi",
+        options: [
+          {
+            label: "Mardi 15h30-17h00 (pickleball)",
+            display: "Mardi 15h30-17h00",
+            defaultMax: 18,
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 /**
@@ -206,6 +226,8 @@ export function categorieLabel(c: CreneauCategorie): string {
       return "Adultes Tennis";
     case "padel":
       return "Padel";
+    case "pickleball":
+      return "Pickleball";
   }
 }
 

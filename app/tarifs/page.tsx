@@ -100,6 +100,24 @@ export default async function TarifsPage() {
           </Block>
         ) : null}
 
+        {/* ÉCOLE PICKLEBALL */}
+        {bundle.coursPickleball.length > 0 ? (
+          <Block
+            color="ocre"
+            title="École de Pickleball"
+            ctas={[{ href: "/cours", label: "Inscription adultes" }]}
+          >
+            <Table
+              rows={bundle.coursPickleball.map((c) => ({
+                label: c.label,
+                detail: c.description,
+                prix: `${c.prix}€`,
+                ferme: c.ferme,
+              }))}
+            />
+          </Block>
+        ) : null}
+
         {/* STAGES */}
         <Block
           color="cyan"

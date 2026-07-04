@@ -44,3 +44,9 @@ export function getEmailFrom(): string {
 export function getEmailAdmin(): string {
   return process.env.EMAIL_TO_NOTIFICATIONS ?? "contact@ats-valrose.fr";
 }
+
+/** Prof de Pickleball, notifié à chaque inscription incluant ce cours.
+ *  Surchargeable via EMAIL_COACH_PICKLEBALL. */
+export function getEmailCoachPickleball(): string {
+  return process.env.EMAIL_COACH_PICKLEBALL ?? "Bo.dollet@orange.fr";
+}

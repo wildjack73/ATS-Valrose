@@ -359,6 +359,7 @@ export default async function AdminDashboardPage({
           paiementsByInscription={Object.fromEntries(paiementsEcoleMap)}
           coursTennis={bundle?.coursTennis ?? []}
           coursPadel={bundle?.coursPadel ?? []}
+          coursPickleball={bundle?.coursPickleball ?? []}
           niveauxEleves={niveauxEleves}
           currentStatut={sp.statut}
           currentType={sp.type}

@@ -78,6 +78,12 @@ export default function DashboardHeader({
     for (const c of e.cours_padel ?? []) {
       coursCounts.set("padel:" + c, (coursCounts.get("padel:" + c) ?? 0) + 1);
     }
+    for (const c of e.cours_pickleball ?? []) {
+      coursCounts.set(
+        "pickleball:" + c,
+        (coursCounts.get("pickleball:" + c) ?? 0) + 1,
+      );
+    }
   }
   const coursLabelById = new Map<string, string>();
   if (bundle) {
@@ -86,6 +92,9 @@ export default function DashboardHeader({
     }
     for (const c of bundle.coursPadel) {
       coursLabelById.set("padel:" + c.code, c.label);
+    }
+    for (const c of bundle.coursPickleball) {
+      coursLabelById.set("pickleball:" + c.code, c.label);
     }
   }
   const topCours = Array.from(coursCounts.entries())

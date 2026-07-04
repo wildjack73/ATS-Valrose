@@ -176,6 +176,9 @@ export async function getTarifsBundle(
   const padel = (cours.data ?? []).filter(
     (c) => (c as CoursEcole).type === "padel",
   );
+  const pickleball = (cours.data ?? []).filter(
+    (c) => (c as CoursEcole).type === "pickleball",
+  );
 
   return {
     saisonStages: saisonStagesResp.data as Saison,
@@ -185,6 +188,7 @@ export async function getTarifsBundle(
     semaines: (semaines.data ?? []) as Semaine[],
     coursTennis: tennis as CoursEcole[],
     coursPadel: padel as CoursEcole[],
+    coursPickleball: pickleball as CoursEcole[],
     licenceFft: (licence.data ?? []) as LicenceFftRow[],
     autres: (autres.data ?? []) as TarifAutre[],
   };
@@ -270,6 +274,7 @@ export function calculerPrixStageFromTarifs(
 export interface CalculPrixEcoleInput {
   coursTennisCodes: string[];
   coursPadelCodes: string[];
+  coursPickleballCodes?: string[];
   licenceFftCode: string;
 }
 
@@ -284,6 +289,10 @@ export function calculerPrixEcoleFromTarifs(
   }
   for (const code of input.coursPadelCodes) {
     const c = bundle.coursPadel.find((x) => x.code === code);
+    if (c) total += c.prix;
+  }
+  for (const code of input.coursPickleballCodes ?? []) {
+    const c = bundle.coursPickleball.find((x) => x.code === code);
     if (c) total += c.prix;
   }
   const lic = bundle.licenceFft.find((l) => l.code === input.licenceFftCode);

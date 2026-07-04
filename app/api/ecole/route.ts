@@ -82,6 +82,23 @@ export async function POST(request: Request) {
       );
     }
   }
+  for (const code of data.cours_pickleball ?? []) {
+    const cours = bundle.coursPickleball.find((c) => c.code === code);
+    if (!cours) {
+      return NextResponse.json(
+        { error: `Cours pickleball invalide : ${code}` },
+        { status: 400 },
+      );
+    }
+    if (cours.ferme) {
+      return NextResponse.json(
+        {
+          error: `Le cours « ${cours.label} » est actuellement complet. Merci de choisir un autre cours.`,
+        },
+        { status: 400 },
+      );
+    }
+  }
   if (!bundle.licenceFft.find((l) => l.code === data.licence_fft)) {
     return NextResponse.json(
       { error: `Licence FFT invalide : ${data.licence_fft}` },
@@ -93,6 +110,7 @@ export async function POST(request: Request) {
     calculerPrixEcoleFromTarifs(bundle, {
       coursTennisCodes: data.cours_tennis ?? [],
       coursPadelCodes: data.cours_padel ?? [],
+      coursPickleballCodes: data.cours_pickleball ?? [],
       licenceFftCode: data.licence_fft,
     }) + (data.licence_pickleball ? PRIX_LICENCE_PICKLEBALL : 0);
 
@@ -111,6 +129,7 @@ export async function POST(request: Request) {
       niveau: data.niveau || null,
       cours_tennis: data.cours_tennis ?? [],
       cours_padel: data.cours_padel ?? [],
+      cours_pickleball: data.cours_pickleball ?? [],
       licence_pickleball: data.licence_pickleball ?? false,
       prix_total,
       dispo_mercredi: data.dispo_mercredi || null,

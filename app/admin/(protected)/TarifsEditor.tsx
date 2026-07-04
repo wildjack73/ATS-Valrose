@@ -323,6 +323,18 @@ export default function TarifsEditor({
         />
       </Section>
 
+      {bundle.coursPickleball.length > 0 ? (
+        <Section title="🏫 Cours École Pickleball">
+          <CoursTable
+            rows={bundle.coursPickleball}
+            disabled={pending}
+            onSave={(id, patch) =>
+              withError(() => apiPatch("cours-ecole", id, patch))
+            }
+          />
+        </Section>
+      ) : null}
+
       <Section title="📋 Licence FFT">
         <table className="w-full text-sm">
           <thead>
