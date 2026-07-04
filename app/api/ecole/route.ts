@@ -106,13 +106,17 @@ export async function POST(request: Request) {
     );
   }
 
+  // La licence Pickle Ball est OBLIGATOIRE dès qu'un cours pickleball est pris,
+  // et sans objet sinon → on la déduit du cours (source de vérité côté serveur).
+  const licencePickleball = (data.cours_pickleball ?? []).length > 0;
+
   const prix_total =
     calculerPrixEcoleFromTarifs(bundle, {
       coursTennisCodes: data.cours_tennis ?? [],
       coursPadelCodes: data.cours_padel ?? [],
       coursPickleballCodes: data.cours_pickleball ?? [],
       licenceFftCode: data.licence_fft,
-    }) + (data.licence_pickleball ? PRIX_LICENCE_PICKLEBALL : 0);
+    }) + (licencePickleball ? PRIX_LICENCE_PICKLEBALL : 0);
 
   const supabase = getSupabaseAdmin();
   const { data: inserted, error } = await supabase
@@ -130,7 +134,7 @@ export async function POST(request: Request) {
       cours_tennis: data.cours_tennis ?? [],
       cours_padel: data.cours_padel ?? [],
       cours_pickleball: data.cours_pickleball ?? [],
-      licence_pickleball: data.licence_pickleball ?? false,
+      licence_pickleball: licencePickleball,
       prix_total,
       dispo_mercredi: data.dispo_mercredi || null,
       dispo_samedi: data.dispo_samedi || null,

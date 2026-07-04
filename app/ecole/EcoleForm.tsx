@@ -103,7 +103,6 @@ export default function EcoleForm({
   const coursPadel = (watch("cours_padel") ?? []) as string[];
   const coursPickleball = (watch("cours_pickleball") ?? []) as string[];
   const licenceFftCode = watch("licence_fft");
-  const licencePickleball = watch("licence_pickleball");
   const hasPickleball = coursPickleball.length > 0;
 
   const prixTotal = useMemo(() => {
@@ -120,7 +119,9 @@ export default function EcoleForm({
     if (licenceFftCode) {
       total += LICENCE_FFT.find((l) => l.code === licenceFftCode)?.prix ?? 0;
     }
-    if (licencePickleball && coursPickleball.length > 0) {
+    // Licence Pickle Ball obligatoire (incluse) dès qu'un cours pickleball
+    // adulte est pris.
+    if (coursPickleball.length > 0) {
       total += PRIX_LICENCE_PICKLEBALL;
     }
     return total;
@@ -129,7 +130,6 @@ export default function EcoleForm({
     coursPadel,
     coursPickleball,
     licenceFftCode,
-    licencePickleball,
     COURS_TENNIS,
     COURS_PADEL,
     COURS_PICKLEBALL,
@@ -139,14 +139,11 @@ export default function EcoleForm({
   async function onSubmit(values: EcoleFormInput) {
     setServerError(null);
     setSubmitting(true);
-    // La licence pickleball n'a de sens qu'avec un cours pickleball : si le
-    // cours a été décoché après coup, on ne facture pas la licence.
+    // La licence pickleball est OBLIGATOIRE avec le cours pickleball adultes,
+    // et sans objet sinon → on la déduit directement du cours.
     const payload: EcoleFormInput = {
       ...values,
-      licence_pickleball:
-        (values.cours_pickleball?.length ?? 0) > 0
-          ? values.licence_pickleball
-          : false,
+      licence_pickleball: (values.cours_pickleball?.length ?? 0) > 0,
     };
     try {
       const res = await fetch("/api/ecole", {
@@ -701,10 +698,12 @@ export default function EcoleForm({
 
       <Section
         step={5}
-        title={estAdultes ? "Licence (facultatif)" : "Licence FFT (obligatoire)"}
+        title={estAdultes ? "Licence" : "Licence FFT (obligatoire)"}
         description={
           estAdultes
-            ? "Pas de licence FFT requise pour les cours adultes."
+            ? hasPickleball
+              ? "Pas de licence FFT requise. La licence Pickle Ball est obligatoire pour le cours de pickleball."
+              : "Pas de licence FFT requise pour les cours adultes."
             : "La licence FFT est obligatoire pour les cours."
         }
       >
@@ -754,37 +753,36 @@ export default function EcoleForm({
           />
         ) : null}
 
-        {/* Licence Pickleball — visible uniquement si un cours Pickleball
-            est sélectionné (sinon inutile de la proposer). */}
+        {/* Licence Pickleball — OBLIGATOIRE (incluse) dès qu'un cours
+            Pickleball adultes est sélectionné. Non décochable. */}
         {hasPickleball ? (
           <div className={estAdultes ? "" : "mt-4"}>
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-              Licence Pickle Ball — Multi raquettes (facultatif)
+              Licence Pickle Ball — Multi raquettes (obligatoire)
             </p>
-            <label
-              className={`flex items-start justify-between gap-3 rounded-md border px-3 py-2.5 cursor-pointer text-sm ${
-                licencePickleball
-                  ? "border-ocre bg-ocre/10"
-                  : "border-gray-300 hover:border-ocre/50"
-              }`}
-            >
+            <div className="flex items-start justify-between gap-3 rounded-md border border-ocre bg-ocre/10 px-3 py-2.5 text-sm">
               <span className="flex items-start gap-2">
                 <input
                   type="checkbox"
                   className="accent-ocre mt-0.5"
-                  {...register("licence_pickleball")}
+                  checked
+                  readOnly
+                  disabled
+                  aria-label="Licence Pickle Ball incluse (obligatoire)"
                 />
                 <span>
-                  <span className="font-medium">Licence Pickle Ball (Multi raquettes)</span>
+                  <span className="font-medium">
+                    Licence Pickle Ball (Multi raquettes)
+                  </span>
                   <span className="block text-xs text-gray-500 mt-0.5">
-                    Licence annuelle pour pratiquer le pickleball au club.
+                    Incluse — obligatoire pour pratiquer le pickleball au club.
                   </span>
                 </span>
               </span>
               <span className="font-bold text-navy whitespace-nowrap">
                 +{PRIX_LICENCE_PICKLEBALL}€
               </span>
-            </label>
+            </div>
           </div>
         ) : null}
       </Section>
