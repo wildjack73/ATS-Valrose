@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { fetchEcole } from "@/lib/admin/queries";
-import { toCsv } from "@/lib/admin/csv";
+import { toXlsx } from "@/lib/admin/xlsx";
 import {
   coursTennisLabels,
   coursPadelLabels,
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   const rows = await fetchEcole({ statut });
 
-  const csv = toCsv(
+  const xlsx = await toXlsx(
     rows.map((r) => ({
       date_inscription: new Date(r.created_at).toLocaleString("fr-FR"),
       nom: r.nom,
@@ -48,39 +48,41 @@ export async function GET(request: Request) {
       notes_admin: r.notes_admin ?? "",
     })),
     [
-      { key: "date_inscription", label: "Date inscription" },
+      { key: "date_inscription", label: "Date inscription", width: 18 },
       { key: "nom", label: "Nom" },
       { key: "prenom", label: "Prénom" },
-      { key: "date_naissance", label: "Date naissance" },
-      { key: "adresse", label: "Adresse" },
-      { key: "code_postal_ville", label: "Code postal & ville" },
-      { key: "telephone", label: "Téléphone" },
-      { key: "email", label: "Email" },
+      { key: "date_naissance", label: "Date naissance", width: 15 },
+      { key: "adresse", label: "Adresse", width: 30 },
+      { key: "code_postal_ville", label: "Code postal & ville", width: 22 },
+      { key: "telephone", label: "Téléphone", width: 14 },
+      { key: "email", label: "Email", width: 28 },
       { key: "niveau", label: "Niveau" },
-      { key: "cours_tennis", label: "Cours tennis" },
-      { key: "cours_padel", label: "Cours padel" },
-      { key: "pickleball", label: "Licence pickleball" },
-      { key: "prix_total", label: "Prix total (€)" },
-      { key: "dispo_mercredi", label: "Dispo mercredi" },
-      { key: "dispo_samedi", label: "Dispo samedi" },
-      { key: "dispo_semaine", label: "Dispo semaine" },
-      { key: "mode_reglement", label: "Mode règlement" },
-      { key: "nb_paiements", label: "Nb paiements" },
-      { key: "licence_fft", label: "Licence FFT" },
+      { key: "cours_tennis", label: "Cours tennis", width: 24 },
+      { key: "cours_padel", label: "Cours padel", width: 22 },
+      { key: "pickleball", label: "Licence pickleball", width: 15 },
+      { key: "prix_total", label: "Prix total (€)", numFmt: "0", width: 13 },
+      { key: "dispo_mercredi", label: "Dispo mercredi", width: 16 },
+      { key: "dispo_samedi", label: "Dispo samedi", width: 16 },
+      { key: "dispo_semaine", label: "Dispo semaine", width: 28 },
+      { key: "mode_reglement", label: "Mode règlement", width: 16 },
+      { key: "nb_paiements", label: "Nb paiements", numFmt: "0", width: 12 },
+      { key: "licence_fft", label: "Licence FFT", width: 16 },
       { key: "statut", label: "Statut" },
-      { key: "notes", label: "Notes" },
-      { key: "notes_admin", label: "Notes admin" },
+      { key: "notes", label: "Notes", width: 30 },
+      { key: "notes_admin", label: "Notes admin", width: 30 },
     ],
+    { sheetName: "École" },
   );
 
   const filename = `inscriptions-ecole-${new Date()
     .toISOString()
-    .slice(0, 10)}.csv`;
+    .slice(0, 10)}.xlsx`;
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Uint8Array(xlsx), {
     status: 200,
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Type":
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });

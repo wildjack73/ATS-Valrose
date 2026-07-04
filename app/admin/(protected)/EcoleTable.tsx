@@ -306,7 +306,7 @@ export default function EcoleTable({
           href={`/api/admin/export/ecole?${params.toString()}`}
           className="rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
         >
-          Export CSV
+          Export Excel
         </a>
       </div>
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { fetchStages } from "@/lib/admin/queries";
-import { toCsv } from "@/lib/admin/csv";
+import { toXlsx } from "@/lib/admin/xlsx";
 import {
   formuleLabel,
   creneauLabel,
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   const rows = await fetchStages({ semaine, statut });
 
-  const csv = toCsv(
+  const xlsx = await toXlsx(
     rows.map((r) => ({
       date_inscription: new Date(r.created_at).toLocaleString("fr-FR"),
       nom: r.nom,
@@ -44,34 +44,36 @@ export async function GET(request: Request) {
       notes_admin: r.notes_admin ?? "",
     })),
     [
-      { key: "date_inscription", label: "Date inscription" },
+      { key: "date_inscription", label: "Date inscription", width: 18 },
       { key: "nom", label: "Nom" },
       { key: "prenom", label: "Prénom" },
-      { key: "date_naissance", label: "Date naissance" },
-      { key: "adresse", label: "Adresse" },
-      { key: "telephone", label: "Téléphone" },
-      { key: "email", label: "Email" },
+      { key: "date_naissance", label: "Date naissance", width: 15 },
+      { key: "adresse", label: "Adresse", width: 30 },
+      { key: "telephone", label: "Téléphone", width: 14 },
+      { key: "email", label: "Email", width: 28 },
       { key: "niveau", label: "Niveau" },
-      { key: "semaine", label: "Semaine" },
-      { key: "formule", label: "Formule" },
+      { key: "semaine", label: "Semaine", width: 22 },
+      { key: "formule", label: "Formule", width: 20 },
       { key: "creneau", label: "Créneau" },
       { key: "dejeuner", label: "Déjeuner" },
-      { key: "formule_4_detail", label: "Détail formule 4" },
-      { key: "prix_total", label: "Prix total (€)" },
+      { key: "formule_4_detail", label: "Détail formule 4", width: 24 },
+      { key: "prix_total", label: "Prix total (€)", numFmt: "0", width: 13 },
       { key: "statut", label: "Statut" },
-      { key: "notes", label: "Notes" },
-      { key: "notes_admin", label: "Notes admin" },
+      { key: "notes", label: "Notes", width: 30 },
+      { key: "notes_admin", label: "Notes admin", width: 30 },
     ],
+    { sheetName: "Stages" },
   );
 
   const filename = `inscriptions-stages-${new Date()
     .toISOString()
-    .slice(0, 10)}.csv`;
+    .slice(0, 10)}.xlsx`;
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Uint8Array(xlsx), {
     status: 200,
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Type":
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });

@@ -169,7 +169,7 @@ export default function StagesTable({
           href={`/api/admin/export/stages?${params.toString()}`}
           className="rounded-md bg-yellow-club text-navy px-3 py-1.5 text-xs font-semibold hover:bg-yellow-hover"
         >
-          Export CSV
+          Export Excel
         </a>
       </div>
 
