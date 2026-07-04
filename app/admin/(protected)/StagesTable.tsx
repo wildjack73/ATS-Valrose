@@ -60,10 +60,11 @@ export default function StagesTable({
   const [openId, setOpenId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterNiveau, setFilterNiveau] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "age_asc" | "age_desc">("date");
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
+    const out = rows.filter((r) => {
       if (q) {
         const hay = `${r.prenom} ${r.nom} ${r.email}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -74,7 +75,20 @@ export default function StagesTable({
       }
       return true;
     });
-  }, [rows, search, filterNiveau, niveauxEleves]);
+    // Tri par âge (client). « date » = ordre serveur (plus récent d'abord).
+    // Les inscriptions sans date de naissance valide vont toujours en bas.
+    if (sortBy !== "date") {
+      out.sort((a, b) => {
+        const aa = age(a.date_naissance);
+        const bb = age(b.date_naissance);
+        if (aa == null && bb == null) return 0;
+        if (aa == null) return 1;
+        if (bb == null) return -1;
+        return sortBy === "age_asc" ? aa - bb : bb - aa;
+      });
+    }
+    return out;
+  }, [rows, search, filterNiveau, niveauxEleves, sortBy]);
 
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -158,6 +172,16 @@ export default function StagesTable({
           ))}
         </select>
         <NiveauFilter value={filterNiveau} onChange={setFilterNiveau} />
+        <select
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+          title="Trier la liste"
+        >
+          <option value="date">Tri : Date d&apos;inscription</option>
+          <option value="age_asc">Tri : Âge croissant (plus jeune)</option>
+          <option value="age_desc">Tri : Âge décroissant (plus âgé)</option>
+        </select>
         <input
           type="search"
           value={search}
