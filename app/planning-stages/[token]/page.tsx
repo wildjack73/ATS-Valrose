@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getActiveTarifsBundle } from "@/lib/data/tarifs-server";
 import {
   fetchStageOrganisation,
   fetchInscriptionsCountByDay,
@@ -7,12 +6,12 @@ import {
   type EnfantEffectif,
   type EffectifsJour,
 } from "@/lib/admin/stages-org-queries";
-import { planningTokenValide, semainesAout } from "@/lib/planning-public";
+import { planningTokenValide, fetchSemainesAout } from "@/lib/planning-public";
 import type { Coach } from "@/lib/data/planning-types";
 
-// Rafraîchi toutes les 60 s : les coachs voient rapidement les changements
-// faits en admin, sans taper Supabase à chaque visite.
-export const revalidate = 60;
+// Rendu à chaque requête : page à très faible trafic (encadrants), et surtout
+// on ne veut PAS mettre en cache un échec transitoire pendant 60 s.
+export const dynamic = "force-dynamic";
 
 // Page « secrète » : jamais indexée, jamais suivie.
 export const metadata = {
@@ -43,24 +42,13 @@ export default async function PlanningStagesPublic({
   const { token } = await params;
   if (!planningTokenValide(token)) notFound();
 
-  const bundle = await getActiveTarifsBundle();
-  if (!bundle) {
-    return (
-      <Shell>
-        <p className="text-gray-600">
-          Planning temporairement indisponible. Réessayez dans quelques
-          secondes.
-        </p>
-      </Shell>
-    );
-  }
-
-  const semaines = semainesAout(bundle.semaines);
+  const semaines = await fetchSemainesAout();
   if (semaines.length === 0) {
     return (
       <Shell>
         <p className="text-gray-600">
-          Aucune semaine de stage en août pour la saison en cours.
+          Aucune semaine de stage en août n&apos;a pu être chargée. Rechargez la
+          page dans quelques secondes.
         </p>
       </Shell>
     );

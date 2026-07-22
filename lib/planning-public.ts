@@ -1,4 +1,5 @@
 import "server-only";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import type { Semaine } from "@/lib/data/tarifs-types";
 
 /**
@@ -33,6 +34,40 @@ export function planningTokenValide(recu: string): boolean {
  * On se base sur `date_debut` (mois 7 = août) ; à défaut on retombe sur le
  * libellé de période (« Été 2026 — Août »).
  */
+/**
+ * Semaines d'août de la saison STAGES active, lues directement.
+ *
+ * On n'utilise volontairement PAS `getActiveTarifsBundle()` : celui-ci exige
+ * aussi la saison ÉCOLE + cours + licences (8 requêtes) et renvoie null si un
+ * seul maillon échoue — une dépendance inutile pour un planning de stages.
+ * Ici : 2 requêtes, et [] en cas de problème.
+ */
+export async function fetchSemainesAout(): Promise<Semaine[]> {
+  try {
+    const supa = getSupabaseAdmin();
+    const { data: saison, error: e1 } = await supa
+      .from("saisons")
+      .select("id")
+      .eq("domaine", "stages")
+      .eq("active", true)
+      .maybeSingle();
+    if (e1) throw e1;
+    if (!saison) return [];
+
+    const { data, error: e2 } = await supa
+      .from("semaines_stages")
+      .select("*")
+      .eq("saison_id", (saison as { id: string }).id)
+      .order("order_idx");
+    if (e2) throw e2;
+
+    return semainesAout((data ?? []) as Semaine[]);
+  } catch (err) {
+    console.error("[planning] fetchSemainesAout:", err);
+    return [];
+  }
+}
+
 export function semainesAout(semaines: Semaine[]): Semaine[] {
   return semaines
     .filter((s) => {
