@@ -1,5 +1,6 @@
 import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { fetchPaiementsRecapForInscriptions } from "@/lib/data/paiements";
 import type { Coach } from "@/lib/data/planning-types";
 
 export type StageSession =
@@ -167,6 +168,11 @@ export interface EnfantEffectif {
   prenom: string;
   nom: string;
   formule: string;
+  /** Téléphone du parent (contact). Optionnel : rempli seulement quand la
+   *  vue en a besoin (ex. page coachs). */
+  telephone?: string | null;
+  /** État de règlement : soldé, partiel ou rien. Optionnel comme ci-dessus. */
+  paiement?: "paye" | "partiel" | "non";
 }
 
 export interface EffectifsJour {
@@ -196,12 +202,14 @@ export interface EffectifsJour {
  */
 export async function fetchEffectifsByDay(
   semaineCode: string,
+  opts: { withContact?: boolean } = {},
 ): Promise<{ total: number; jours: Record<string, EffectifsJour> }> {
+  const withContact = opts.withContact === true;
   const supa = getSupabaseAdmin();
   const { data, error } = await supa
     .from("inscriptions_stages")
     .select(
-      "prenom, nom, formule, formule_creneau, formule_4_selection, dejeuner_jours, statut",
+      "id, prenom, nom, formule, formule_creneau, formule_4_selection, dejeuner_jours, statut, telephone, prix_total",
     )
     .eq("semaine", semaineCode)
     .neq("statut", "annule");
@@ -213,6 +221,29 @@ export async function fetchEffectifsByDay(
   if (error) {
     console.error("fetchEffectifsByDay:", error);
     return { total: 0, jours };
+  }
+
+  // Récap paiements (seulement si la vue demande le contact/règlement) : une
+  // requête pour toute la semaine → état « soldé / partiel / rien » par enfant.
+  const paiementsParId = new Map<string, number>();
+  if (withContact) {
+    const ids = (data ?? [])
+      .map((r) => (r as { id?: string }).id)
+      .filter((x): x is string => Boolean(x));
+    if (ids.length > 0) {
+      const recap = await fetchPaiementsRecapForInscriptions("stages", ids);
+      for (const [id, r] of recap) paiementsParId.set(id, r.totalPaye);
+    }
+  }
+  function etatPaiement(
+    id: string,
+    statut: string,
+    prixTotal: number,
+  ): "paye" | "partiel" | "non" {
+    if (statut === "paye") return "paye";
+    const paye = paiementsParId.get(id) ?? 0;
+    if (prixTotal > 0 && paye >= prixTotal) return "paye";
+    return paye > 0 ? "partiel" : "non";
   }
 
   // Sets pour dédoublonner par slot (clé = prenom|nom|formule normalisés)
@@ -249,6 +280,7 @@ export async function fetchEffectifsByDay(
 
   for (const i of data ?? []) {
     const ins = i as {
+      id: string;
       prenom: string;
       nom: string;
       formule: string;
@@ -257,11 +289,24 @@ export async function fetchEffectifsByDay(
         | { jour: string; option: string; creneau?: "matin" | "apres_midi" | null }[]
         | null;
       dejeuner_jours: string[] | null;
+      statut: string;
+      telephone: string | null;
+      prix_total: number | null;
     };
     const enfant: EnfantEffectif = {
       prenom: ins.prenom,
       nom: ins.nom,
       formule: ins.formule,
+      ...(withContact
+        ? {
+            telephone: ins.telephone,
+            paiement: etatPaiement(
+              ins.id,
+              ins.statut,
+              ins.prix_total ?? 0,
+            ),
+          }
+        : {}),
     };
     seenChildKeys.add(childKey(ins.prenom, ins.nom, ins.formule));
 

@@ -59,7 +59,7 @@ export default async function PlanningStagesPublic({
       const [org, counts, effectifs] = await Promise.all([
         fetchStageOrganisation(s.id),
         fetchInscriptionsCountByDay(s.code),
-        fetchEffectifsByDay(s.code),
+        fetchEffectifsByDay(s.code, { withContact: true }),
       ]);
       return { semaine: s, org, counts, effectifs };
     }),
@@ -201,13 +201,52 @@ function Shell({ children }: { children: React.ReactNode }) {
             Mois d&apos;août · document interne réservé aux encadrants
           </p>
           <p className="text-[11px] text-gray-400 mt-2">
-            Ce lien est privé : merci de ne pas le diffuser en dehors de
-            l&apos;équipe encadrante.
+            Ce lien est privé (noms, téléphones et règlements des familles) :
+            merci de ne pas le diffuser en dehors de l&apos;équipe encadrante.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-600">
+            <span className="font-semibold uppercase tracking-wide text-gray-400">
+              Règlement :
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Dot className="bg-emerald-500" /> Payé
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Dot className="bg-amber-500" /> Partiel
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Dot className="bg-red-500" /> À régler
+            </span>
+          </div>
         </header>
         {children}
       </div>
     </div>
+  );
+}
+
+function Dot({ className }: { className: string }) {
+  return (
+    <span
+      className={`inline-block w-2 h-2 rounded-full shrink-0 ${className}`}
+    />
+  );
+}
+
+/** Pastille d'état de règlement à côté du nom de l'enfant. */
+function PastilleReglement({ etat }: { etat?: "paye" | "partiel" | "non" }) {
+  const config =
+    etat === "paye"
+      ? { cls: "bg-emerald-100 text-emerald-700", label: "Payé" }
+      : etat === "partiel"
+        ? { cls: "bg-amber-100 text-amber-700", label: "Partiel" }
+        : { cls: "bg-red-100 text-red-700", label: "À régler" };
+  return (
+    <span
+      className={`inline-block text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${config.cls}`}
+    >
+      {config.label}
+    </span>
   );
 }
 
@@ -259,13 +298,32 @@ function ColonneEnfants({
       {sorted.length === 0 ? (
         <p className="text-xs text-gray-400 italic">—</p>
       ) : (
-        <ul className="space-y-0.5">
+        <ul className="space-y-1.5">
           {sorted.map((e, i) => (
             <li key={i} className="flex items-start gap-1.5 text-xs">
-              <span className="text-[9px] font-bold text-gray-400 w-5 shrink-0">
+              <span className="text-[9px] font-bold text-gray-400 w-5 shrink-0 mt-0.5">
                 {FORMULE_SHORT[e.formule] ?? "?"}
               </span>
-              {e.prenom} {e.nom}
+              <span className="min-w-0">
+                <span className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-medium text-gray-900">
+                    {e.prenom} {e.nom}
+                  </span>
+                  <PastilleReglement etat={e.paiement} />
+                </span>
+                {e.telephone ? (
+                  <a
+                    href={`tel:${e.telephone.replace(/\s/g, "")}`}
+                    className="text-[11px] text-navy hover:underline"
+                  >
+                    📞 {e.telephone}
+                  </a>
+                ) : (
+                  <span className="text-[11px] text-gray-400">
+                    ☎ non renseigné
+                  </span>
+                )}
+              </span>
             </li>
           ))}
         </ul>
