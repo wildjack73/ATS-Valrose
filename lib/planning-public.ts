@@ -68,6 +68,28 @@ export async function fetchSemainesAout(): Promise<Semaine[]> {
   }
 }
 
+/**
+ * Code de la semaine (parmi celles fournies) qui contient la date du jour,
+ * ou null si aucune. On raisonne en semaine calendaire lundi → dimanche
+ * (date_debut = lundi), pour qu'un samedi/dimanche compte encore comme « en
+ * cours ».
+ */
+export function codeSemaineEnCours(semaines: Semaine[]): string | null {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const t = now.getTime();
+  for (const s of semaines) {
+    if (!s.date_debut) continue;
+    const lundi = new Date(s.date_debut);
+    if (Number.isNaN(lundi.getTime())) continue;
+    lundi.setHours(0, 0, 0, 0);
+    const dimanche = new Date(lundi);
+    dimanche.setDate(dimanche.getDate() + 6);
+    if (t >= lundi.getTime() && t <= dimanche.getTime()) return s.code;
+  }
+  return null;
+}
+
 export function semainesAout(semaines: Semaine[]): Semaine[] {
   return semaines
     .filter((s) => {

@@ -6,8 +6,13 @@ import {
   type EnfantEffectif,
   type EffectifsJour,
 } from "@/lib/admin/stages-org-queries";
-import { planningTokenValide, fetchSemainesAout } from "@/lib/planning-public";
+import {
+  planningTokenValide,
+  fetchSemainesAout,
+  codeSemaineEnCours,
+} from "@/lib/planning-public";
 import type { Coach } from "@/lib/data/planning-types";
+import WeekPicker from "./WeekPicker";
 
 // Rendu à chaque requête : page à très faible trafic (encadrants), et surtout
 // on ne veut PAS mettre en cache un échec transitoire pendant 60 s.
@@ -36,8 +41,10 @@ const FORMULE_SHORT: Record<string, string> = {
 
 export default async function PlanningStagesPublic({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ semaine?: string }>;
 }) {
   const { token } = await params;
   if (!planningTokenValide(token)) notFound();
@@ -45,7 +52,7 @@ export default async function PlanningStagesPublic({
   const semaines = await fetchSemainesAout();
   if (semaines.length === 0) {
     return (
-      <Shell>
+      <Shell picker={null}>
         <p className="text-gray-600">
           Aucune semaine de stage en août n&apos;a pu être chargée. Rechargez la
           page dans quelques secondes.
@@ -54,8 +61,23 @@ export default async function PlanningStagesPublic({
     );
   }
 
+  const sp = await searchParams;
+  const enCours = codeSemaineEnCours(semaines);
+
+  // Sélection : paramètre d'URL > semaine en cours > 1re semaine.
+  const showAll = sp.semaine === "all";
+  const selectedCode = showAll
+    ? "all"
+    : (sp.semaine && semaines.find((s) => s.code === sp.semaine)?.code) ||
+      enCours ||
+      semaines[0].code;
+
+  const aAfficher = showAll
+    ? semaines
+    : semaines.filter((s) => s.code === selectedCode);
+
   const data = await Promise.all(
-    semaines.map(async (s) => {
+    aAfficher.map(async (s) => {
       const [org, counts, effectifs] = await Promise.all([
         fetchStageOrganisation(s.id),
         fetchInscriptionsCountByDay(s.code),
@@ -65,15 +87,31 @@ export default async function PlanningStagesPublic({
     }),
   );
 
+  const picker = (
+    <WeekPicker
+      current={selectedCode}
+      weeks={semaines.map((s) => ({
+        code: s.code,
+        label: s.label,
+        enCours: s.code === enCours,
+      }))}
+    />
+  );
+
   return (
-    <Shell>
+    <Shell picker={picker}>
       {data.map(({ semaine, org, counts, effectifs }) => {
         const organisation = Object.fromEntries(org.byKey.entries());
         return (
           <section key={semaine.id} className="mb-10 break-inside-avoid">
             <header className="rounded-t-xl bg-gradient-to-r from-navy via-navy to-cyan-club text-white px-5 py-3">
-              <h2 className="text-lg font-extrabold">
+              <h2 className="text-lg font-extrabold flex items-center gap-2 flex-wrap">
                 {semaine.periode} — {semaine.label}
+                {semaine.code === enCours ? (
+                  <span className="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-club text-navy">
+                    Semaine en cours
+                  </span>
+                ) : null}
               </h2>
               <p className="text-xs text-white/80 mt-0.5">
                 {counts.total} inscription{counts.total > 1 ? "s" : ""} sur la
@@ -189,7 +227,13 @@ export default async function PlanningStagesPublic({
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({
+  children,
+  picker,
+}: {
+  children: React.ReactNode;
+  picker: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-4 py-8">
@@ -200,7 +244,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <p className="text-sm text-gray-600 mt-1">
             Mois d&apos;août · document interne réservé aux encadrants
           </p>
-          <p className="text-[11px] text-gray-400 mt-2">
+          {picker ? <div className="mt-4">{picker}</div> : null}
+          <p className="text-[11px] text-gray-400 mt-3">
             Ce lien est privé (noms, téléphones et règlements des familles) :
             merci de ne pas le diffuser en dehors de l&apos;équipe encadrante.
           </p>
