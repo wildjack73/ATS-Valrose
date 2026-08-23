@@ -53,3 +53,11 @@ data-historique/
 # données personnelles : emails, téléphones, paiements). Stocker dans un
 # emplacement chiffré (OneDrive privé, etc.).
 backups/
+
+.vercel
+
+# Images generees par tools/image-tool.mjs
+tools/images/
+
+# Script local de sauvegarde (chemins spécifiques à la machine)
+scripts/sauvegarde-auto.cmd
