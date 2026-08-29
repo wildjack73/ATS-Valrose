@@ -22,11 +22,11 @@ export default async function EcoleInscription({
 
   const bundle = await getActiveTarifsBundle();
   const jpo = bundle ? await fetchJpoEcole(bundle.saisonEcole.id) : null;
-  // Le bandeau JPO concerne les enfants → masqué sur l'entrée adultes.
+  // Bandeau JPO affiché sur les deux entrées (jeunes ET adultes), tant que la
+  // date limite n'est pas dépassée. La phrase « Votre enfant… » reste, elle,
+  // réservée aux jeunes (cf. plus bas).
   const jpoVisible =
-    !estAdultes &&
-    !!jpo &&
-    Date.now() < new Date(jpo.visible_jusqu_au).getTime();
+    !!jpo && Date.now() < new Date(jpo.visible_jusqu_au).getTime();
 
   if (!bundle) {
     return (
@@ -84,9 +84,14 @@ export default async function EcoleInscription({
                     <strong>
                       Les inscriptions seront validées uniquement suite à la
                       participation aux journées portes ouvertes.
-                    </strong>{" "}
-                    Votre enfant pourra essayer une fois dans son groupe avant
-                    une inscription définitive.
+                    </strong>
+                    {!estAdultes ? (
+                      <>
+                        {" "}
+                        Votre enfant pourra essayer une fois dans son groupe
+                        avant une inscription définitive.
+                      </>
+                    ) : null}
                   </p>
 
                   {jpo.jours.length > 0 ? (
