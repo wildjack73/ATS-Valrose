@@ -89,7 +89,6 @@ export async function sendStageEmails(row: InscriptionStageRow) {
  */
 export async function sendValidationEcole(
   row: InscriptionEcoleRow,
-  dateReprise: string | null,
 ): Promise<{ ok: boolean; error?: string }> {
   const cours: string[] = [];
   for (const id of row.cours_tennis ?? []) {
@@ -115,7 +114,6 @@ export async function sendValidationEcole(
     nom: row.nom,
     cours_resume: cours.join(", "),
     creneaux,
-    date_reprise: dateReprise,
   });
   const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
 

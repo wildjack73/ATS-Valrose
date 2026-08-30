@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { sendValidationEcole } from "@/lib/email/send";
-import { getActiveSaison } from "@/lib/data/tarifs-server";
-import { fetchJpoEcole } from "@/lib/data/jpo-ecole";
 import type { InscriptionEcoleRow } from "@/lib/types/db";
 
 export const runtime = "nodejs";
@@ -12,14 +10,6 @@ export const runtime = "nodejs";
 // Le client découpe en lots ; le suivi prevenu_at garantit qu'aucun n'est
 // prévenu deux fois même si on relance.
 const MAX_PAR_LOT = 25;
-
-/** Date de reprise des cours (depuis la config JPO de la saison école active). */
-async function getDateReprise(): Promise<string | null> {
-  const saison = await getActiveSaison("ecole");
-  if (!saison) return null;
-  const jpo = await fetchJpoEcole(saison.id);
-  return jpo?.date_reprise ?? null;
-}
 
 export async function POST(request: Request) {
   if (!(await isAdminAuthenticated())) {
@@ -60,7 +50,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erreur base" }, { status: 500 });
   }
   const rows = (data ?? []) as InscriptionEcoleRow[];
-  const dateReprise = await getDateReprise();
 
   let sent = 0;
   const failed: { id: string; nom: string; error: string }[] = [];
@@ -68,7 +57,7 @@ export async function POST(request: Request) {
   // Envoi SÉQUENTIEL (respecte les limites SMTP). prevenu_at posé au fil de
   // l'eau → si ça coupe, les déjà envoyés restent marqués.
   for (const row of rows) {
-    const res = await sendValidationEcole(row, dateReprise);
+    const res = await sendValidationEcole(row);
     if (res.ok) {
       const now = new Date().toISOString();
       const { error: upErr } = await supa
