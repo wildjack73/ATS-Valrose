@@ -641,9 +641,7 @@ function EcoleRowGroup({
             <button
               onClick={prevenir}
               disabled={pending}
-              className={`text-sm leading-none transition disabled:opacity-30 ${
-                row.prevenu_at ? "" : "grayscale hover:grayscale-0"
-              }`}
+              className="text-base leading-none transition hover:scale-125 disabled:opacity-30"
               title={
                 row.prevenu_at
                   ? `Prévenu le ${new Date(row.prevenu_at).toLocaleDateString("fr-FR")} — cliquer pour renvoyer`
