@@ -231,6 +231,80 @@ export default function EcoleTable({
     });
   }
 
+  // ---- « Prévenir » : email de confirmation d'inscription (validation JPO) ----
+  // Envoi par lots de 25 (limites SMTP + timeout). prevenu_at posé côté serveur.
+  async function prevenirBatch(
+    ids: string[],
+  ): Promise<{ sent: number; failed: number }> {
+    let sent = 0;
+    let failed = 0;
+    for (let i = 0; i < ids.length; i += 25) {
+      const chunk = ids.slice(i, i + 25);
+      try {
+        const res = await fetch("/api/admin/inscriptions/ecole/prevenir", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: chunk }),
+        });
+        if (res.ok) {
+          const j = await res.json();
+          sent += j.sent ?? 0;
+          failed += Array.isArray(j.failed) ? j.failed.length : 0;
+        } else {
+          failed += chunk.length;
+        }
+      } catch {
+        failed += chunk.length;
+      }
+    }
+    return { sent, failed };
+  }
+
+  // Inscriptions du filtre courant, non annulées / non désactivées, pas encore
+  // prévenues → cible du bouton « en masse ».
+  const aPrevenir = filteredRows.filter(
+    (r) => !r.prevenu_at && r.statut !== "annule" && !r.desactive,
+  );
+
+  function prevenirSolo(id: string, label: string) {
+    if (
+      !window.confirm(
+        `Envoyer l'email de confirmation d'inscription à ${label} ?`,
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      const { failed } = await prevenirBatch([id]);
+      if (failed) window.alert("L'email n'a pas pu être envoyé. Réessaye.");
+      router.refresh();
+    });
+  }
+
+  function prevenirEnMasse() {
+    if (aPrevenir.length === 0) {
+      window.alert(
+        "Personne à prévenir : toutes les inscriptions de ce filtre ont déjà été prévenues.",
+      );
+      return;
+    }
+    if (
+      !window.confirm(
+        `Envoyer l'email de confirmation à ${aPrevenir.length} inscrit(s) non encore prévenu(s) ?\n\n⚠️ Cela envoie de vrais emails aux familles.`,
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      const { sent, failed } = await prevenirBatch(aPrevenir.map((r) => r.id));
+      window.alert(
+        `✅ ${sent} email(s) de confirmation envoyé(s).` +
+          (failed ? `\n⚠️ ${failed} échec(s) — réessaye pour les restants.` : ""),
+      );
+      router.refresh();
+    });
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-b-xl rounded-tr-xl shadow-sm">
       <div className="p-4 border-b flex flex-wrap items-center gap-2">
@@ -329,6 +403,15 @@ export default function EcoleTable({
         >
           Export Excel
         </a>
+        <button
+          type="button"
+          onClick={prevenirEnMasse}
+          disabled={pending || aPrevenir.length === 0}
+          title="Envoyer l'email de confirmation d'inscription à tous les inscrits (du filtre en cours) pas encore prévenus"
+          className="rounded-md bg-navy text-white px-3 py-1.5 text-xs font-semibold hover:bg-navy-dark disabled:opacity-40"
+        >
+          ✉️ Prévenir les non-prévenus ({aPrevenir.length})
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -365,6 +448,9 @@ export default function EcoleTable({
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
+                  prevenir={() =>
+                    prevenirSolo(r.id, `${r.prenom} ${r.nom}`)
+                  }
                   remove={() =>
                     deleteInscription(r.id, `${r.prenom} ${r.nom}`)
                   }
@@ -386,6 +472,7 @@ function EcoleRowGroup({
   open,
   toggle,
   patch,
+  prevenir,
   remove,
   pending,
 }: {
@@ -395,6 +482,7 @@ function EcoleRowGroup({
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
+  prevenir: () => void;
   remove: () => void;
   pending: boolean;
 }) {
@@ -498,6 +586,12 @@ function EcoleRowGroup({
             {modeReglementLabel(row.mode_reglement)} × {row.nb_paiements} ·{" "}
             {licenceFftLabel(row.licence_fft)}
           </div>
+          {row.prevenu_at ? (
+            <div className="mt-1 inline-block text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+              ✅ Prévenu le{" "}
+              {new Date(row.prevenu_at).toLocaleDateString("fr-FR")}
+            </div>
+          ) : null}
         </td>
         <td className="p-3 text-right font-bold text-navy align-top whitespace-nowrap">
           <div>{row.prix_total}€</div>
@@ -536,6 +630,25 @@ function EcoleRowGroup({
             >
               <IconPhone />
             </a>
+            <button
+              onClick={prevenir}
+              disabled={pending}
+              className={`text-sm leading-none transition disabled:opacity-30 ${
+                row.prevenu_at ? "" : "grayscale hover:grayscale-0"
+              }`}
+              title={
+                row.prevenu_at
+                  ? `Prévenu le ${new Date(row.prevenu_at).toLocaleDateString("fr-FR")} — cliquer pour renvoyer`
+                  : "Prévenir de l'inscription (envoyer l'email de confirmation)"
+              }
+              aria-label={
+                row.prevenu_at
+                  ? "Déjà prévenu (renvoyer)"
+                  : "Prévenir de l'inscription"
+              }
+            >
+              {row.prevenu_at ? "✅" : "🔔"}
+            </button>
             <button
               onClick={() => patch({ desactive: !row.desactive })}
               disabled={pending}

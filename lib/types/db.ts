@@ -109,6 +109,9 @@ export interface InscriptionEcoleRow {
   /** Mise en pause temporaire (différent de « annulé ») : la ligne
    *  reste mais n'est plus comptée et la place est libérée. */
   desactive: boolean;
+  /** Date d'envoi de l'email de confirmation d'inscription (validation après
+   *  JPO). NULL = pas encore prévenu. */
+  prevenu_at: string | null;
 }
 
 export type InscriptionEcoleInsert = Omit<

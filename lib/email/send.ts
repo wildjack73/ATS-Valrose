@@ -13,6 +13,7 @@ import {
   emailFamilleEcole,
   emailAdminEcole,
   emailCoachPickleball,
+  emailValidationEcole,
 } from "./templates";
 import { FORMULES, OPTIONS_F4 } from "@/lib/data/stages";
 import { creneauLabel, f4SelectionLabel } from "@/lib/admin/format";
@@ -79,6 +80,56 @@ export async function sendStageEmails(row: InscriptionStageRow) {
     safeSend(row.email, famille.subject, famille.html, famille.text),
     safeSend(getEmailAdmin(), admin.subject, admin.html, admin.text),
   ]);
+}
+
+/**
+ * Email de CONFIRMATION d'inscription École, déclenché manuellement depuis
+ * l'admin (bouton « Prévenir »). Contrairement à safeSend, renvoie un statut
+ * pour que l'appelant ne marque « prévenu » que si l'email est réellement parti.
+ */
+export async function sendValidationEcole(
+  row: InscriptionEcoleRow,
+  dateReprise: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const cours: string[] = [];
+  for (const id of row.cours_tennis ?? []) {
+    cours.push(COURS_TENNIS.find((c) => c.id === id)?.label ?? id);
+  }
+  for (const id of row.cours_padel ?? []) {
+    cours.push("Padel " + (COURS_PADEL.find((c) => c.id === id)?.label ?? id));
+  }
+  for (const id of row.cours_pickleball ?? []) {
+    cours.push(COURS_PICKLEBALL.find((c) => c.id === id)?.label ?? id);
+  }
+
+  const mailer = getMailer();
+  if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
+
+  const { subject, html, text } = emailValidationEcole({
+    prenom: row.prenom,
+    nom: row.nom,
+    cours_resume: cours.join(", "),
+    date_reprise: dateReprise,
+  });
+  const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
+
+  try {
+    await mailer.sendMail(mailOptions);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "envoi échoué" };
+  }
+  // Copie dans « Envoyés » (best-effort, n'impacte pas le résultat)
+  try {
+    const raw = await new Promise<Buffer>((resolve, reject) => {
+      new MailComposer(mailOptions).compile().build((err, msg) =>
+        err ? reject(err) : resolve(msg),
+      );
+    });
+    await appendToSent(raw);
+  } catch (e) {
+    console.error("[email] copie Envoyés (validation) échouée:", e);
+  }
+  return { ok: true };
 }
 
 export async function sendEcoleEmails(row: InscriptionEcoleRow) {

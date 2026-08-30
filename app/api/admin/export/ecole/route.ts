@@ -46,6 +46,9 @@ export async function GET(request: Request) {
       nb_paiements: r.nb_paiements,
       licence_fft: licenceFftLabel(r.licence_fft),
       statut: statutLabel(r.statut),
+      prevenu: r.prevenu_at
+        ? new Date(r.prevenu_at).toLocaleDateString("fr-FR")
+        : "",
       notes: r.notes ?? "",
       notes_admin: r.notes_admin ?? "",
     })),
@@ -71,6 +74,7 @@ export async function GET(request: Request) {
       { key: "nb_paiements", label: "Nb paiements", numFmt: "0", width: 12 },
       { key: "licence_fft", label: "Licence FFT", width: 16 },
       { key: "statut", label: "Statut" },
+      { key: "prevenu", label: "Prévenu le", width: 14 },
       { key: "notes", label: "Notes", width: 30 },
       { key: "notes_admin", label: "Notes admin", width: 30 },
     ],

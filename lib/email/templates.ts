@@ -166,6 +166,49 @@ Voir : https://ats-valrose.fr/admin?tab=ecole`;
   return { subject, html, text };
 }
 
+/** Email de CONFIRMATION d'inscription École (envoyé après validation par le
+ *  club, suite aux journées portes ouvertes). Déclenché manuellement depuis
+ *  l'admin (bouton « Prévenir »). */
+export function emailValidationEcole(d: {
+  prenom: string;
+  nom: string;
+  cours_resume: string;
+  date_reprise: string | null;
+}) {
+  const subject = `Inscription confirmée — École ATS Valrose — ${d.prenom} ${d.nom}`;
+  const html = wrap(
+    `Inscription confirmée`,
+    `
+      <p>Bonjour,</p>
+      <p>Bonne nouvelle&nbsp;: l'inscription de <strong>${escape(d.prenom)} ${escape(
+        d.nom,
+      )}</strong> à l'ATS Valrose pour la saison 2026-2027 est <strong>confirmée</strong>&nbsp;✅.</p>
+      ${d.cours_resume ? `<p><strong>Cours&nbsp;:</strong> ${escape(d.cours_resume)}</p>` : ""}
+      ${
+        d.date_reprise
+          ? `<p>🎾 <strong>Reprise des cours&nbsp;:</strong> ${escape(d.date_reprise)}.</p>`
+          : ""
+      }
+      <p>Le règlement (espèces ou chèque) se fait à l'accueil du club. Le créneau
+      définitif vous sera confirmé par le club.</p>
+      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · <a href="mailto:padelnice@gmail.com">padelnice@gmail.com</a></p>
+      <p style="color:#666;font-size:13px">Sportivement,<br/>L'équipe ATS Valrose</p>
+    `,
+  );
+  const text = `Bonjour,
+
+Bonne nouvelle : l'inscription de ${d.prenom} ${d.nom} à l'ATS Valrose pour la saison 2026-2027 est confirmée.
+${d.cours_resume ? `\nCours : ${d.cours_resume}` : ""}${d.date_reprise ? `\nReprise des cours : ${d.date_reprise}` : ""}
+
+Le règlement (espèces ou chèque) se fait à l'accueil du club. Le créneau définitif vous sera confirmé par le club.
+
+Pour toute question : contact@ats-valrose.fr · padelnice@gmail.com
+
+Sportivement,
+L'équipe ATS Valrose`;
+  return { subject, html, text };
+}
+
 export function emailCoachPickleball(d: {
   prenom: string;
   nom: string;
