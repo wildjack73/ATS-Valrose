@@ -173,6 +173,7 @@ export function emailValidationEcole(d: {
   prenom: string;
   nom: string;
   cours_resume: string;
+  creneaux: string;
   date_reprise: string | null;
 }) {
   const subject = `Inscription confirmée — École ATS Valrose — ${d.prenom} ${d.nom}`;
@@ -184,6 +185,7 @@ export function emailValidationEcole(d: {
         d.nom,
       )}</strong> à l'ATS Valrose pour la saison 2026-2027 est <strong>confirmée</strong>&nbsp;✅.</p>
       ${d.cours_resume ? `<p><strong>Cours&nbsp;:</strong> ${escape(d.cours_resume)}</p>` : ""}
+      ${d.creneaux ? `<p>📅 <strong>Jour et horaire&nbsp;:</strong> ${escape(d.creneaux)}</p>` : ""}
       ${
         d.date_reprise
           ? `<p>🎾 <strong>Reprise des cours&nbsp;:</strong> ${escape(d.date_reprise)}.</p>`
@@ -198,7 +200,7 @@ export function emailValidationEcole(d: {
   const text = `Bonjour,
 
 Bonne nouvelle : l'inscription de ${d.prenom} ${d.nom} à l'ATS Valrose pour la saison 2026-2027 est confirmée.
-${d.cours_resume ? `\nCours : ${d.cours_resume}` : ""}${d.date_reprise ? `\nReprise des cours : ${d.date_reprise}` : ""}
+${d.cours_resume ? `\nCours : ${d.cours_resume}` : ""}${d.creneaux ? `\nJour et horaire : ${d.creneaux}` : ""}${d.date_reprise ? `\nReprise des cours : ${d.date_reprise}` : ""}
 
 Le règlement (espèces ou chèque) se fait à l'accueil du club. Le créneau définitif vous sera confirmé par le club.
 

@@ -105,10 +105,16 @@ export async function sendValidationEcole(
   const mailer = getMailer();
   if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
 
+  // Jour + horaire = créneaux choisis à l'inscription (dispo_*).
+  const creneaux = [row.dispo_mercredi, row.dispo_samedi, row.dispo_semaine]
+    .filter((x): x is string => Boolean(x && x.trim()))
+    .join(", ");
+
   const { subject, html, text } = emailValidationEcole({
     prenom: row.prenom,
     nom: row.nom,
     cours_resume: cours.join(", "),
+    creneaux,
     date_reprise: dateReprise,
   });
   const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
