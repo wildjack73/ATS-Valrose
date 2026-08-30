@@ -619,6 +619,28 @@ function EcoleRowGroup({
             paiementInfo={row.paiement_info}
             notesAdmin={row.notes_admin}
           />
+          {/* Prévenir : visible directement dans la ligne (sans déplier) */}
+          <div className="mt-2">
+            {row.prevenu_at ? (
+              <span
+                className="inline-block text-[10px] font-semibold text-emerald-600"
+                title={`Prévenu le ${new Date(row.prevenu_at).toLocaleDateString("fr-FR")} — déplier pour renvoyer`}
+              >
+                ✅ Prévenu le{" "}
+                {new Date(row.prevenu_at).toLocaleDateString("fr-FR")}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={prevenir}
+                disabled={pending}
+                className="rounded bg-yellow-club text-navy px-2 py-1 text-[11px] font-bold hover:bg-yellow-hover disabled:opacity-40"
+                title="Envoyer l'email de confirmation d'inscription"
+              >
+                🔔 Prévenir
+              </button>
+            )}
+          </div>
         </td>
         <td className="p-3 whitespace-nowrap">
           <div className="flex items-center gap-2 text-gray-400">
@@ -638,23 +660,6 @@ function EcoleRowGroup({
             >
               <IconPhone />
             </a>
-            <button
-              onClick={prevenir}
-              disabled={pending}
-              className="text-base leading-none transition hover:scale-125 disabled:opacity-30"
-              title={
-                row.prevenu_at
-                  ? `Prévenu le ${new Date(row.prevenu_at).toLocaleDateString("fr-FR")} — cliquer pour renvoyer`
-                  : "Prévenir de l'inscription (envoyer l'email de confirmation)"
-              }
-              aria-label={
-                row.prevenu_at
-                  ? "Déjà prévenu (renvoyer)"
-                  : "Prévenir de l'inscription"
-              }
-            >
-              {row.prevenu_at ? "✅" : "🔔"}
-            </button>
             <button
               onClick={() => patch({ desactive: !row.desactive })}
               disabled={pending}
@@ -808,7 +813,7 @@ function EcoleEditPanel({
           type="button"
           onClick={prevenir}
           disabled={pending}
-          className="w-full rounded-lg bg-navy text-white px-4 py-2.5 text-sm font-bold hover:bg-navy-dark disabled:opacity-40"
+          className="w-full rounded-lg bg-yellow-club text-navy px-4 py-2.5 text-sm font-bold hover:bg-yellow-hover disabled:opacity-40"
         >
           ✉️ Prévenir de l&apos;inscription (envoyer la confirmation par email)
         </button>
