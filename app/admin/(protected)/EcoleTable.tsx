@@ -725,6 +725,7 @@ function EcoleRowGroup({
                 row={row}
                 paiements={paiements}
                 patch={patch}
+                prevenir={prevenir}
                 pending={pending}
               />
             </div>
@@ -756,11 +757,13 @@ function EcoleEditPanel({
   row,
   paiements,
   patch,
+  prevenir,
   pending,
 }: {
   row: InscriptionEcoleRow;
   paiements: PaiementClient[];
   patch: (p: object) => void;
+  prevenir: () => void;
   pending: boolean;
 }) {
   const [statut, setStatut] = useState(row.statut);
@@ -784,6 +787,33 @@ function EcoleEditPanel({
 
   return (
     <div className="space-y-3">
+      {/* ✉️ Prévenir de l'inscription (email de confirmation) */}
+      {row.prevenu_at ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+          <span className="text-sm font-semibold text-emerald-700">
+            ✅ Inscription confirmée — prévenu le{" "}
+            {new Date(row.prevenu_at).toLocaleDateString("fr-FR")}
+          </span>
+          <button
+            type="button"
+            onClick={prevenir}
+            disabled={pending}
+            className="rounded border border-emerald-300 bg-white text-emerald-700 px-2.5 py-1 text-xs font-semibold hover:bg-emerald-100 disabled:opacity-40"
+          >
+            Renvoyer l&apos;email
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={prevenir}
+          disabled={pending}
+          className="w-full rounded-lg bg-navy text-white px-4 py-2.5 text-sm font-bold hover:bg-navy-dark disabled:opacity-40"
+        >
+          ✉️ Prévenir de l&apos;inscription (envoyer la confirmation par email)
+        </button>
+      )}
+
       {/* 💰 Paiements (en haut, geste le plus fréquent) */}
       <PaiementsPanel
         inscriptionType="ecole"
