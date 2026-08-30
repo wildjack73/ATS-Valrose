@@ -14,6 +14,7 @@ import {
   emailAdminEcole,
   emailCoachPickleball,
   emailValidationEcole,
+  emailValidationStage,
 } from "./templates";
 import { FORMULES, OPTIONS_F4 } from "@/lib/data/stages";
 import { creneauLabel, f4SelectionLabel } from "@/lib/admin/format";
@@ -132,6 +133,47 @@ export async function sendValidationEcole(
     await appendToSent(raw);
   } catch (e) {
     console.error("[email] copie Envoyés (validation) échouée:", e);
+  }
+  return { ok: true };
+}
+
+/** Email de CONFIRMATION d'inscription STAGE, déclenché depuis l'admin
+ *  (bouton « Prévenir »). Renvoie un statut (ne marque prévenu que si OK). */
+export async function sendValidationStage(
+  row: InscriptionStageRow,
+): Promise<{ ok: boolean; error?: string }> {
+  const mailer = getMailer();
+  if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
+
+  const formule = FORMULES.find((f) => f.id === row.formule);
+  const { subject, html, text } = emailValidationStage({
+    prenom: row.prenom,
+    nom: row.nom,
+    semaine_label: row.semaine_label,
+    formule_titre: formule?.titre ?? row.formule,
+    creneau: creneauLabel(row.formule_creneau),
+    dejeuner: !!row.formule_dejeuner,
+    formule_4_detail:
+      row.formule === "formule_4"
+        ? f4SelectionLabel(row.formule_4_selection)
+        : null,
+  });
+  const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
+
+  try {
+    await mailer.sendMail(mailOptions);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "envoi échoué" };
+  }
+  try {
+    const raw = await new Promise<Buffer>((resolve, reject) => {
+      new MailComposer(mailOptions).compile().build((err, msg) =>
+        err ? reject(err) : resolve(msg),
+      );
+    });
+    await appendToSent(raw);
+  } catch (e) {
+    console.error("[email] copie Envoyés (validation stage) échouée:", e);
   }
   return { ok: true };
 }

@@ -201,6 +201,56 @@ L'équipe ATS Valrose`;
   return { subject, html, text };
 }
 
+/** Email de CONFIRMATION d'inscription STAGE, déclenché manuellement depuis
+ *  l'admin (bouton « Prévenir »). */
+export function emailValidationStage(d: {
+  prenom: string;
+  nom: string;
+  semaine_label: string;
+  formule_titre: string;
+  creneau?: string | null;
+  dejeuner: boolean;
+  formule_4_detail?: string | null;
+}) {
+  const subject = `Inscription confirmée — Stage ATS Valrose — ${d.prenom} ${d.nom}`;
+  const details = [
+    `<strong>Semaine&nbsp;:</strong> ${escape(d.semaine_label)}`,
+    `<strong>Formule&nbsp;:</strong> ${escape(d.formule_titre)}`,
+    d.creneau ? `<strong>Créneau&nbsp;:</strong> ${escape(d.creneau)}` : null,
+    d.dejeuner ? `<strong>Déjeuner inclus&nbsp;:</strong> Oui` : null,
+    d.formule_4_detail
+      ? `<strong>Détail&nbsp;:</strong> ${escape(d.formule_4_detail)}`
+      : null,
+  ]
+    .filter(Boolean)
+    .map((l) => `<p style="margin:6px 0">${l}</p>`)
+    .join("");
+  const html = wrap(
+    `Inscription au stage confirmée`,
+    `
+      <p>Bonjour,</p>
+      <p>Bonne nouvelle&nbsp;: l'inscription de <strong>${escape(d.prenom)} ${escape(
+        d.nom,
+      )}</strong> au stage est <strong>confirmée</strong>&nbsp;✅.</p>
+      <div style="background:#f0f7fa;border-left:4px solid #2db5d6;padding:12px 16px;margin:16px 0">${details}</div>
+      <p>Pour toute question&nbsp;: <a href="mailto:contact@ats-valrose.fr">contact@ats-valrose.fr</a> · <a href="mailto:padelnice@gmail.com">padelnice@gmail.com</a></p>
+      <p style="color:#666;font-size:13px">Sportivement,<br/>L'équipe ATS Valrose</p>
+    `,
+  );
+  const text = `Bonjour,
+
+Bonne nouvelle : l'inscription de ${d.prenom} ${d.nom} au stage est confirmée.
+
+- Semaine : ${d.semaine_label}
+- Formule : ${d.formule_titre}${d.creneau ? `\n- Créneau : ${d.creneau}` : ""}${d.dejeuner ? `\n- Déjeuner inclus : Oui` : ""}${d.formule_4_detail ? `\n- Détail : ${d.formule_4_detail}` : ""}
+
+Pour toute question : contact@ats-valrose.fr · padelnice@gmail.com
+
+Sportivement,
+L'équipe ATS Valrose`;
+  return { subject, html, text };
+}
+
 export function emailCoachPickleball(d: {
   prenom: string;
   nom: string;

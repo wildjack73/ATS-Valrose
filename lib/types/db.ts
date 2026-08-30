@@ -61,6 +61,8 @@ export interface InscriptionStageRow {
   /** Mise en pause temporaire (différent de « annulé ») : la ligne
    *  reste mais n'est plus comptée et la place est libérée. */
   desactive: boolean;
+  /** Date d'envoi de l'email de confirmation d'inscription. NULL = pas prévenu. */
+  prevenu_at: string | null;
 }
 
 export type InscriptionStageInsert = Omit<

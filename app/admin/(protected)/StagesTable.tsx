@@ -130,6 +130,84 @@ export default function StagesTable({
     });
   }
 
+  // ---- « Prévenir » : email de confirmation d'inscription stage ----
+  async function prevenirBatch(
+    ids: string[],
+  ): Promise<{ sent: number; failed: number }> {
+    let sent = 0;
+    let failed = 0;
+    for (let i = 0; i < ids.length; i += 25) {
+      const chunk = ids.slice(i, i + 25);
+      try {
+        const res = await fetch("/api/admin/inscriptions/stages/prevenir", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: chunk }),
+        });
+        if (res.ok) {
+          const j = await res.json();
+          sent += j.sent ?? 0;
+          failed += Array.isArray(j.failed) ? j.failed.length : 0;
+        } else {
+          failed += chunk.length;
+        }
+      } catch {
+        failed += chunk.length;
+      }
+    }
+    return { sent, failed };
+  }
+
+  const aPrevenir = filteredRows.filter(
+    (r) => !r.prevenu_at && r.statut !== "annule" && !r.desactive,
+  );
+
+  function prevenirSolo(id: string, label: string) {
+    if (
+      !window.confirm(
+        `Envoyer l'email de confirmation d'inscription à ${label} ?`,
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      const { failed } = await prevenirBatch([id]);
+      if (failed) window.alert("L'email n'a pas pu être envoyé. Réessaye.");
+      router.refresh();
+    });
+  }
+
+  function prevenirEnMasse() {
+    if (aPrevenir.length === 0) {
+      window.alert(
+        "Personne à prévenir : toutes les inscriptions de ce filtre ont déjà été prévenues.",
+      );
+      return;
+    }
+    if (
+      !window.confirm(
+        `Envoyer l'email de confirmation à ${aPrevenir.length} inscrit(s) non encore prévenu(s) ?\n\n⚠️ Cela envoie de vrais emails aux familles.`,
+      )
+    ) {
+      return;
+    }
+    if (
+      !window.confirm(
+        `Êtes-vous vraiment sûr ?\n\n${aPrevenir.length} email(s) vont partir MAINTENANT. Cette action ne peut pas être annulée.`,
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      const { sent, failed } = await prevenirBatch(aPrevenir.map((r) => r.id));
+      window.alert(
+        `✅ ${sent} email(s) de confirmation envoyé(s).` +
+          (failed ? `\n⚠️ ${failed} échec(s) — réessaye pour les restants.` : ""),
+      );
+      router.refresh();
+    });
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-b-xl rounded-tr-xl shadow-sm">
       <div className="p-4 border-b flex flex-wrap items-center gap-3">
@@ -195,6 +273,15 @@ export default function StagesTable({
         >
           Export Excel
         </a>
+        <button
+          type="button"
+          onClick={prevenirEnMasse}
+          disabled={pending || aPrevenir.length === 0}
+          title="Envoyer l'email de confirmation d'inscription à tous les inscrits (du filtre en cours) pas encore prévenus"
+          className="rounded-md bg-navy text-white px-3 py-1.5 text-xs font-semibold hover:bg-navy-dark disabled:opacity-40"
+        >
+          ✉️ Prévenir les non-prévenus ({aPrevenir.length})
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -233,6 +320,9 @@ export default function StagesTable({
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
+                  prevenir={() =>
+                    prevenirSolo(r.id, `${r.prenom} ${r.nom}`)
+                  }
                   remove={() =>
                     deleteInscription(r.id, `${r.prenom} ${r.nom}`)
                   }
@@ -258,6 +348,7 @@ function RowGroup({
   open,
   toggle,
   patch,
+  prevenir,
   remove,
   pending,
 }: {
@@ -269,6 +360,7 @@ function RowGroup({
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
+  prevenir: () => void;
   remove: () => void;
   pending: boolean;
 }) {
@@ -359,6 +451,28 @@ function RowGroup({
             paiementInfo={row.paiement_info}
             notesAdmin={row.notes_admin}
           />
+          {/* Prévenir : visible directement dans la ligne (sans déplier) */}
+          <div className="mt-2">
+            {row.prevenu_at ? (
+              <span
+                className="inline-block text-[10px] font-semibold text-emerald-600"
+                title={`Prévenu le ${new Date(row.prevenu_at).toLocaleDateString("fr-FR")} — déplier pour renvoyer`}
+              >
+                ✅ Prévenu le{" "}
+                {new Date(row.prevenu_at).toLocaleDateString("fr-FR")}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={prevenir}
+                disabled={pending}
+                className="rounded bg-yellow-club text-navy px-2 py-1 text-[11px] font-bold hover:bg-yellow-hover disabled:opacity-40"
+                title="Envoyer l'email de confirmation d'inscription"
+              >
+                🔔 Prévenir
+              </button>
+            )}
+          </div>
         </td>
         <td className="p-3 whitespace-nowrap">
           <div className="flex items-center gap-2 text-gray-400">
@@ -450,6 +564,7 @@ function RowGroup({
                 optionsF4={optionsF4}
                 paiements={paiements}
                 patch={patch}
+                prevenir={prevenir}
                 pending={pending}
               />
             </div>
@@ -485,6 +600,7 @@ function EditPanel({
   optionsF4,
   paiements,
   patch,
+  prevenir,
   pending,
 }: {
   row: InscriptionStageRow;
@@ -492,6 +608,7 @@ function EditPanel({
   optionsF4: OptionF4[];
   paiements: PaiementClient[];
   patch: (p: object) => void;
+  prevenir: () => void;
   pending: boolean;
 }) {
   const [statut, setStatut] = useState(row.statut);
@@ -605,6 +722,33 @@ function EditPanel({
 
   return (
     <div className="space-y-3">
+      {/* ✉️ Prévenir de l'inscription (email de confirmation) */}
+      {row.prevenu_at ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+          <span className="text-sm font-semibold text-emerald-700">
+            ✅ Inscription confirmée — prévenu le{" "}
+            {new Date(row.prevenu_at).toLocaleDateString("fr-FR")}
+          </span>
+          <button
+            type="button"
+            onClick={prevenir}
+            disabled={pending}
+            className="rounded border border-emerald-300 bg-white text-emerald-700 px-2.5 py-1 text-xs font-semibold hover:bg-emerald-100 disabled:opacity-40"
+          >
+            Renvoyer l&apos;email
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={prevenir}
+          disabled={pending}
+          className="w-full rounded-lg bg-yellow-club text-navy px-4 py-2.5 text-sm font-bold hover:bg-yellow-hover disabled:opacity-40"
+        >
+          ✉️ Prévenir de l&apos;inscription (envoyer la confirmation par email)
+        </button>
+      )}
+
       {/* 💰 Paiements (en haut, c'est le geste le plus fréquent) */}
       <PaiementsPanel
         inscriptionType="stages"

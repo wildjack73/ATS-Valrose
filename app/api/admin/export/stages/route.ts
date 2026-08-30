@@ -40,6 +40,9 @@ export async function GET(request: Request) {
         r.formule === "formule_4" ? f4SelectionLabel(r.formule_4_selection) : "",
       prix_total: r.prix_total,
       statut: statutLabel(r.statut),
+      prevenu: r.prevenu_at
+        ? new Date(r.prevenu_at).toLocaleDateString("fr-FR")
+        : "",
       notes: r.notes ?? "",
       notes_admin: r.notes_admin ?? "",
     })),
@@ -59,6 +62,7 @@ export async function GET(request: Request) {
       { key: "formule_4_detail", label: "Détail formule 4", width: 24 },
       { key: "prix_total", label: "Prix total (€)", numFmt: "0", width: 13 },
       { key: "statut", label: "Statut" },
+      { key: "prevenu", label: "Prévenu le", width: 14 },
       { key: "notes", label: "Notes", width: 30 },
       { key: "notes_admin", label: "Notes admin", width: 30 },
     ],
