@@ -288,9 +288,17 @@ export default function EcoleTable({
       );
       return;
     }
+    // Double confirmation : l'envoi en masse est irréversible.
     if (
       !window.confirm(
         `Envoyer l'email de confirmation à ${aPrevenir.length} inscrit(s) non encore prévenu(s) ?\n\n⚠️ Cela envoie de vrais emails aux familles.`,
+      )
+    ) {
+      return;
+    }
+    if (
+      !window.confirm(
+        `Êtes-vous vraiment sûr ?\n\n${aPrevenir.length} email(s) vont partir MAINTENANT. Cette action ne peut pas être annulée.`,
       )
     ) {
       return;
