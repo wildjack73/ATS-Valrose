@@ -23,6 +23,9 @@ import type {
   InscriptionEcoleRow,
 } from "@/lib/types/db";
 import { COURS_TENNIS, COURS_PADEL, COURS_PICKLEBALL } from "@/lib/data/ecole";
+import { getActiveSaison } from "@/lib/data/tarifs-server";
+import { fetchHorairesEcole } from "@/lib/data/horaires-ecole-server";
+import { horaireFor } from "@/lib/data/horaires-ecole";
 
 /** Envoi best-effort : log les erreurs mais ne fait pas échouer la requête. */
 async function safeSend(
@@ -105,9 +108,29 @@ export async function sendValidationEcole(
   const mailer = getMailer();
   if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
 
-  // Jour + horaire = créneaux choisis à l'inscription (dispo_*).
+  // Horaires exacts saisis en admin (best-effort) : on enrichit chaque créneau
+  // avec « (9h00 - 10h00) » quand un horaire existe pour ce cours × créneau.
+  let horaires: Record<string, string> = {};
+  try {
+    const saisonId =
+      (row as { saison_id?: string | null }).saison_id ||
+      (await getActiveSaison("ecole"))?.id;
+    if (saisonId) horaires = await fetchHorairesEcole(saisonId);
+  } catch {
+    /* pas bloquant */
+  }
+  const coursTennisCodes = (row.cours_tennis ?? []) as string[];
   const creneaux = [row.dispo_mercredi, row.dispo_samedi, row.dispo_semaine]
     .filter((x): x is string => Boolean(x && x.trim()))
+    .flatMap((s) => s.split(",").map((x) => x.trim()).filter(Boolean))
+    .map((label) => {
+      let h = "";
+      for (const code of coursTennisCodes) {
+        h = horaireFor(horaires, code, label);
+        if (h) break;
+      }
+      return h ? `${label} (${h})` : label;
+    })
     .join(", ");
 
   const { subject, html, text } = emailValidationEcole({

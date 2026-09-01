@@ -17,6 +17,7 @@ import EcoleTable from "./EcoleTable";
 import HistoriqueTable from "./HistoriqueTable";
 import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 import TarifsEditor from "./TarifsEditor";
+import HorairesEditor from "./HorairesEditor";
 import CapacitesEditor from "./CapacitesEditor";
 import PlanningEcole from "./PlanningEcole";
 import DashboardHeader from "./DashboardHeader";
@@ -42,6 +43,7 @@ import {
   IconPlaces,
 } from "./Icons";
 import { fetchCapacitesEcole } from "@/lib/data/ecole-capacites";
+import { fetchHorairesEcole } from "@/lib/data/horaires-ecole-server";
 import { fetchSlotsOccupesEcole } from "@/lib/data/ecole-slots";
 import {
   fetchGroupesEcole,
@@ -92,6 +94,8 @@ export default async function AdminDashboardPage({
         ? "historique"
         : sp.tab === "tarifs"
           ? "tarifs"
+          : sp.tab === "horaires"
+          ? "horaires"
           : sp.tab === "capacites"
           ? "capacites"
           : sp.tab === "planning"
@@ -219,6 +223,12 @@ export default async function AdminDashboardPage({
       ? await fetchJpoEcole(bundle.saisonEcole.id)
       : null;
 
+  // Horaires exacts (cours tennis jeunes) : charger si l'onglet actif.
+  const horairesEcole =
+    tab === "horaires" && bundle
+      ? await fetchHorairesEcole(bundle.saisonEcole.id)
+      : null;
+
   // Capacités créneaux école : charger seulement si l'onglet est actif
   // (capacités éditées + occupation actuelle de chaque créneau).
   const [capacitesEcole, slotsOccupesEcole] =
@@ -287,6 +297,13 @@ export default async function AdminDashboardPage({
           icon={<IconTarifs />}
         >
           Tarifs
+        </TabLink>
+        <TabLink
+          active={tab === "horaires"}
+          href="/admin?tab=horaires"
+          icon={<IconTarifs />}
+        >
+          Horaires
         </TabLink>
         <TabLink
           active={tab === "capacites"}
@@ -379,6 +396,14 @@ export default async function AdminDashboardPage({
             Aucune saison configurée. Exécute{" "}
             <code className="bg-white px-1 rounded">supabase/seed-2026-2027.sql</code>{" "}
             dans Supabase.
+          </div>
+        )
+      ) : tab === "horaires" ? (
+        bundle ? (
+          <HorairesEditor initial={horairesEcole ?? {}} />
+        ) : (
+          <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
+            Aucune saison active pour gérer les horaires.
           </div>
         )
       ) : tab === "capacites" ? (
