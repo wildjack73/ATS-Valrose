@@ -107,7 +107,7 @@ select s.id, 'tennis', v.* from s, (values
   ('initiation',              'Initiation',           'À partir de 6 ans · 1h/semaine',                    250, 30),
   ('perfectionnement',        'Perfectionnement',     'À partir de 7 ans · 1h30/semaine',                  360, 40),
   ('centre_entrainement',     'Centre d''Entraînement','Joueurs confirmés · 3h/semaine',                  720, 50),
-  ('demi_journee',            'Demi-journée',         'Multi-activités sur une demi-journée · 3h/semaine', 750, 60),
+  ('demi_journee',            'Demi-journée',         'Multi-activités sur une demi-journée · 3h/semaine', 780, 60),
   ('cours_adultes_annuel',    'Cours Adultes',        'Adultes · 1h30/semaine · saison complète',          520, 70),
   ('cours_adultes_trimestre', 'Cours Adultes',        'Adultes · 1h30/semaine · 1 trimestre',              180, 80)
 ) as v(code, label, description, prix, order_idx)

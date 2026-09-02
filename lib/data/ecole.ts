@@ -18,7 +18,7 @@ export const COURS_TENNIS: CoursItem[] = [
   { id: "initiation",             label: "Initiation (1h)",                  prix: 250 },
   { id: "perfectionnement",       label: "Perfectionnement (1h30)",          prix: 360 },
   { id: "centre_entrainement",    label: "Centre d'Entraînement (3h)",       prix: 720 },
-  { id: "demi_journee",           label: "Demi-journée (3h)",                prix: 750 },
+  { id: "demi_journee",           label: "Demi-journée (3h)",                prix: 780 },
   { id: "cours_adultes_annuel",   label: "Cours Adultes (1h30, annuel)",     prix: 520 },
   { id: "cours_adultes_trimestre",label: "Cours Adultes (1h30, 1 trimestre)",prix: 180 },
 ];

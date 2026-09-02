@@ -235,7 +235,7 @@ export default function HomePage() {
                     <span className="text-base font-normal text-white/70 mx-1">
                       à
                     </span>
-                    <span className="text-white">750€</span>
+                    <span className="text-white">780€</span>
                   </p>
                   <p className="text-sm text-white/70">par an, selon la formule</p>
                 </div>
