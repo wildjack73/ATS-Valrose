@@ -92,6 +92,8 @@ export interface InscriptionEcoleRow {
   cours_padel: CoursPadelId[];
   cours_pickleball: CoursPickleballId[];
   licence_pickleball: boolean;
+  /** Coché en admin quand l'élève a été placé dans son groupe (post-JPO). */
+  ajoute_au_groupe: boolean;
 
   prix_total: number;
 

@@ -11,6 +11,7 @@ interface PatchBody {
   paiement_info?: string | null;
   notes_admin?: string | null;
   desactive?: boolean;
+  ajoute_au_groupe?: boolean;
   niveau?: string | null;
   niveau_attribue?: string | null;
   // Créneaux / disponibilités (édition admin) — CSV de libellés
@@ -50,6 +51,9 @@ export async function PATCH(
   }
   if (body.desactive !== undefined) {
     patch.desactive = Boolean(body.desactive);
+  }
+  if (body.ajoute_au_groupe !== undefined) {
+    patch.ajoute_au_groupe = Boolean(body.ajoute_au_groupe);
   }
   if (body.niveau !== undefined) {
     patch.niveau = body.niveau ? String(body.niveau).trim() : null;

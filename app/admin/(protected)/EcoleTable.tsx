@@ -641,6 +641,28 @@ function EcoleRowGroup({
               </button>
             )}
           </div>
+          {/* Suivi : élève placé dans son groupe (post-JPO) */}
+          <label
+            className="mt-2 flex items-center gap-1.5 text-[11px] font-medium cursor-pointer select-none"
+            title="Cocher une fois l'élève placé dans son groupe"
+          >
+            <input
+              type="checkbox"
+              className="accent-emerald-600"
+              checked={!!row.ajoute_au_groupe}
+              disabled={pending}
+              onChange={() =>
+                patch({ ajoute_au_groupe: !row.ajoute_au_groupe })
+              }
+            />
+            <span
+              className={
+                row.ajoute_au_groupe ? "text-emerald-600" : "text-gray-500"
+              }
+            >
+              Ajouté au groupe
+            </span>
+          </label>
         </td>
         <td className="p-3 whitespace-nowrap">
           <div className="flex items-center gap-2 text-gray-400">
