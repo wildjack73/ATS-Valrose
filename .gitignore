@@ -61,3 +61,8 @@ tools/images/
 
 # Script local de sauvegarde (chemins spécifiques à la machine)
 scripts/sauvegarde-auto.cmd
+
+# Sauvegardes locales / outils / fichiers de test (jamais sur le dépôt public)
+_sauvegardes/
+tools/
+test-image-zai.png

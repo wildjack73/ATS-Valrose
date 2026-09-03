@@ -17,6 +17,7 @@ interface PatchBody {
   notes_admin?: string | null;
   desactive?: boolean;
   ajoute_au_groupe?: boolean;
+  coach_id?: string | null;
   horaire_confirme?: string | null;
   niveau?: string | null;
   niveau_attribue?: string | null;
@@ -64,6 +65,10 @@ export async function PATCH(
   }
   if (body.ajoute_au_groupe !== undefined) {
     patch.ajoute_au_groupe = Boolean(body.ajoute_au_groupe);
+  }
+  if (body.coach_id !== undefined) {
+    const v = body.coach_id ? String(body.coach_id).trim() : "";
+    patch.coach_id = v || null;
   }
   if (body.horaire_confirme !== undefined) {
     patch.horaire_confirme = body.horaire_confirme

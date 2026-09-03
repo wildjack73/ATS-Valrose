@@ -19,7 +19,7 @@ import HistoriqueEcoleTable from "./HistoriqueEcoleTable";
 import TarifsEditor from "./TarifsEditor";
 import HorairesEditor from "./HorairesEditor";
 import CapacitesEditor from "./CapacitesEditor";
-import PlanningEcole from "./PlanningEcole";
+import GroupesEcole from "./GroupesEcole";
 import DashboardHeader from "./DashboardHeader";
 import StagesOrganisation from "./StagesOrganisation";
 import CoachesEditor from "./CoachesEditor";
@@ -45,11 +45,8 @@ import {
 import { fetchCapacitesEcole } from "@/lib/data/ecole-capacites";
 import { fetchHorairesEcole } from "@/lib/data/horaires-ecole-server";
 import { fetchSlotsOccupesEcole } from "@/lib/data/ecole-slots";
-import {
-  fetchGroupesEcole,
-  fetchCoaches,
-  fetchInscriptionsSansGroupe,
-} from "@/lib/admin/planning-queries";
+import { fetchCoaches } from "@/lib/admin/planning-queries";
+import { fetchElevesAGrouper } from "@/lib/admin/groupes-ecole-derives";
 import {
   fetchStageOrganisation,
   fetchInscriptionsCountByDay,
@@ -200,13 +197,10 @@ export default async function AdminDashboardPage({
     );
   }
 
-  // Planning : on charge groupes + non-placés seulement si l'onglet est actif
-  const planningData =
+  // Groupes École : élèves cochés « Ajouté au groupe » (chargés si onglet actif)
+  const elevesAGrouper =
     tab === "planning" && bundle
-      ? await Promise.all([
-          fetchGroupesEcole(bundle.saisonEcole.id),
-          fetchInscriptionsSansGroupe(bundle.saisonEcole.id),
-        ])
+      ? await fetchElevesAGrouper(bundle.saisonEcole.id)
       : null;
 
   // Annuaire : charger seulement si onglet actif
@@ -226,7 +220,7 @@ export default async function AdminDashboardPage({
   // Horaires exacts (cours tennis jeunes) : nécessaires à l'onglet Horaires
   // (édition) ET à l'onglet École (menu déroulant horaire par élève).
   const horairesEcole =
-    (tab === "horaires" || tab === "ecole") && bundle
+    (tab === "horaires" || tab === "ecole" || tab === "planning") && bundle
       ? await fetchHorairesEcole(bundle.saisonEcole.id)
       : null;
 
@@ -318,7 +312,7 @@ export default async function AdminDashboardPage({
           href="/admin?tab=planning"
           icon={<IconPlanning />}
         >
-          Planning École
+          Groupes École
         </TabLink>
         <TabLink
           active={tab === "stages-org"}
@@ -419,16 +413,16 @@ export default async function AdminDashboardPage({
           </div>
         )
       ) : tab === "planning" ? (
-        bundle && planningData ? (
-          <PlanningEcole
+        bundle && elevesAGrouper ? (
+          <GroupesEcole
             saisonId={bundle.saisonEcole.id}
-            groupes={planningData[0]}
+            eleves={elevesAGrouper}
             coaches={coaches}
-            inscriptionsSansGroupe={planningData[1]}
+            horaires={horairesEcole ?? {}}
           />
         ) : (
           <div className="rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-sm">
-            Aucune saison active pour gérer le planning.
+            Aucune saison active pour gérer les groupes.
           </div>
         )
       ) : tab === "coachs" ? (
