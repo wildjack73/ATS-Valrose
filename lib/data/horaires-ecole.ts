@@ -60,3 +60,36 @@ export function horaireFor(
 ): string {
   return horaires[horaireCle(coursCode, creneauLabel)] ?? "";
 }
+
+/**
+ * Options d'un menu déroulant « horaire exact » pour un élève : pour chacun de
+ * ses créneaux choisis (dispoLabels) et de ses cours (coursCodes), on éclate
+ * la liste d'horaires (« 9h-10h, 10h-11h ») en options « Créneau — 9h-10h ».
+ * Dédupliqué, dans l'ordre des créneaux.
+ */
+export function horaireOptionsFor(
+  horaires: Record<string, string>,
+  coursCodes: string[],
+  dispoLabels: string[],
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const creneau of dispoLabels) {
+    for (const code of coursCodes) {
+      const h = horaireFor(horaires, code, creneau);
+      if (!h) continue;
+      for (const slot of h
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)) {
+        const opt = `${creneau} — ${slot}`;
+        if (!seen.has(opt)) {
+          seen.add(opt);
+          out.push(opt);
+        }
+      }
+    }
+  }
+  return out;
+}
+

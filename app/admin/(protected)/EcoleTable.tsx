@@ -9,6 +9,7 @@ import {
   categorieLabel,
   type CreneauCategorie,
 } from "@/lib/data/creneaux-ecole";
+import { horaireOptionsFor } from "@/lib/data/horaires-ecole";
 import {
   formatDateTime,
   age,
@@ -41,6 +42,7 @@ export default function EcoleTable({
   coursTennis,
   coursPadel,
   coursPickleball,
+  horaires,
   niveauxEleves,
   currentStatut,
   currentType,
@@ -54,6 +56,8 @@ export default function EcoleTable({
   coursTennis: CoursEcole[];
   coursPadel: CoursEcole[];
   coursPickleball: CoursEcole[];
+  /** Horaires exacts saisis en admin (cle -> horaire) pour la saison active. */
+  horaires: Record<string, string>;
   niveauxEleves: Record<string, string>;
   currentStatut?: string;
   currentType?: string;
@@ -453,6 +457,7 @@ export default function EcoleTable({
                   row={r}
                   paiements={paiementsByInscription[r.id] ?? []}
                   niveauAttribue={niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null}
+                  horaires={horaires}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -477,6 +482,7 @@ function EcoleRowGroup({
   row,
   paiements,
   niveauAttribue,
+  horaires,
   open,
   toggle,
   patch,
@@ -487,6 +493,7 @@ function EcoleRowGroup({
   row: InscriptionEcoleRow;
   paiements: PaiementClient[];
   niveauAttribue: string | null;
+  horaires: Record<string, string>;
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
@@ -502,6 +509,17 @@ function EcoleRowGroup({
   ]
     .filter(Boolean)
     .join(" • ");
+
+  // Options du menu déroulant « horaire exact » : dérivées des créneaux
+  // choisis (dispo_*) × cours tennis de l'élève × horaires saisis en admin.
+  const dispoLabels = [row.dispo_mercredi, row.dispo_samedi, row.dispo_semaine]
+    .filter((x): x is string => Boolean(x && x.trim()))
+    .flatMap((s) => s.split(",").map((x) => x.trim()).filter(Boolean));
+  const horaireOptions = horaireOptionsFor(
+    horaires,
+    (row.cours_tennis ?? []) as string[],
+    dispoLabels,
+  );
 
   function handleRowClick(e: React.MouseEvent<HTMLTableRowElement>) {
     const target = e.target as HTMLElement;
@@ -663,6 +681,35 @@ function EcoleRowGroup({
               Ajouté au groupe
             </span>
           </label>
+          {/* Horaire exact confirmé : menu déroulant selon jour + matin/aprem */}
+          {horaireOptions.length > 0 ? (
+            <select
+              value={row.horaire_confirme ?? ""}
+              disabled={pending}
+              onChange={(e) =>
+                patch({ horaire_confirme: e.target.value || null })
+              }
+              title="Choisir l'horaire exact (groupe) de cet élève"
+              className={`mt-2 w-full max-w-[180px] rounded border px-1.5 py-1 text-[11px] ${
+                row.horaire_confirme
+                  ? "border-navy bg-navy/5 text-navy font-semibold"
+                  : "border-gray-300 text-gray-600"
+              }`}
+            >
+              <option value="">— Horaire exact —</option>
+              {horaireOptions.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+              {row.horaire_confirme &&
+              !horaireOptions.includes(row.horaire_confirme) ? (
+                <option value={row.horaire_confirme}>
+                  {row.horaire_confirme}
+                </option>
+              ) : null}
+            </select>
+          ) : null}
         </td>
         <td className="p-3 whitespace-nowrap">
           <div className="flex items-center gap-2 text-gray-400">

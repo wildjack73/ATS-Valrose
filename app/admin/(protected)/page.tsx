@@ -223,9 +223,10 @@ export default async function AdminDashboardPage({
       ? await fetchJpoEcole(bundle.saisonEcole.id)
       : null;
 
-  // Horaires exacts (cours tennis jeunes) : charger si l'onglet actif.
+  // Horaires exacts (cours tennis jeunes) : nécessaires à l'onglet Horaires
+  // (édition) ET à l'onglet École (menu déroulant horaire par élève).
   const horairesEcole =
-    tab === "horaires" && bundle
+    (tab === "horaires" || tab === "ecole") && bundle
       ? await fetchHorairesEcole(bundle.saisonEcole.id)
       : null;
 
@@ -377,6 +378,7 @@ export default async function AdminDashboardPage({
           coursTennis={bundle?.coursTennis ?? []}
           coursPadel={bundle?.coursPadel ?? []}
           coursPickleball={bundle?.coursPickleball ?? []}
+          horaires={horairesEcole ?? {}}
           niveauxEleves={niveauxEleves}
           currentStatut={sp.statut}
           currentType={sp.type}

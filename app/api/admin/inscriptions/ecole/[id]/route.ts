@@ -12,6 +12,7 @@ interface PatchBody {
   notes_admin?: string | null;
   desactive?: boolean;
   ajoute_au_groupe?: boolean;
+  horaire_confirme?: string | null;
   niveau?: string | null;
   niveau_attribue?: string | null;
   // Créneaux / disponibilités (édition admin) — CSV de libellés
@@ -54,6 +55,11 @@ export async function PATCH(
   }
   if (body.ajoute_au_groupe !== undefined) {
     patch.ajoute_au_groupe = Boolean(body.ajoute_au_groupe);
+  }
+  if (body.horaire_confirme !== undefined) {
+    patch.horaire_confirme = body.horaire_confirme
+      ? String(body.horaire_confirme).trim()
+      : null;
   }
   if (body.niveau !== undefined) {
     patch.niveau = body.niveau ? String(body.niveau).trim() : null;

@@ -133,11 +133,18 @@ export async function sendValidationEcole(
     })
     .join(", ");
 
+  // Si un horaire exact a été confirmé (menu déroulant admin), il prime sur la
+  // liste des créneaux — la famille reçoit l'horaire précis de son groupe.
+  const creneauxFinal =
+    row.horaire_confirme && row.horaire_confirme.trim()
+      ? row.horaire_confirme.trim()
+      : creneaux;
+
   const { subject, html, text } = emailValidationEcole({
     prenom: row.prenom,
     nom: row.nom,
     cours_resume: cours.join(", "),
-    creneaux,
+    creneaux: creneauxFinal,
   });
   const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
 

@@ -94,6 +94,9 @@ export interface InscriptionEcoleRow {
   licence_pickleball: boolean;
   /** Coché en admin quand l'élève a été placé dans son groupe (post-JPO). */
   ajoute_au_groupe: boolean;
+  /** Horaire exact confirmé par l'admin (menu déroulant), ex.
+   *  « Mercredi matin — 10h-11h ». Null = pas encore choisi. */
+  horaire_confirme: string | null;
 
   prix_total: number;
 
