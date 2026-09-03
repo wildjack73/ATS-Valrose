@@ -894,6 +894,21 @@ function EcoleEditPanel({
         </button>
       )}
 
+      {/* 👁 Prévisualiser l'email (ouvre le rendu réel, sans envoi) */}
+      <button
+        type="button"
+        onClick={() =>
+          window.open(
+            `/api/admin/inscriptions/ecole/${row.id}/preview-prevenir`,
+            "_blank",
+            "noopener",
+          )
+        }
+        className="text-xs text-navy underline hover:text-yellow-hover"
+      >
+        👁 Prévisualiser l&apos;email avant d&apos;envoyer
+      </button>
+
       {/* 💰 Paiements (en haut, geste le plus fréquent) */}
       <PaiementsPanel
         inscriptionType="ecole"

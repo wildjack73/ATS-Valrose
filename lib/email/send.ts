@@ -91,9 +91,14 @@ export async function sendStageEmails(row: InscriptionStageRow) {
  * l'admin (bouton « Prévenir »). Contrairement à safeSend, renvoie un statut
  * pour que l'appelant ne marque « prévenu » que si l'email est réellement parti.
  */
-export async function sendValidationEcole(
+/**
+ * Construit (sans envoyer) le message de confirmation École pour une
+ * inscription : cours, horaire (confirmé / unique / liste). Réutilisé par
+ * l'envoi ET la prévisualisation admin.
+ */
+export async function buildValidationEcoleEmail(
   row: InscriptionEcoleRow,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ subject: string; html: string; text: string }> {
   const cours: string[] = [];
   for (const id of row.cours_tennis ?? []) {
     cours.push(COURS_TENNIS.find((c) => c.id === id)?.label ?? id);
@@ -104,9 +109,6 @@ export async function sendValidationEcole(
   for (const id of row.cours_pickleball ?? []) {
     cours.push(COURS_PICKLEBALL.find((c) => c.id === id)?.label ?? id);
   }
-
-  const mailer = getMailer();
-  if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
 
   // Horaires exacts saisis en admin (best-effort) : on enrichit chaque créneau
   // avec « (9h00 - 10h00) » quand un horaire existe pour ce cours × créneau.
@@ -144,12 +146,21 @@ export async function sendValidationEcole(
         ? options[0]
         : creneaux;
 
-  const { subject, html, text } = emailValidationEcole({
+  return emailValidationEcole({
     prenom: row.prenom,
     nom: row.nom,
     cours_resume: cours.join(", "),
     creneaux: creneauxFinal,
   });
+}
+
+export async function sendValidationEcole(
+  row: InscriptionEcoleRow,
+): Promise<{ ok: boolean; error?: string }> {
+  const mailer = getMailer();
+  if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
+
+  const { subject, html, text } = await buildValidationEcoleEmail(row);
   const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
 
   try {
