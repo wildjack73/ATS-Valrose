@@ -594,6 +594,14 @@ function EcoleRowGroup({
     row.horaire_confirme ??
     (horaireOptions.length === 1 ? horaireOptions[0] : "");
 
+  // Champ horaire = liste (propositions) + saisie libre (datalist). État local
+  // resynchronisé quand la valeur en base change (après enregistrement).
+  const [horaireInput, setHoraireInput] = useState(effectiveHoraire || "");
+  useEffect(() => {
+    setHoraireInput(effectiveHoraire || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [row.horaire_confirme]);
+
   function handleRowClick(e: React.MouseEvent<HTMLTableRowElement>) {
     const target = e.target as HTMLElement;
     if (target.closest("a, button, input, select, textarea, label")) return;
@@ -754,36 +762,36 @@ function EcoleRowGroup({
               Ajouté au groupe
             </span>
           </label>
-          {/* Horaire exact confirmé : menu déroulant selon jour + matin/aprem */}
+          {/* Horaire exact : propositions (liste) OU saisie libre (datalist).
+              Indispensable pour le Centre d'Entraînement dont les combinaisons
+              sont propres à chaque élève. */}
           {horaireOptions.length > 0 ? (
-            <select
-              value={effectiveHoraire || ""}
-              disabled={pending}
-              onChange={(e) =>
-                patch({ horaire_confirme: e.target.value || null })
-              }
-              title="Choisir l'horaire exact (groupe) de cet élève"
-              className={`mt-2 w-full max-w-[180px] rounded border px-1.5 py-1 text-[11px] ${
-                effectiveHoraire
-                  ? "border-navy bg-navy/5 text-navy font-semibold"
-                  : "border-gray-300 text-gray-600"
-              }`}
-            >
-              {horaireOptions.length === 1 ? null : (
-                <option value="">— Horaire exact —</option>
-              )}
-              {horaireOptions.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-              {row.horaire_confirme &&
-              !horaireOptions.includes(row.horaire_confirme) ? (
-                <option value={row.horaire_confirme}>
-                  {row.horaire_confirme}
-                </option>
-              ) : null}
-            </select>
+            <>
+              <input
+                list={`hor-${row.id}`}
+                value={horaireInput}
+                disabled={pending}
+                onChange={(e) => setHoraireInput(e.target.value)}
+                onBlur={() => {
+                  const v = horaireInput.trim();
+                  if (v !== (row.horaire_confirme ?? "")) {
+                    patch({ horaire_confirme: v || null });
+                  }
+                }}
+                placeholder="Horaire exact…"
+                title="Choisir un horaire proposé ou saisir l'horaire précis"
+                className={`mt-2 w-full max-w-[200px] rounded border px-1.5 py-1 text-[11px] ${
+                  horaireInput
+                    ? "border-navy bg-navy/5 text-navy font-semibold"
+                    : "border-gray-300 text-gray-600"
+                }`}
+              />
+              <datalist id={`hor-${row.id}`}>
+                {horaireOptions.map((o) => (
+                  <option key={o} value={o} />
+                ))}
+              </datalist>
+            </>
           ) : null}
         </td>
         <td className="p-3 whitespace-nowrap">
