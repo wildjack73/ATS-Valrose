@@ -7,6 +7,7 @@ import {
   type GroupeEleveRow,
   effectiveHoraireLabel,
   horaireSortKey,
+  dispoLabelsOf,
   A_CLASSER,
 } from "@/lib/data/groupes-ecole";
 import {
@@ -50,7 +51,7 @@ export default function GroupesEcole({
   const [pending, startTransition] = useTransition();
   const [rows, setRows] = useState<GroupeEleveRow[]>(eleves);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<"liste" | "grille">("liste");
+  const [view, setView] = useState<"tableau" | "grille">("tableau");
 
   useEffect(() => setRows(eleves), [eleves]);
 
@@ -63,7 +64,6 @@ export default function GroupesEcole({
     [coaches],
   );
 
-  // Regroupement par horaire effectif
   const groups = useMemo(() => {
     const map = new Map<string, GroupeEleveRow[]>();
     for (const r of rows) {
@@ -81,7 +81,11 @@ export default function GroupesEcole({
       label,
       eleves: (map.get(label) as GroupeEleveRow[])
         .slice()
-        .sort((x, y) => x.nom.localeCompare(y.nom)),
+        .sort(
+          (x, y) =>
+            (age(y.date_naissance) ?? 0) - (age(x.date_naissance) ?? 0) ||
+            x.nom.localeCompare(y.nom),
+        ),
     }));
   }, [rows, horaires]);
 
@@ -96,14 +100,11 @@ export default function GroupesEcole({
       prev.map((r) => (ids.includes(r.id) ? { ...r, coach_id: coachId } : r)),
     );
     try {
-      const res = await fetch(
-        "/api/admin/inscriptions/ecole/coach-groupe",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inscription_ids: ids, coach_id: coachId }),
-        },
-      );
+      const res = await fetch("/api/admin/inscriptions/ecole/coach-groupe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inscription_ids: ids, coach_id: coachId }),
+      });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error ?? "Échec de l'affectation");
@@ -115,7 +116,7 @@ export default function GroupesEcole({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {error ? (
         <div className="rounded-md bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm no-print">
           ⚠ {error}
@@ -125,14 +126,14 @@ export default function GroupesEcole({
       <div className="flex flex-wrap items-center gap-3 bg-white rounded-xl border border-gray-200 p-4 shadow-sm no-print">
         <div className="inline-flex rounded border border-gray-300 overflow-hidden text-xs">
           <button
-            onClick={() => setView("liste")}
+            onClick={() => setView("tableau")}
             className={`px-3 py-1.5 font-semibold ${
-              view === "liste"
+              view === "tableau"
                 ? "bg-navy text-white"
                 : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
-            📝 Liste (affecter)
+            📝 Tableau
           </button>
           <button
             onClick={() => setView("grille")}
@@ -142,7 +143,7 @@ export default function GroupesEcole({
                 : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
-            📋 Grille (Excel)
+            📋 Grille coachs
           </button>
         </div>
         <button
@@ -162,17 +163,18 @@ export default function GroupesEcole({
 
       {totalCoches === 0 ? (
         <section className="rounded-xl bg-white border border-gray-200 p-10 text-center text-gray-600">
-          Aucun élève coché « Ajouté au groupe » pour le moment. Coche des élèves
-          dans l'onglet <strong>École enfants</strong> : ils apparaîtront ici,
-          rangés par horaire.
+          Aucun élève coché « Ajouté au groupe » (ni prévenu) pour le moment.
+          Coche des élèves dans l'onglet <strong>École enfants</strong> : ils
+          apparaîtront ici, rangés par horaire.
         </section>
-      ) : view === "liste" ? (
-        <div className="space-y-4">
+      ) : view === "tableau" ? (
+        <div className="space-y-6">
           {groups.map((g) => (
-            <GroupeSection
+            <GroupeTable
               key={g.label}
               label={g.label}
               eleves={g.eleves}
+              horaires={horaires}
               activeCoaches={activeCoaches}
               coachById={coachById}
               pending={pending}
@@ -191,11 +193,47 @@ export default function GroupesEcole({
   );
 }
 
-// --- Vue Liste : une section par horaire, coach par élève -------------------
+// --- Vue Tableau : un tableau par créneau (lignes = élèves) ------------------
 
-function GroupeSection({
+function CoachSelect({
+  value,
+  coach,
+  activeCoaches,
+  pending,
+  onChange,
+}: {
+  value: string;
+  coach: Coach | null | undefined;
+  activeCoaches: Coach[];
+  pending: boolean;
+  onChange: (coachId: string | null) => void;
+}) {
+  return (
+    <select
+      value={value}
+      disabled={pending}
+      onChange={(e) => onChange(e.target.value || null)}
+      className="w-full rounded border px-2 py-1 text-sm font-semibold"
+      style={{
+        borderColor: coach?.couleur ?? "#d1d5db",
+        color: coach?.couleur ?? "#6b7280",
+        backgroundColor: coach ? `${coach.couleur}12` : "#fff",
+      }}
+    >
+      <option value="">— coach —</option>
+      {activeCoaches.map((c) => (
+        <option key={c.id} value={c.id}>
+          {c.nom}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function GroupeTable({
   label,
   eleves,
+  horaires,
   activeCoaches,
   coachById,
   pending,
@@ -203,31 +241,41 @@ function GroupeSection({
 }: {
   label: string;
   eleves: GroupeEleveRow[];
+  horaires: Record<string, string>;
   activeCoaches: Coach[];
   coachById: Map<string, Coach>;
   pending: boolean;
   onSetCoach: (ids: string[], coachId: string | null) => void;
 }) {
   const isAClasser = label === A_CLASSER;
+
   return (
-    <section
-      className={`rounded-xl border shadow-sm overflow-hidden ${
-        isAClasser
-          ? "border-orange-300 bg-orange-50/40"
-          : "border-gray-200 bg-white"
-      }`}
-    >
-      <header className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <span className={`font-bold ${isAClasser ? "text-orange-800" : "text-navy"}`}>
+    <section className="rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden print-break">
+      <header
+        className={`px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-300 ${
+          isAClasser ? "bg-orange-100" : "bg-navy"
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`text-base font-extrabold ${
+              isAClasser ? "text-orange-900" : "text-white"
+            }`}
+          >
             {isAClasser ? "🟠 À classer" : `📅 ${label}`}
           </span>
-          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-            {eleves.length}
+          <span
+            className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+              isAClasser
+                ? "bg-white/70 text-orange-800"
+                : "bg-white/20 text-white"
+            }`}
+          >
+            {eleves.length} élève{eleves.length > 1 ? "s" : ""}
           </span>
         </div>
         {!isAClasser ? (
-          <label className="text-xs text-gray-600 flex items-center gap-1.5 no-print">
+          <label className="text-xs text-white/90 flex items-center gap-1.5 no-print">
             Coach pour tout le créneau :
             <select
               defaultValue=""
@@ -241,7 +289,7 @@ function GroupeSection({
                   );
                 e.target.value = "";
               }}
-              className="rounded border border-gray-300 px-2 py-1 text-xs"
+              className="rounded border border-white/40 bg-white/95 px-2 py-1 text-xs text-navy font-semibold"
             >
               <option value="">— choisir —</option>
               {activeCoaches.map((c) => (
@@ -253,67 +301,104 @@ function GroupeSection({
             </select>
           </label>
         ) : (
-          <span className="text-[11px] text-orange-700 no-print">
+          <span className="text-[11px] text-orange-800 no-print">
             Renseigne leur horaire exact (onglet École) pour les ranger.
           </span>
         )}
       </header>
-      <ul className="divide-y divide-gray-100">
-        {eleves.map((e) => {
-          const coach = e.coach_id ? coachById.get(e.coach_id) : null;
-          return (
-            <li
-              key={e.id}
-              className="px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: coach?.couleur ?? "#e5e7eb" }}
-                aria-hidden
-              />
-              <strong className="text-navy">
-                {e.prenom} {e.nom}
-              </strong>
-              <span className="text-xs text-gray-500">
-                {age(e.date_naissance) ?? "?"} ans
-                {coursSummary(e) ? ` · ${coursSummary(e)}` : ""}
-              </span>
-              <label className="ml-auto flex items-center gap-1.5 no-print">
-                <span className="text-[11px] text-gray-500">Coach</span>
-                <select
-                  value={e.coach_id ?? ""}
-                  disabled={pending}
-                  onChange={(ev) =>
-                    onSetCoach([e.id], ev.target.value || null)
-                  }
-                  className="rounded border border-gray-300 px-2 py-1 text-xs"
-                  style={
-                    coach
-                      ? { borderColor: coach.couleur ?? undefined }
-                      : undefined
-                  }
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="bg-gray-100 text-[11px] uppercase tracking-wide text-gray-500">
+              <th className="w-10 px-3 py-2 text-right border-b border-gray-300">
+                #
+              </th>
+              <th className="px-3 py-2 text-left border-b border-r border-gray-300">
+                Élève
+              </th>
+              <th className="w-16 px-3 py-2 text-center border-b border-r border-gray-300">
+                Âge
+              </th>
+              <th className="px-3 py-2 text-left border-b border-r border-gray-300">
+                Cours
+              </th>
+              {isAClasser ? (
+                <th className="px-3 py-2 text-left border-b border-gray-300">
+                  Dispos
+                </th>
+              ) : (
+                <>
+                  <th className="w-44 px-3 py-2 text-left border-b border-gray-300 no-print">
+                    Coach
+                  </th>
+                  <th className="hidden print:table-cell px-3 py-2 text-left border-b border-gray-300">
+                    Coach
+                  </th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {eleves.map((e, i) => {
+              const coach = e.coach_id ? coachById.get(e.coach_id) : null;
+              return (
+                <tr
+                  key={e.id}
+                  className="border-b border-gray-200 last:border-b-0 even:bg-gray-50/70 hover:bg-yellow-50/40"
                 >
-                  <option value="">—</option>
-                  {activeCoaches.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nom}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {/* Coach visible aussi à l'impression */}
-              <span className="hidden print:inline text-xs font-semibold">
-                {coach?.nom ?? ""}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+                  <td className="px-3 py-2 text-right text-gray-400 tabular-nums border-r border-gray-100">
+                    {i + 1}
+                  </td>
+                  <td className="px-3 py-2 font-bold text-navy whitespace-nowrap border-r border-gray-100">
+                    {e.prenom} {e.nom}
+                  </td>
+                  <td className="px-3 py-2 text-center text-gray-700 tabular-nums border-r border-gray-100">
+                    {age(e.date_naissance) ?? "?"}
+                  </td>
+                  <td className="px-3 py-2 text-gray-600 border-r border-gray-100">
+                    {coursSummary(e) || "—"}
+                  </td>
+                  {isAClasser ? (
+                    <td className="px-3 py-2 text-gray-500 text-xs">
+                      {dispoLabelsOf(e).join(" · ") || "—"}
+                    </td>
+                  ) : (
+                    <>
+                      <td className="px-3 py-1.5 no-print">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{
+                              backgroundColor: coach?.couleur ?? "#e5e7eb",
+                            }}
+                            aria-hidden
+                          />
+                          <CoachSelect
+                            value={e.coach_id ?? ""}
+                            coach={coach}
+                            activeCoaches={activeCoaches}
+                            pending={pending}
+                            onChange={(cid) => onSetCoach([e.id], cid)}
+                          />
+                        </div>
+                      </td>
+                      <td className="hidden print:table-cell px-3 py-2 font-semibold">
+                        {coach?.nom ?? "—"}
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
 
-// --- Vue Grille : horaires en lignes × coachs en colonnes -------------------
+// --- Vue Grille : horaires en lignes × coachs en colonnes (façon Excel) ------
 
 function Grille({
   groups,
@@ -324,7 +409,6 @@ function Grille({
   activeCoaches: Coach[];
   coachById: Map<string, Coach>;
 }) {
-  // Colonnes = coachs qui apparaissent réellement + « Sans coach » si besoin
   const usedCoachIds = new Set<string>();
   let hasSansCoach = false;
   for (const g of groups)
@@ -337,25 +421,33 @@ function Grille({
   const cellFor = (eleves: GroupeEleveRow[], coachId: string | null) =>
     eleves.filter((e) => (e.coach_id ?? null) === coachId);
 
+  if (cols.length === 0 && !hasSansCoach) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500 text-sm">
+        Aucun élève pour l'instant.
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-      <table className="w-full text-xs border-collapse">
+    <div className="overflow-x-auto rounded-xl border border-gray-300 bg-white shadow-sm">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
-            <th className="bg-navy text-white px-2 py-2 border border-navy/30 sticky left-0 z-10 text-left">
+            <th className="bg-navy text-white px-3 py-3 border border-navy/40 sticky left-0 z-10 text-left min-w-[160px]">
               Créneau
             </th>
             {cols.map((c) => (
               <th
                 key={c.id}
-                className="text-white px-2 py-2 border border-white/30 font-bold"
+                className="text-white px-3 py-3 border border-white/30 font-extrabold min-w-[160px] text-center"
                 style={{ backgroundColor: c.couleur ?? "#0d2e3f" }}
               >
                 {c.nom}
               </th>
             ))}
             {hasSansCoach ? (
-              <th className="px-2 py-2 border border-gray-200 bg-gray-100 text-gray-600 font-bold">
+              <th className="px-3 py-3 border border-gray-300 bg-gray-200 text-gray-600 font-bold min-w-[160px] text-center">
                 Sans coach
               </th>
             ) : null}
@@ -363,8 +455,8 @@ function Grille({
         </thead>
         <tbody>
           {groups.map((g) => (
-            <tr key={g.label} className="even:bg-gray-50/60 align-top">
-              <th className="px-2 py-2 border border-gray-200 bg-navy/5 text-navy font-bold whitespace-nowrap sticky left-0 text-left">
+            <tr key={g.label} className="align-top">
+              <th className="px-3 py-2.5 border border-gray-300 bg-navy/5 text-navy font-bold whitespace-nowrap sticky left-0 text-left">
                 {g.label === A_CLASSER ? "🟠 À classer" : g.label}
               </th>
               {cols.map((c) => {
@@ -372,40 +464,48 @@ function Grille({
                 return (
                   <td
                     key={c.id}
-                    className="px-2 py-2 border border-gray-200"
+                    className="px-3 py-2.5 border border-gray-300"
                     style={{
                       backgroundColor: list.length
-                        ? `${c.couleur ?? "#0d2e3f"}0f`
+                        ? `${c.couleur ?? "#0d2e3f"}0d`
                         : undefined,
                     }}
                   >
-                    <ul className="space-y-0.5 leading-tight">
+                    <ol className="space-y-1 leading-snug list-none">
                       {list.map((e) => (
-                        <li key={e.id}>
-                          {e.prenom} {e.nom}
-                          <span className="text-gray-400">
-                            {" "}
-                            {age(e.date_naissance) ?? "?"}
+                        <li
+                          key={e.id}
+                          className="flex items-baseline justify-between gap-2"
+                        >
+                          <span className="text-navy">
+                            {e.prenom} {e.nom}
+                          </span>
+                          <span className="text-gray-400 tabular-nums text-xs shrink-0">
+                            {age(e.date_naissance) ?? "?"} ans
                           </span>
                         </li>
                       ))}
-                    </ul>
+                    </ol>
                   </td>
                 );
               })}
               {hasSansCoach ? (
-                <td className="px-2 py-2 border border-gray-200">
-                  <ul className="space-y-0.5 leading-tight text-gray-500">
+                <td className="px-3 py-2.5 border border-gray-300 bg-gray-50">
+                  <ol className="space-y-1 leading-snug list-none text-gray-500">
                     {cellFor(g.eleves, null).map((e) => (
-                      <li key={e.id}>
-                        {e.prenom} {e.nom}
-                        <span className="text-gray-400">
-                          {" "}
-                          {age(e.date_naissance) ?? "?"}
+                      <li
+                        key={e.id}
+                        className="flex items-baseline justify-between gap-2"
+                      >
+                        <span>
+                          {e.prenom} {e.nom}
+                        </span>
+                        <span className="text-gray-400 tabular-nums text-xs shrink-0">
+                          {age(e.date_naissance) ?? "?"} ans
                         </span>
                       </li>
                     ))}
-                  </ul>
+                  </ol>
                 </td>
               ) : null}
             </tr>
