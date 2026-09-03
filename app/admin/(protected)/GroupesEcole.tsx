@@ -152,7 +152,7 @@ export default function GroupesEcole({
           🖨️ Imprimer
         </button>
         <div className="ml-auto text-xs text-gray-600">
-          <strong>{totalCoches}</strong> élèves cochés ·{" "}
+          <strong>{totalCoches}</strong> élèves à grouper ·{" "}
           <strong className="text-green-700">{totalCoches - aClasser}</strong>{" "}
           classés ·{" "}
           <strong className="text-orange-600">{aClasser}</strong> à classer ·{" "}
