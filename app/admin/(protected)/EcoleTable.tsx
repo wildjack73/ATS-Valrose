@@ -25,6 +25,7 @@ import {
 import InlineStatusBadge from "./InlineStatusBadge";
 import CoordonneesEditor from "./CoordonneesEditor";
 import CreneauxEcoleEditor from "./CreneauxEcoleEditor";
+import CoursEcoleEditor from "./CoursEcoleEditor";
 import {
   PaiementsPanel,
   PaiementBadge,
@@ -463,6 +464,9 @@ export default function EcoleTable({
                   paiements={paiementsByInscription[r.id] ?? []}
                   niveauAttribue={niveauxEleves[eleveKey(r.nom, r.prenom)] ?? null}
                   horaires={horaires}
+                  coursTennis={coursTennis}
+                  coursPadel={coursPadel}
+                  coursPickleball={coursPickleball}
                   open={openId === r.id}
                   toggle={() => setOpenId(openId === r.id ? null : r.id)}
                   patch={(p) => patchInscription(r.id, p)}
@@ -542,6 +546,9 @@ function EcoleRowGroup({
   paiements,
   niveauAttribue,
   horaires,
+  coursTennis,
+  coursPadel,
+  coursPickleball,
   open,
   toggle,
   patch,
@@ -553,6 +560,9 @@ function EcoleRowGroup({
   paiements: PaiementClient[];
   niveauAttribue: string | null;
   horaires: Record<string, string>;
+  coursTennis: CoursEcole[];
+  coursPadel: CoursEcole[];
+  coursPickleball: CoursEcole[];
   open: boolean;
   toggle: () => void;
   patch: (p: object) => void;
@@ -865,6 +875,9 @@ function EcoleRowGroup({
                 paiements={paiements}
                 patch={patch}
                 prevenir={prevenir}
+                coursTennis={coursTennis}
+                coursPadel={coursPadel}
+                coursPickleball={coursPickleball}
                 pending={pending}
               />
             </div>
@@ -897,12 +910,18 @@ function EcoleEditPanel({
   paiements,
   patch,
   prevenir,
+  coursTennis,
+  coursPadel,
+  coursPickleball,
   pending,
 }: {
   row: InscriptionEcoleRow;
   paiements: PaiementClient[];
   patch: (p: object) => void;
   prevenir: () => void;
+  coursTennis: CoursEcole[];
+  coursPadel: CoursEcole[];
+  coursPickleball: CoursEcole[];
   pending: boolean;
 }) {
   const [statut, setStatut] = useState(row.statut);
@@ -967,6 +986,16 @@ function EcoleEditPanel({
         patch={patch}
         pending={pending}
         withCodePostal
+      />
+
+      {/* Cours éditables (correction : mauvais cours choisi) */}
+      <CoursEcoleEditor
+        row={row}
+        coursTennis={coursTennis}
+        coursPadel={coursPadel}
+        coursPickleball={coursPickleball}
+        patch={patch}
+        pending={pending}
       />
 
       {/* Créneaux / disponibilités éditables */}

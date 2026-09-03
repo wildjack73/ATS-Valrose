@@ -59,6 +59,10 @@ export default function StagesTable({
   const [pending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  // Aperçu email « Prévenir » avant envoi (solo).
+  const [preview, setPreview] = useState<{ id: string; label: string } | null>(
+    null,
+  );
   const [filterNiveau, setFilterNiveau] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "age_asc" | "age_desc">("date");
 
@@ -162,17 +166,18 @@ export default function StagesTable({
     (r) => !r.prevenu_at && r.statut !== "annule" && !r.desactive,
   );
 
+  // Solo : ouvre d'abord l'aperçu de l'email ; l'envoi se fait depuis la fenêtre.
   function prevenirSolo(id: string, label: string) {
-    if (
-      !window.confirm(
-        `Envoyer l'email de confirmation d'inscription à ${label} ?`,
-      )
-    ) {
-      return;
-    }
+    setPreview({ id, label });
+  }
+
+  function envoyerDepuisApercu() {
+    if (!preview) return;
+    const id = preview.id;
     startTransition(async () => {
       const { failed } = await prevenirBatch([id]);
       if (failed) window.alert("L'email n'a pas pu être envoyé. Réessaye.");
+      setPreview(null);
       router.refresh();
     });
   }
@@ -333,6 +338,60 @@ export default function StagesTable({
           </tbody>
         </table>
       </div>
+
+      {/* Fenêtre d'aperçu de l'email « Prévenir » avant envoi (solo) */}
+      {preview ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => !pending && setPreview(null)}
+        >
+          <div
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="flex items-center justify-between border-b px-4 py-3">
+              <div>
+                <h3 className="font-bold text-navy">Aperçu de l&apos;email</h3>
+                <p className="text-xs text-gray-500">
+                  Confirmation d&apos;inscription — {preview.label}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreview(null)}
+                disabled={pending}
+                className="text-gray-400 hover:text-navy text-xl leading-none disabled:opacity-40"
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </header>
+            <iframe
+              src={`/api/admin/inscriptions/stages/${preview.id}/preview-prevenir`}
+              title="Aperçu de l'email"
+              className="w-full flex-1 min-h-[380px] bg-gray-50"
+            />
+            <footer className="flex items-center justify-end gap-3 border-t px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setPreview(null)}
+                disabled={pending}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={envoyerDepuisApercu}
+                disabled={pending}
+                className="rounded-lg bg-navy text-white px-5 py-2 text-sm font-bold hover:bg-navy-dark disabled:opacity-40"
+              >
+                {pending ? "Envoi…" : "✉️ Envoyer l'email"}
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

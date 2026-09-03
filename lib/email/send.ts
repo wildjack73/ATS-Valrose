@@ -182,16 +182,15 @@ export async function sendValidationEcole(
   return { ok: true };
 }
 
-/** Email de CONFIRMATION d'inscription STAGE, déclenché depuis l'admin
- *  (bouton « Prévenir »). Renvoie un statut (ne marque prévenu que si OK). */
-export async function sendValidationStage(
-  row: InscriptionStageRow,
-): Promise<{ ok: boolean; error?: string }> {
-  const mailer = getMailer();
-  if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
-
+/** Construit (sans envoyer) le message de confirmation STAGE. Réutilisé par
+ *  l'envoi ET la prévisualisation admin. */
+export function buildValidationStageEmail(row: InscriptionStageRow): {
+  subject: string;
+  html: string;
+  text: string;
+} {
   const formule = FORMULES.find((f) => f.id === row.formule);
-  const { subject, html, text } = emailValidationStage({
+  return emailValidationStage({
     prenom: row.prenom,
     nom: row.nom,
     semaine_label: row.semaine_label,
@@ -203,6 +202,17 @@ export async function sendValidationStage(
         ? f4SelectionLabel(row.formule_4_selection)
         : null,
   });
+}
+
+/** Email de CONFIRMATION d'inscription STAGE, déclenché depuis l'admin
+ *  (bouton « Prévenir »). Renvoie un statut (ne marque prévenu que si OK). */
+export async function sendValidationStage(
+  row: InscriptionStageRow,
+): Promise<{ ok: boolean; error?: string }> {
+  const mailer = getMailer();
+  if (!mailer) return { ok: false, error: "SMTP non configuré (SMTP_PASS absent)" };
+
+  const { subject, html, text } = buildValidationStageEmail(row);
   const mailOptions = { from: getEmailFrom(), to: row.email, subject, html, text };
 
   try {
