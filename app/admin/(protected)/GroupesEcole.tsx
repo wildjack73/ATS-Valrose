@@ -197,13 +197,11 @@ export default function GroupesEcole({
 
 function CoachSelect({
   value,
-  coach,
   activeCoaches,
   pending,
   onChange,
 }: {
   value: string;
-  coach: Coach | null | undefined;
   activeCoaches: Coach[];
   pending: boolean;
   onChange: (coachId: string | null) => void;
@@ -213,12 +211,7 @@ function CoachSelect({
       value={value}
       disabled={pending}
       onChange={(e) => onChange(e.target.value || null)}
-      className="w-full rounded border px-2 py-1 text-sm font-semibold"
-      style={{
-        borderColor: coach?.couleur ?? "#d1d5db",
-        color: coach?.couleur ?? "#6b7280",
-        backgroundColor: coach ? `${coach.couleur}12` : "#fff",
-      }}
+      className="w-full rounded border border-gray-300 px-2 py-1 text-sm font-semibold"
     >
       <option value="">— coach —</option>
       {activeCoaches.map((c) => (
@@ -253,13 +246,13 @@ function GroupeTable({
     <section className="rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden print-break">
       <header
         className={`px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-300 ${
-          isAClasser ? "bg-orange-100" : "bg-navy"
+          isAClasser ? "bg-amber-50" : "bg-navy"
         }`}
       >
         <div className="flex items-center gap-2.5">
           <span
             className={`text-base font-extrabold ${
-              isAClasser ? "text-orange-900" : "text-white"
+              isAClasser ? "text-amber-900" : "text-white"
             }`}
           >
             {isAClasser ? "🟠 À classer" : `📅 ${label}`}
@@ -267,7 +260,7 @@ function GroupeTable({
           <span
             className={`text-xs font-bold px-2 py-0.5 rounded-full ${
               isAClasser
-                ? "bg-white/70 text-orange-800"
+                ? "bg-amber-100 text-amber-900"
                 : "bg-white/20 text-white"
             }`}
           >
@@ -301,7 +294,7 @@ function GroupeTable({
             </select>
           </label>
         ) : (
-          <span className="text-[11px] text-orange-800 no-print">
+          <span className="text-[11px] text-amber-900 no-print">
             Renseigne leur horaire exact (onglet École) pour les ranger.
           </span>
         )}
@@ -345,7 +338,7 @@ function GroupeTable({
               return (
                 <tr
                   key={e.id}
-                  className="border-b border-gray-200 last:border-b-0 even:bg-gray-50/70 hover:bg-yellow-50/40"
+                  className="border-b border-gray-200 last:border-b-0 even:bg-gray-50/60 hover:bg-gray-50"
                 >
                   <td className="px-3 py-2 text-right text-gray-400 tabular-nums border-r border-gray-100">
                     {i + 1}
@@ -376,7 +369,6 @@ function GroupeTable({
                           />
                           <CoachSelect
                             value={e.coach_id ?? ""}
-                            coach={coach}
                             activeCoaches={activeCoaches}
                             pending={pending}
                             onChange={(cid) => onSetCoach([e.id], cid)}
@@ -447,7 +439,7 @@ function Grille({
               </th>
             ))}
             {hasSansCoach ? (
-              <th className="px-3 py-3 border border-gray-300 bg-gray-200 text-gray-600 font-bold min-w-[160px] text-center">
+              <th className="px-3 py-3 border border-gray-300 bg-gray-100 text-gray-600 font-bold min-w-[160px] text-center">
                 Sans coach
               </th>
             ) : null}
