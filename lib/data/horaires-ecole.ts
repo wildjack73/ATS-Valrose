@@ -36,11 +36,13 @@ export const COURS_HORAIRES: {
     code: "centre_entrainement",
     label: "Centre d'Entraînement",
     detail: "confirmés · 3h/sem",
+    combos: true,
   },
   {
     code: "demi_journee",
     label: "Demi-journée",
     detail: "multi-activités · 3h/sem",
+    combos: true,
   },
 ];
 
