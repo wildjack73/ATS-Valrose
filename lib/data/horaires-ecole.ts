@@ -12,28 +12,57 @@
  * Pas de dépendance server-only : importable client + serveur.
  */
 
-/** Cours tennis jeunes concernés (code + libellé + repère public). */
-export const COURS_HORAIRES: { code: string; label: string; detail: string }[] =
-  [
-    { code: "baby_tennis", label: "Baby Tennis", detail: "dès 3 ans · 1h/sem" },
-    { code: "mini_tennis", label: "Mini Tennis", detail: "dès 5 ans · 1h/sem" },
-    { code: "initiation", label: "Initiation", detail: "dès 6 ans · 1h/sem" },
-    {
-      code: "perfectionnement",
-      label: "Perfectionnement",
-      detail: "dès 7 ans · 1h30/sem",
-    },
-    {
-      code: "centre_entrainement",
-      label: "Centre d'Entraînement",
-      detail: "confirmés · 3h/sem",
-    },
-    {
-      code: "demi_journee",
-      label: "Demi-journée",
-      detail: "multi-activités · 3h/sem",
-    },
-  ];
+/**
+ * Cours tennis jeunes concernés (code + libellé + repère public).
+ * `combos: true` → cours 3h/sem à COMBINAISONS multi-jours (Centre, Demi-journée) :
+ * on ne saisit pas un horaire par créneau mais une liste de combinaisons
+ * possibles (une par ligne), proposées telles quelles dans le menu déroulant.
+ */
+export const COURS_HORAIRES: {
+  code: string;
+  label: string;
+  detail: string;
+  combos?: boolean;
+}[] = [
+  { code: "baby_tennis", label: "Baby Tennis", detail: "dès 3 ans · 1h/sem" },
+  { code: "mini_tennis", label: "Mini Tennis", detail: "dès 5 ans · 1h/sem" },
+  { code: "initiation", label: "Initiation", detail: "dès 6 ans · 1h/sem" },
+  {
+    code: "perfectionnement",
+    label: "Perfectionnement",
+    detail: "dès 7 ans · 1h30/sem",
+  },
+  {
+    code: "centre_entrainement",
+    label: "Centre d'Entraînement",
+    detail: "confirmés · 3h/sem",
+    combos: true,
+  },
+  {
+    code: "demi_journee",
+    label: "Demi-journée",
+    detail: "multi-activités · 3h/sem",
+    combos: true,
+  },
+];
+
+/** Pseudo-créneau servant à stocker les combinaisons d'un cours 3h. */
+export const COMBO_CRENEAU = "__combos__";
+
+export function comboCle(coursCode: string): string {
+  return horaireCle(coursCode, COMBO_CRENEAU);
+}
+
+/** Liste des combinaisons saisies pour un cours (une par ligne dans le champ). */
+export function combosList(
+  horaires: Record<string, string>,
+  coursCode: string,
+): string[] {
+  return (horaires[comboCle(coursCode)] ?? "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 /** Créneaux jeunes (mêmes libellés que creneaux-ecole.ts / dispo_semaine). */
 export const CRENEAUX_HORAIRES: string[] = [
@@ -74,6 +103,17 @@ export function horaireOptionsFor(
 ): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
+  const add = (opt: string) => {
+    if (opt && !seen.has(opt)) {
+      seen.add(opt);
+      out.push(opt);
+    }
+  };
+  // Cours à combinaisons (Centre d'Entraînement, Demi-journée) : les
+  // combinaisons multi-jours sont proposées telles quelles.
+  for (const code of coursCodes) {
+    for (const combo of combosList(horaires, code)) add(combo);
+  }
   for (const creneau of dispoLabels) {
     for (const code of coursCodes) {
       const h = horaireFor(horaires, code, creneau);
@@ -82,11 +122,7 @@ export function horaireOptionsFor(
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)) {
-        const opt = `${creneau} — ${slot}`;
-        if (!seen.has(opt)) {
-          seen.add(opt);
-          out.push(opt);
-        }
+        add(`${creneau} — ${slot}`);
       }
     }
   }

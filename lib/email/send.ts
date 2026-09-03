@@ -25,7 +25,7 @@ import type {
 import { COURS_TENNIS, COURS_PADEL, COURS_PICKLEBALL } from "@/lib/data/ecole";
 import { getActiveSaison } from "@/lib/data/tarifs-server";
 import { fetchHorairesEcole } from "@/lib/data/horaires-ecole-server";
-import { horaireFor } from "@/lib/data/horaires-ecole";
+import { horaireFor, horaireOptionsFor } from "@/lib/data/horaires-ecole";
 
 /** Envoi best-effort : log les erreurs mais ne fait pas échouer la requête. */
 async function safeSend(
@@ -120,9 +120,10 @@ export async function sendValidationEcole(
     /* pas bloquant */
   }
   const coursTennisCodes = (row.cours_tennis ?? []) as string[];
-  const creneaux = [row.dispo_mercredi, row.dispo_samedi, row.dispo_semaine]
+  const dispoLabels = [row.dispo_mercredi, row.dispo_samedi, row.dispo_semaine]
     .filter((x): x is string => Boolean(x && x.trim()))
-    .flatMap((s) => s.split(",").map((x) => x.trim()).filter(Boolean))
+    .flatMap((s) => s.split(",").map((x) => x.trim()).filter(Boolean));
+  const creneaux = dispoLabels
     .map((label) => {
       let h = "";
       for (const code of coursTennisCodes) {
@@ -133,12 +134,15 @@ export async function sendValidationEcole(
     })
     .join(", ");
 
-  // Si un horaire exact a été confirmé (menu déroulant admin), il prime sur la
-  // liste des créneaux — la famille reçoit l'horaire précis de son groupe.
+  // Horaire affiché : 1) l'horaire confirmé (menu admin) prime ; 2) sinon, s'il
+  // n'existe qu'UN seul horaire possible, on l'utilise ; 3) sinon, la liste.
+  const options = horaireOptionsFor(horaires, coursTennisCodes, dispoLabels);
   const creneauxFinal =
     row.horaire_confirme && row.horaire_confirme.trim()
       ? row.horaire_confirme.trim()
-      : creneaux;
+      : options.length === 1
+        ? options[0]
+        : creneaux;
 
   const { subject, html, text } = emailValidationEcole({
     prenom: row.prenom,

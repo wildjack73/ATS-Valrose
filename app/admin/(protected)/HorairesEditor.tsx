@@ -6,6 +6,7 @@ import {
   COURS_HORAIRES,
   CRENEAUX_HORAIRES,
   horaireCle,
+  comboCle,
 } from "@/lib/data/horaires-ecole";
 
 /**
@@ -37,10 +38,12 @@ export default function HorairesEditor({
 
   function save() {
     const entries = COURS_HORAIRES.flatMap((c) =>
-      CRENEAUX_HORAIRES.map((cr) => {
-        const cle = horaireCle(c.code, cr);
-        return { cle, horaire: values[cle] ?? "" };
-      }),
+      c.combos
+        ? [{ cle: comboCle(c.code), horaire: values[comboCle(c.code)] ?? "" }]
+        : CRENEAUX_HORAIRES.map((cr) => {
+            const cle = horaireCle(c.code, cr);
+            return { cle, horaire: values[cle] ?? "" };
+          }),
     );
     startTransition(async () => {
       const res = await fetch("/api/admin/horaires-ecole", {
@@ -91,25 +94,44 @@ export default function HorairesEditor({
               </h3>
             </header>
             <div className="p-3 space-y-1.5">
-              {CRENEAUX_HORAIRES.map((cr) => {
-                const cle = horaireCle(c.code, cr);
-                return (
-                  <label
-                    key={cle}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <span className="w-40 shrink-0 text-gray-600">{cr}</span>
-                    <input
-                      type="text"
-                      value={values[cle] ?? ""}
-                      onChange={(e) => setOne(cle, e.target.value)}
-                      placeholder="ex : 9h00 - 10h00"
-                      disabled={pending}
-                      className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm focus:border-navy focus:outline-none"
-                    />
-                  </label>
-                );
-              })}
+              {c.combos ? (
+                <label className="block text-sm">
+                  <span className="block text-gray-600 mb-1">
+                    Combinaisons possibles (<strong>une par ligne</strong>) —
+                    ex. «&nbsp;Mercredi 14h-15h30 + Vendredi 17h&nbsp;»
+                  </span>
+                  <textarea
+                    rows={4}
+                    value={values[comboCle(c.code)] ?? ""}
+                    onChange={(e) => setOne(comboCle(c.code), e.target.value)}
+                    placeholder={
+                      "Mercredi 14h-15h30 + Vendredi 17h\nMercredi 14h + Samedi 10h30"
+                    }
+                    disabled={pending}
+                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm resize-y focus:border-navy focus:outline-none"
+                  />
+                </label>
+              ) : (
+                CRENEAUX_HORAIRES.map((cr) => {
+                  const cle = horaireCle(c.code, cr);
+                  return (
+                    <label
+                      key={cle}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <span className="w-40 shrink-0 text-gray-600">{cr}</span>
+                      <input
+                        type="text"
+                        value={values[cle] ?? ""}
+                        onChange={(e) => setOne(cle, e.target.value)}
+                        placeholder="ex : 9h00 - 10h00"
+                        disabled={pending}
+                        className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm focus:border-navy focus:outline-none"
+                      />
+                    </label>
+                  );
+                })
+              )}
             </div>
           </section>
         ))}

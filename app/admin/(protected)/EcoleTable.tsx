@@ -520,6 +520,10 @@ function EcoleRowGroup({
     (row.cours_tennis ?? []) as string[],
     dispoLabels,
   );
+  // Un seul horaire possible → présélectionné (sans forcer l'enregistrement).
+  const effectiveHoraire =
+    row.horaire_confirme ??
+    (horaireOptions.length === 1 ? horaireOptions[0] : "");
 
   function handleRowClick(e: React.MouseEvent<HTMLTableRowElement>) {
     const target = e.target as HTMLElement;
@@ -684,19 +688,21 @@ function EcoleRowGroup({
           {/* Horaire exact confirmé : menu déroulant selon jour + matin/aprem */}
           {horaireOptions.length > 0 ? (
             <select
-              value={row.horaire_confirme ?? ""}
+              value={effectiveHoraire || ""}
               disabled={pending}
               onChange={(e) =>
                 patch({ horaire_confirme: e.target.value || null })
               }
               title="Choisir l'horaire exact (groupe) de cet élève"
               className={`mt-2 w-full max-w-[180px] rounded border px-1.5 py-1 text-[11px] ${
-                row.horaire_confirme
+                effectiveHoraire
                   ? "border-navy bg-navy/5 text-navy font-semibold"
                   : "border-gray-300 text-gray-600"
               }`}
             >
-              <option value="">— Horaire exact —</option>
+              {horaireOptions.length === 1 ? null : (
+                <option value="">— Horaire exact —</option>
+              )}
               {horaireOptions.map((o) => (
                 <option key={o} value={o}>
                   {o}
