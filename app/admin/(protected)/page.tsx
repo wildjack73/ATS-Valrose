@@ -314,6 +314,13 @@ export default async function AdminDashboardPage({
           Places
         </TabLink>
         <TabLink
+          active={tab === "planning"}
+          href="/admin?tab=planning"
+          icon={<IconPlanning />}
+        >
+          Planning École
+        </TabLink>
+        <TabLink
           active={tab === "stages-org"}
           href="/admin?tab=stages-org"
           icon={<IconPlanning />}
@@ -348,16 +355,6 @@ export default async function AdminDashboardPage({
         >
           Archives <span className="opacity-60">({totalArchives})</span>
         </TabLink>
-        {/* Planning École masqué pour le moment — réactivable en décommentant
-        <TabLink
-          active={tab === "planning"}
-          href="/admin?tab=planning"
-          accent="ocre"
-          icon="📅"
-        >
-          Planning École
-        </TabLink>
-        */}
       </div>
 
       {tab === "stages" ? (
