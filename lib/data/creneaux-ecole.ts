@@ -140,6 +140,12 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
             defaultMax: 4,
           },
           {
+            label: "Samedi 13h30-15h (padel)",
+            display: "Samedi 13h30-15h",
+            defaultMax: 4,
+            note: "perfectionnement jeunes",
+          },
+          {
             label: "Samedi Après-midi (padel)",
             display: "Samedi 15h-16h30",
             defaultMax: 4,
