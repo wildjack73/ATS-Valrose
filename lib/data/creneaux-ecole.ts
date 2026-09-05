@@ -185,11 +185,29 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
     titre: "🏓 Padel jeunes — Perfectionnement",
     groupes: [
       {
-        titre: "Après-midi",
+        // Perfectionnement padel jeunes : 4 créneaux au choix.
+        // NB : les 3 premiers réutilisent les MÊMES labels que le padel
+        // adultes (valeur stockée identique → capacité/occupation partagées).
+        titre: "Créneaux au choix",
         options: [
+          {
+            label: "Lundi 17h-18h30 (padel)",
+            display: "Lundi 17h-18h30",
+            defaultMax: 4,
+          },
+          {
+            label: "Mercredi Après-midi (padel)",
+            display: "Mercredi 17h-18h30",
+            defaultMax: 4,
+          },
           {
             label: "Samedi 13h30-15h (padel)",
             display: "Samedi 13h30-15h",
+            defaultMax: 4,
+          },
+          {
+            label: "Samedi Après-midi (padel)",
+            display: "Samedi 15h-16h30",
             defaultMax: 4,
           },
         ],
