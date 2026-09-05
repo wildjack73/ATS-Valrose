@@ -576,6 +576,14 @@ export default function EcoleForm({
               ADULTE_TENNIS_CODES.has(c),
             );
             const hasPadel = coursPadelSel.length > 0;
+            // Padel jeunes = cours « Perfectionnement Padel » (code
+            // "perfectionnement"). Padel adultes = tout autre cours padel
+            // (cours_adultes_*). On sépare les deux pour n'afficher les
+            // créneaux jeunes qu'aux jeunes, et inversement.
+            const hasPadelJeunes = coursPadelSel.includes("perfectionnement");
+            const hasPadelAdulte = coursPadelSel.some(
+              (c) => c !== "perfectionnement",
+            );
             const hasPickleballCours = coursPickleballSel.length > 0;
             const rienChoisi =
               !hasJeune && !hasAdulteTennis && !hasPadel && !hasPickleballCours;
@@ -587,7 +595,8 @@ export default function EcoleForm({
               (s) =>
                 (s.categorie === "jeunes" && hasJeune) ||
                 (s.categorie === "adultes_tennis" && hasAdulteTennis) ||
-                (s.categorie === "padel" && hasPadel) ||
+                (s.categorie === "padel" && hasPadelAdulte) ||
+                (s.categorie === "padel_jeunes" && hasPadelJeunes) ||
                 (s.categorie === "pickleball" && hasPickleballCours),
             );
 

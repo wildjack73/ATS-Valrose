@@ -29,6 +29,7 @@ const CATS: CreneauCategorie[] = [
   "jeunes",
   "adultes_tennis",
   "padel",
+  "padel_jeunes",
   "pickleball",
 ];
 

@@ -21,6 +21,7 @@ export type CreneauCategorie =
   | "jeunes"
   | "adultes_tennis"
   | "padel"
+  | "padel_jeunes"
   | "pickleball";
 
 /** Entrée à plat (label + catégorie) — pour les filtres admin. */
@@ -140,12 +141,6 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
             defaultMax: 4,
           },
           {
-            label: "Samedi 13h30-15h (padel)",
-            display: "Samedi 13h30-15h",
-            defaultMax: 4,
-            note: "perfectionnement jeunes",
-          },
-          {
             label: "Samedi Après-midi (padel)",
             display: "Samedi 15h-16h30",
             defaultMax: 4,
@@ -179,6 +174,22 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
           {
             label: "Vendredi 18h30-20h (padel)",
             display: "Vendredi",
+            defaultMax: 4,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    categorie: "padel_jeunes",
+    titre: "🏓 Padel jeunes — Perfectionnement",
+    groupes: [
+      {
+        titre: "Après-midi",
+        options: [
+          {
+            label: "Samedi 13h30-15h (padel)",
+            display: "Samedi 13h30-15h",
             defaultMax: 4,
           },
         ],
@@ -232,6 +243,8 @@ export function categorieLabel(c: CreneauCategorie): string {
       return "Adultes Tennis";
     case "padel":
       return "Padel";
+    case "padel_jeunes":
+      return "Padel jeunes";
     case "pickleball":
       return "Pickleball";
   }

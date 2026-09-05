@@ -140,6 +140,7 @@ export default function EcoleTable({
       jeunes: [],
       adultes_tennis: [],
       padel: [],
+      padel_jeunes: [],
       pickleball: [],
     };
     for (const c of CRENEAUX_ECOLE) byCat[c.categorie].push(c.label);
