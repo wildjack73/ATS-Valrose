@@ -26,39 +26,7 @@ import { COURS_TENNIS, COURS_PADEL, COURS_PICKLEBALL } from "@/lib/data/ecole";
 import { getActiveSaison } from "@/lib/data/tarifs-server";
 import { fetchHorairesEcole } from "@/lib/data/horaires-ecole-server";
 import { horaireFor, horaireOptionsFor } from "@/lib/data/horaires-ecole";
-import { SECTIONS_CRENEAUX } from "@/lib/data/creneaux-ecole";
-
-/** label stocké (dispo_semaine) → option définie dans creneaux-ecole.ts */
-const OPTION_PAR_LABEL = (() => {
-  const map = new Map<
-    string,
-    { display: string; note?: string }
-  >();
-  for (const section of SECTIONS_CRENEAUX)
-    for (const groupe of section.groupes)
-      for (const option of groupe.options)
-        map.set(option.label, { display: option.display, note: option.note });
-  return map;
-})();
-
-/** Contient un horaire (ex. « 13h30 », « 9h-10h ») ? */
-function contientHoraire(s: string): boolean {
-  return /\d\s*h/i.test(s);
-}
-
-/**
- * Libellé lisible d'un créneau pour l'email, AVEC l'horaire quand on l'a.
- * Beaucoup de créneaux padel stockent un label sans heure (« Samedi Après-midi
- * (padel) ») alors que l'heure est dans le `display` (« Samedi 15h-16h30 »).
- */
-function creneauLisible(label: string): string {
-  const opt = OPTION_PAR_LABEL.get(label);
-  if (!opt) return label; // libellé inconnu (anciennes données) → tel quel
-  // Si le display porte l'heure (padel après-midi…), on le préfère.
-  if (contientHoraire(opt.display)) return opt.display;
-  // Sinon le label porte souvent l'heure ; on retire juste le marqueur (padel).
-  return label.replace(/\s*\((?:padel|pickleball)\)/gi, "").trim();
-}
+import { creneauTexteParLabel } from "@/lib/data/creneaux-ecole";
 
 /** Envoi best-effort : log les erreurs mais ne fait pas échouer la requête. */
 async function safeSend(
@@ -167,8 +135,8 @@ export async function buildValidationEcoleEmail(
         if (h) break;
       }
       if (h) return `${label} (${h})`;
-      // 2) Sinon, libellé lisible avec l'heure (padel/pickleball notamment)
-      return creneauLisible(label);
+      // 2) Sinon, libellé lisible « JOUR + heure » (padel/pickleball, samedi…)
+      return creneauTexteParLabel(label);
     })
     .join(", ");
 

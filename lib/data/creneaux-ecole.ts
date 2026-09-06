@@ -293,15 +293,53 @@ export function normalizeSlot(s: string): string {
     .trim();
 }
 
+const JOUR_RE = /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)/i;
+
+/** Retire le marqueur de catégorie d'un label (« (padel) », « (padel perf) »,
+ *  « (pickleball) ») → « Samedi 9h-10h30 », « Lundi 17h-18h30 »… */
+function retirerMarqueur(label: string): string {
+  return label.replace(/\s*\((?:padel(?:\s*perf)?|pickleball)\)/gi, "").trim();
+}
+
 /**
- * Texte « jour + heure » lisible d'un créneau (pour menus/emails) : on prend le
- * `display` s'il porte déjà une heure, sinon le `label` nettoyé de son marqueur
- * « (padel) » / « (padel perf) » / « (pickleball) » — ces labels contiennent
- * l'heure (ex. « Lundi 17h-18h30 (padel) » → « Lundi 17h-18h30 »).
+ * Texte « JOUR + heure » lisible d'un créneau (pour menus/emails). Garantit
+ * toujours le jour, contrairement au seul `display` qui peut ne contenir que
+ * l'heure (ex. « 9h-10h30 » pour le créneau « Samedi 9h-10h30 »).
+ *
+ * Règles :
+ *  - si le label porte déjà jour + heure (« Samedi 9h-10h30 ») → on l'utilise ;
+ *  - sinon si le display porte l'heure, on s'assure qu'il commence par le jour
+ *    (sinon on préfixe le jour issu du label) → « Samedi 15h-16h30 » ;
+ *  - sinon on renvoie le label (« Samedi Après-midi », « Mercredi matin »).
  */
 export function creneauTexteComplet(option: CreneauOption): string {
-  if (/\d\s*h/i.test(option.display)) return option.display;
-  return option.label.replace(/\s*\((?:padel(?:\s*perf)?|pickleball)\)/gi, "").trim();
+  const label = retirerMarqueur(option.label);
+  const disp = option.display;
+  if (/\d\s*h/i.test(label)) return label;
+  if (/\d\s*h/i.test(disp)) {
+    if (JOUR_RE.test(disp)) return disp;
+    const jour = label.match(JOUR_RE)?.[0];
+    return jour ? `${jour} ${disp}` : disp;
+  }
+  return label;
+}
+
+/** Map label (valeur stockée) → option définie. */
+const OPTION_BY_LABEL: Map<string, CreneauOption> = (() => {
+  const m = new Map<string, CreneauOption>();
+  for (const s of SECTIONS_CRENEAUX)
+    for (const g of s.groupes) for (const o of g.options) m.set(o.label, o);
+  return m;
+})();
+
+/**
+ * Texte « JOUR + heure » lisible à partir d'un label STOCKÉ (dispo_semaine).
+ * Utilisé par l'email de confirmation. Retombe sur le label nettoyé si le
+ * créneau n'est pas (ou plus) défini.
+ */
+export function creneauTexteParLabel(label: string): string {
+  const opt = OPTION_BY_LABEL.get(label.trim());
+  return opt ? creneauTexteComplet(opt) : retirerMarqueur(label);
 }
 
 /**
