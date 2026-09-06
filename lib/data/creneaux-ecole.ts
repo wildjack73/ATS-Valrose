@@ -191,11 +191,6 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
         titre: "Créneaux au choix",
         options: [
           {
-            label: "Lundi 17h-18h30 (padel perf)",
-            display: "Lundi 17h-18h30",
-            defaultMax: 4,
-          },
-          {
             label: "Mercredi 17h-18h30 (padel perf)",
             display: "Mercredi 17h-18h30",
             defaultMax: 4,
