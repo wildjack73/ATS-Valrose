@@ -45,6 +45,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <Link className="hover:text-yellow-club" href="/admin?tab=ecole">
                 École
               </Link>
+              <Link
+                className="hover:text-yellow-club text-yellow-club/90"
+                href="/admin/affectation-padel"
+              >
+                Affectation padel
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">
