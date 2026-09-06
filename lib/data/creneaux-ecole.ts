@@ -282,6 +282,17 @@ export function normalizeSlot(s: string): string {
 }
 
 /**
+ * Texte « jour + heure » lisible d'un créneau (pour menus/emails) : on prend le
+ * `display` s'il porte déjà une heure, sinon le `label` nettoyé de son marqueur
+ * « (padel) » / « (padel perf) » / « (pickleball) » — ces labels contiennent
+ * l'heure (ex. « Lundi 17h-18h30 (padel) » → « Lundi 17h-18h30 »).
+ */
+export function creneauTexteComplet(option: CreneauOption): string {
+  if (/\d\s*h/i.test(option.display)) return option.display;
+  return option.label.replace(/\s*\((?:padel(?:\s*perf)?|pickleball)\)/gi, "").trim();
+}
+
+/**
  * Capacité effective d'un créneau : override admin (si une ligne existe en DB
  * pour ce `label`) sinon valeur par défaut du code. Renvoie `undefined` =
  * illimité.
