@@ -91,6 +91,12 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
     titre: "🎾 Cours Adultes Tennis",
     groupes: [
       {
+        titre: "En journée — 10h30-12h00",
+        options: [
+          { label: "Lundi 10h30-12h00", display: "Lundi", defaultMax: 5 },
+        ],
+      },
+      {
         titre: "Soir en semaine — 18h30-20h",
         options: [
           { label: "Lundi 18h30-20h", display: "Lundi", defaultMax: 5 },
@@ -111,6 +117,12 @@ export const SECTIONS_CRENEAUX: CreneauSection[] = [
             defaultMax: 5,
             note: "non débutant",
           },
+        ],
+      },
+      {
+        titre: "Soir en semaine — 20h-21h30",
+        options: [
+          { label: "Vendredi 20h-21h30", display: "Vendredi", defaultMax: 5 },
         ],
       },
       {
